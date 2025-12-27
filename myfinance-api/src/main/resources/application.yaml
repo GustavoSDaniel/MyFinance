@@ -1,0 +1,21 @@
+server:
+  port: 5050
+
+spring:
+  application:
+    name: myfinance-api
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
