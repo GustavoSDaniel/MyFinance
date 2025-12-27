@@ -1,0 +1,82 @@
+services:
+  my-finance-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: my-finance-app
+    restart: unless-stopped
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+    ports:
+      - "5050:5050"
+    networks:
+      - myfinance-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: db-my-finance
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5051:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - myfinance-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:alpine
+    container_name: redis-cache-my-finance
+    ports:
+      - "5052:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - myfinance-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  dbeaver:
+    image: dbeaver/cloudbeaver:ea
+    container_name: cloudbeaver-my-finance
+    restart: unless-stopped
+    ports:
+      - "5053:8978"
+    volumes:
+      - cloudbeaver_data:/opt/cloudbeaver/workspace
+    networks:
+      - myfinance-network
+    depends_on:
+      - postgres
+
+networks:
+  myfinance-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  cloudbeaver_data:
