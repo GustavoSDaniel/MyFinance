@@ -23,7 +23,8 @@ public class AuthController {
 
         UserInfoResponse user = new UserInfoResponse(
                 principal.getAttribute("name"),
-                principal.getAttribute("email")
+                principal.getAttribute("email"),
+                principal.getAttribute("picture")
         );
 
         return ResponseEntity.ok(user);

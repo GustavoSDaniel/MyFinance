@@ -16,23 +16,28 @@ public class User {
 
     public User() {}
 
-    public User(String email, String username){
+    public User(String email, String name, UserRole role) {
         this.email = email;
-        this.username = username;
+        this.name = name;
+        this.role = role;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Email
+    @Email(message = "Email deve ser válido")
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
-    private String username;
+    private String name;
 
     private String picture;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserRole role = UserRole.ROLE_USER;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, name = "created_at")
@@ -41,6 +46,19 @@ public class User {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User user = (User) o;
+        return id != null && id.equals(user.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 
     public UUID getId() {
         return id;
@@ -54,12 +72,12 @@ public class User {
         this.email = email;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPicture() {
@@ -68,6 +86,14 @@ public class User {
 
     public void setPicture(String picture) {
         this.picture = picture;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 
     public LocalDateTime getCreatedAt() {

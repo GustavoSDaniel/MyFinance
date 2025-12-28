@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.config;
 
+import com.gustavosdaniel.myfinance_api.util.OAuth2LoginSuccessHandler;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
     public static final String[] PUBLIC_URLS = {
 
             "/swagger-ui/**",
@@ -23,6 +26,10 @@ public class SecurityConfig {
             "/webjars/**"
 
     };
+
+    public SecurityConfig(OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -38,7 +45,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/api/v1/auth/user", true)
+                        .successHandler(oAuth2LoginSuccessHandler)
                         .failureUrl("/login?error=true")
                 )
 
