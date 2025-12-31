@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.user;
 
 import com.gustavosdaniel.myfinance_api.accounts.Account;
+import com.gustavosdaniel.myfinance_api.categories.Category;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import org.springframework.data.annotation.CreatedDate;
@@ -45,9 +46,16 @@ public class User {
     @OneToMany(
             mappedBy = "user",
             fetch = FetchType.LAZY,
-            cascade = {CascadeType.MERGE, CascadeType.PERSIST},
+            cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<Account> accounts = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "user",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<Category> categories = new ArrayList<>();
 
     @CreatedDate
     @Column(nullable = false, updatable = false, name = "created_at")
@@ -56,6 +64,31 @@ public class User {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void addAccount(Account account){
+        account.setUser(this);
+        this.accounts.add(account);
+    }
+
+    public void remove(Account account){
+        this.accounts.remove(account);
+        if (account != null){
+            account.setUser(null);
+        }
+    }
+
+    public void addCategory(Category category){
+        category.setUser(this);
+        this.categories.add(category);
+
+    }
+
+    public void removeCategory(Category category){
+        this.categories.remove(category);
+        if (category != null){
+            category.setUser(null);
+        }
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -112,6 +145,14 @@ public class User {
 
     public void setAccounts(List<Account> accounts) {
         this.accounts = accounts;
+    }
+
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
     }
 
     public LocalDateTime getCreatedAt() {
