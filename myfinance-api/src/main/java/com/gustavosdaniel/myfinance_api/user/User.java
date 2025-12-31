@@ -2,6 +2,7 @@ package com.gustavosdaniel.myfinance_api.user;
 
 import com.gustavosdaniel.myfinance_api.accounts.Account;
 import com.gustavosdaniel.myfinance_api.categories.Category;
+import com.gustavosdaniel.myfinance_api.transactions.Transaction;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import org.springframework.data.annotation.CreatedDate;
@@ -56,6 +57,13 @@ public class User {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<Category> categories = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "user",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<Transaction> transactions = new ArrayList<>();
 
     @CreatedDate
     @Column(nullable = false, updatable = false, name = "created_at")
@@ -153,6 +161,14 @@ public class User {
 
     public void setCategories(List<Category> categories) {
         this.categories = categories;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -1,6 +1,8 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
+import com.gustavosdaniel.myfinance_api.transactions.Transaction;
 import com.gustavosdaniel.myfinance_api.user.User;
+import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -8,6 +10,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -56,6 +60,9 @@ public class Account {
     private Boolean isActive;
 
     private String description;
+
+    @OneToMany(mappedBy = "account", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    private List<Transaction> transactions = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -152,6 +159,14 @@ public class Account {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void setTransactions(List<Transaction> transactions) {
+        this.transactions = transactions;
     }
 
     public LocalDateTime getCreatedAt() {

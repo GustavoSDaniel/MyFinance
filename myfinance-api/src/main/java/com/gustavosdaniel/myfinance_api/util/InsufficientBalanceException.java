@@ -1,4 +1,4 @@
-package com.gustavosdaniel.myfinance_api.accounts;
+package com.gustavosdaniel.myfinance_api.util;
 
 import com.gustavosdaniel.myfinance_api.exception.BusinesException;
 
