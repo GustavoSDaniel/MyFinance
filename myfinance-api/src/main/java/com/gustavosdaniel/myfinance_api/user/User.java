@@ -2,6 +2,7 @@ package com.gustavosdaniel.myfinance_api.user;
 
 import com.gustavosdaniel.myfinance_api.accounts.Account;
 import com.gustavosdaniel.myfinance_api.categories.Category;
+import com.gustavosdaniel.myfinance_api.goals.Goal;
 import com.gustavosdaniel.myfinance_api.transactions.Transaction;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -65,6 +66,14 @@ public class User {
             orphanRemoval = true)
     private List<Transaction> transactions = new ArrayList<>();
 
+    @OneToMany(
+            mappedBy = "user",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Goal> goals = new ArrayList<>();
+
     @CreatedDate
     @Column(nullable = false, updatable = false, name = "created_at")
     private LocalDateTime createdAt;
@@ -95,6 +104,19 @@ public class User {
         this.categories.remove(category);
         if (category != null){
             category.setUser(null);
+        }
+    }
+
+    public void addGoals(Goal goals){
+        goals.setUser(this);
+        this.goals.add(goals);
+    }
+
+    public void removeGoals(Goal goals){
+        this.goals.remove(goals);
+
+        if (goals != null){
+            goals.setUser(null);
         }
     }
 
@@ -169,6 +191,14 @@ public class User {
 
     public void setTransactions(List<Transaction> transactions) {
         this.transactions = transactions;
+    }
+
+    public List<Goal> getGoals() {
+        return goals;
+    }
+
+    public void setGoals(List<Goal> goals) {
+        this.goals = goals;
     }
 
     public LocalDateTime getCreatedAt() {

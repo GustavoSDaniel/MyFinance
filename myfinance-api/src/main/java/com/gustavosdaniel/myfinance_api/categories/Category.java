@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.categories;
 
+import com.gustavosdaniel.myfinance_api.goals.Goal;
 import com.gustavosdaniel.myfinance_api.transactions.Transaction;
 import com.gustavosdaniel.myfinance_api.user.User;
 import jakarta.persistence.*;
@@ -60,8 +61,11 @@ public class Category {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    @OneToMany(mappedBy = "category", cascade = {CascadeType.PERSIST, CascadeType.MERGE)
+    @OneToMany(mappedBy = "category", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Transaction> transactions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Goal> goals = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -204,6 +208,14 @@ public class Category {
 
     public void setTransactions(List<Transaction> transactions) {
         this.transactions = transactions;
+    }
+
+    public List<Goal> getGoals() {
+        return goals;
+    }
+
+    public void setGoals(List<Goal> goals) {
+        this.goals = goals;
     }
 
     public LocalDateTime getCreatedAt() {
