@@ -81,7 +81,7 @@ public class Category {
 
     public void addChild(Category child) throws CategoryNotParentException {
         child.setParent(this);
-        this.children.add(this);
+        this.children.add(child);
     }
 
     public void addBudget(Budget budget){
@@ -92,7 +92,7 @@ public class Category {
     public void removeBudget(Budget budget){
         this.budgets.remove(budget);
 
-        if (budget == null){
+        if (budget != null){
             budget.setCategory(null);
         }
     }
@@ -223,10 +223,6 @@ public class Category {
 
     public void setChildren(List<Category> children) {
         this.children = children;
-    }
-
-    public Boolean isActive() {
-        return isActive;
     }
 
     public Boolean getIsActive() {

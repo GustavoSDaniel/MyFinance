@@ -92,7 +92,7 @@ public class Transaction {
 
     private void validateAmount(BigDecimal amount) throws InvalidAmountException {
 
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0){
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0){
             throw new InvalidAmountException("O valor da transação deve ser positivo");
         }
     }
@@ -171,7 +171,8 @@ public class Transaction {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
+    public void setAmount(BigDecimal amount) throws InvalidAmountException {
+        validateAmount(amount);
         this.amount = amount;
     }
 
@@ -218,10 +219,6 @@ public class Transaction {
 
     public TransactionStatus getStatus() {
         return status;
-    }
-
-    public void setStatus(TransactionStatus status) {
-        this.status = status;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -127,7 +127,7 @@ public class User {
 
         if (budget != null){
 
-            budget.setCategory(null);
+            budget.setUser(null);
         }
     }
 

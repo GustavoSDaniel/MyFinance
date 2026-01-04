@@ -1,4 +1,4 @@
-package com.gustavosdaniel.myfinance_api.goals;
+package com.gustavosdaniel.myfinance_api.transactions;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface GoalRepository extends JpaRepository<Goal, UUID> {
+public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
 }
