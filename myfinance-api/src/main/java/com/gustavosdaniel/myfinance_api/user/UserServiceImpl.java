@@ -31,7 +31,6 @@ public class UserServiceImpl implements UserService{
         if (existingUser.isPresent()) {
 
             User user = existingUser.get();
-            user.setEmail(request.email());
             user.setName(request.name());
             user.setPicture(request.picture());
 
@@ -56,7 +55,7 @@ public class UserServiceImpl implements UserService{
 
         if (users.isEmpty()){
 
-            log.info("Nenhum usuário foi encontrado");
+            log.info("Nenhum usuário encontrado na busca");
 
             return Page.empty();
         }
