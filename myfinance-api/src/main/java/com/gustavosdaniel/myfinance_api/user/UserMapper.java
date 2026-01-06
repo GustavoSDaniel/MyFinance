@@ -43,4 +43,12 @@ public class UserMapper {
                 user.getPicture()
         );
     }
+
+    public UserResponse toUserResponse(User user){
+        if (user == null){
+            return null;
+        }
+
+        return new UserResponse(user.getName(), user.getEmail());
+    }
 }
