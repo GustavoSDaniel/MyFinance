@@ -48,7 +48,7 @@ class UserServiceImplTest {
             UserRequest request = new UserRequest(
                     "gustavosdaniel@gmail.com", "Gustavo", "fotinha.png");
 
-            User newUser = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.ROLE_USER );
+            User newUser = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(newUser, "id", userId);
 
             UserInfoResponse response = new UserInfoResponse(
@@ -78,7 +78,7 @@ class UserServiceImplTest {
         @DisplayName("Should update user with sucesso")
         void shouldUpdateUser(){
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.ROLE_USER);
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
 
             UserRequest request = new UserRequest(
                     "gustavosdaniel@gmail.com", "Eduardo", "image.png");
@@ -112,9 +112,9 @@ class UserServiceImplTest {
 
             Pageable pageable = Pageable.unpaged();
 
-            User user1 = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.ROLE_ADMIN);
-            User user2 = new User("silva@gmail.com","Silva", UserRole.ROLE_USER);
-            User user3 = new User("daniel@gmail.com","Daniel", UserRole.ROLE_USER);
+            User user1 = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.ADMIN);
+            User user2 = new User("silva@gmail.com","Silva", UserRole.USER);
+            User user3 = new User("daniel@gmail.com","Daniel", UserRole.USER);
 
             List<User> users = Arrays.asList(user1, user2, user3);
 
@@ -149,7 +149,7 @@ class UserServiceImplTest {
 
             String email = "gustavosdaniel@gmail.com";
 
-            User user = new User(email,"Gustavo", UserRole.ROLE_USER);
+            User user = new User(email,"Gustavo", UserRole.USER);
 
             UserResponse userResponse = new UserResponse("Gustavo", "gustavosdaniel@gmail.com");
 
@@ -173,7 +173,7 @@ class UserServiceImplTest {
         void shouldUserById(){
 
             UUID userId = UUID.randomUUID();
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.ROLE_USER);
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             UserResponse userResponse = new UserResponse("Gustavo", "gustavosdaniel@gmail.com");
@@ -199,7 +199,7 @@ class UserServiceImplTest {
         void shouldDeleteUser(){
 
             UUID userId = UUID.randomUUID();
-            User user = new User("gustavosdaniel@gmail.com","Gustavo",UserRole.ROLE_USER);
+            User user = new User("gustavosdaniel@gmail.com","Gustavo",UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));

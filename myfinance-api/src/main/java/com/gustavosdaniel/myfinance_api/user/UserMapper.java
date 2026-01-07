@@ -15,7 +15,7 @@ public class UserMapper {
         return new User(
                 request.email(),
                 request.name(),
-                UserRole.ROLE_USER
+                UserRole.USER
         );
     }
 
