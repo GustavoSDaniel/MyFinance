@@ -36,11 +36,15 @@ public class UserServiceImpl implements UserService{
 
             User userUpdate = userRepository.save(user);
 
+            log.info("Usuário: {} atualizado com sucesso", userUpdate.getName());
+
             return userMapper.toUserInfoResponse(userUpdate);
         }
 
         User newUser = userMapper.toUser(request);
         User savedUser = userRepository.save(newUser);
+
+        log.info("Novo usuário: {} salvo com sucesso", savedUser.getName());
 
         return userMapper.toUserInfoResponse(savedUser);
     }
@@ -51,8 +55,6 @@ public class UserServiceImpl implements UserService{
 
         Page<User> users = userRepository.findAll(pageable);
 
-        log.info("Todos os usuário encontrados {}", users.getNumberOfElements());
-
         if (users.isEmpty()){
 
             log.info("Nenhum usuário encontrado na busca");
@@ -60,7 +62,10 @@ public class UserServiceImpl implements UserService{
             return Page.empty();
         }
 
+        log.info("Todos os usuário encontrados {}", users.getNumberOfElements());
+
         return users.map(userMapper::toUserResponse);
+
     }
 
 
@@ -70,12 +75,16 @@ public class UserServiceImpl implements UserService{
 
         Optional<User> user = userRepository.findByEmail(email);
 
+        log.info("Buscando usuário pelo email {}", user.get().getEmail());
+
         if (user.isEmpty()){
 
             log.info("Nenhum usuário foi encontrado com esse mail {}", email);
 
             return Optional.empty();
         }
+
+        log.info("Usuário com o email {}, encontrado com sucesso", user.get().getEmail());
 
         return user.map(userMapper::toUserResponse);
 
@@ -87,7 +96,7 @@ public class UserServiceImpl implements UserService{
 
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
 
-        log.info("Usuário com o id: {} encontrado", id);
+        log.info("Usuário com o id: {} encontrado com sucesso", id);
 
         return userMapper.toUserResponse(user);
     }
