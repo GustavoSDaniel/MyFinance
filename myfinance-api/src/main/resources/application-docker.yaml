@@ -1,6 +1,10 @@
 server:
   port: 5050
 
+app:
+  security:
+    admin-emails: ${ADMIN_EMAILS}
+
 spring:
   application:
     name: myfinance-api

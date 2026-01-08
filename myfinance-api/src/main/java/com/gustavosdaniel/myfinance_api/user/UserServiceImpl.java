@@ -3,10 +3,12 @@ package com.gustavosdaniel.myfinance_api.user;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +18,9 @@ public class UserServiceImpl implements UserService{
     private final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+
+    @Value("${app.security.admin-emails}")
+    private  List<String> adminEmails;
 
     public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
@@ -40,8 +45,15 @@ public class UserServiceImpl implements UserService{
 
             return userMapper.toUserInfoResponse(userUpdate);
         }
+        UserRole role = UserRole.USER;
+
+        if (adminEmails.contains(request.email())){
+
+            role = UserRole.ADMIN;
+        }
 
         User newUser = userMapper.toUser(request);
+        newUser.setRole(role);
         User savedUser = userRepository.save(newUser);
 
         log.info("Novo usuário: {} salvo com sucesso", savedUser.getName());
@@ -75,11 +87,11 @@ public class UserServiceImpl implements UserService{
 
         Optional<User> user = userRepository.findByEmail(email);
 
-        log.info("Buscando usuário pelo email {}", user.get().getEmail());
+        log.info("Buscando usuário pelo email {}", email);
 
         if (user.isEmpty()){
 
-            log.info("Nenhum usuário foi encontrado com esse mail {}", email);
+            log.warn("Nenhum usuário foi encontrado com esse mail {}", email);
 
             return Optional.empty();
         }
