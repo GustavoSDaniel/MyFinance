@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.exception;
 
+import com.gustavosdaniel.myfinance_api.accounts.AccountNameDuplicate;
 import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
 import jakarta.xml.bind.ValidationException;
 import org.slf4j.Logger;
@@ -54,5 +55,20 @@ public class GlobalExceptionHandle {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 
+    }
+
+    @ExceptionHandler(AccountNameDuplicate.class)
+    public ResponseEntity<ErrorResponse> handleAccountNameDuplicate(AccountNameDuplicate ex){
+
+        log.warn("Conta com esse nome já existe {}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Conta com nome já em uso",
+                "Já existe uma conta com esse nome em uso",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
     }
 }

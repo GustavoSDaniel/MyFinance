@@ -25,7 +25,7 @@ public class Account {
         this.isActive = true;
     }
 
-    public Account(User user, String name, AccountType type, BigDecimal initialBalance) {
+    public Account(User user, String name, AccountType type) {
 
         this.user = user;
         this.name = name;
