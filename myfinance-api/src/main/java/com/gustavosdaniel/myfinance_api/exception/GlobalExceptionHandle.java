@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.exception;
 
 import com.gustavosdaniel.myfinance_api.accounts.AccountNameDuplicate;
+import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
 import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
 import jakarta.xml.bind.ValidationException;
 import org.slf4j.Logger;
@@ -70,5 +71,20 @@ public class GlobalExceptionHandle {
         );
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAccountNotFoundException(AccountNotFoundException ex){
+
+        log.warn("Conta não encontrada {}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Conta não encontrada",
+                "A conta pesquisada não foi encontrada",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
     }
 }

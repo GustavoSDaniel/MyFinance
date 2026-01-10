@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -51,4 +52,32 @@ public class AccountServiceImpl implements AccountService{
 
         return accountMapper.toAccountResponse(savedAccount);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AccountResponse getById(UUID id, UUID userId){
+
+        log.info("Buscando conta {} para o usuário {}", id, userId);
+
+        Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
+
+        log.info("Conta encontrada com sucesso");
+
+        return accountMapper.toAccountResponse(account);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AccountResponse> searchAccount(String name, UUID userId) {
+
+        log.info("Buscando contas pelo nome");
+
+        List<Account> accounts = accountRepository.searchByName(name, userId);
+
+        log.info("Contas encontradas com sucesso {}", accounts);
+
+        return accounts.stream().map(accountMapper::toAccountResponse).toList();
+    }
+
+
 }

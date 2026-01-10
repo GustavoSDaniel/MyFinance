@@ -25,11 +25,12 @@ public class Account {
         this.isActive = true;
     }
 
-    public Account(User user, String name, AccountType type) {
+    public Account(User user, String name, AccountType type, String description) {
 
         this.user = user;
         this.name = name;
         this.type = type;
+        this.description = description;
         this.initialBalance = initialBalance != null ? initialBalance : BigDecimal.ZERO;
         this.currentBalance = this.initialBalance;
         this.isActive = true;
@@ -46,6 +47,8 @@ public class Account {
     @Column(nullable = false)
     private String name;
 
+    private String description;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AccountType type;
@@ -58,8 +61,6 @@ public class Account {
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
-
-    private String description;
 
     @OneToMany(mappedBy = "account", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     private List<Transaction> transactions = new ArrayList<>();

@@ -14,7 +14,8 @@ public class AccountMapper {
         return new Account(
                 null,
                 request.name(),
-                request.type()
+                request.type(),
+                request.description()
         );
     }
 
@@ -28,6 +29,7 @@ public class AccountMapper {
                 account.getUser() != null ? account.getUser().getName() : null,
                 account.getName(),
                 account.getType(),
+                account.getDescription(),
                 account.getInitialBalance()
         );
     }

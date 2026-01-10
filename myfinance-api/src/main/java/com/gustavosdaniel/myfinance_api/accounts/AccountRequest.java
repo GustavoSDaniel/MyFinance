@@ -8,6 +8,7 @@ public record AccountRequest(
         @NotBlank(message = "O nome não deve estar vazio")
         String name,
         @NotNull(message = "O tipo da conta é obrigatório")
-        AccountType type
+        AccountType type,
+        String description
 ) {
 }

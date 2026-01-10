@@ -8,6 +8,7 @@ public record AccountResponse(
         String user,
         String name,
         AccountType type,
+        String description,
         BigDecimal initialBalance
-) {
+        ) {
 }
