@@ -55,6 +55,45 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional(readOnly = true)
+    public List<AccountResponse> getAllAccounts(UUID userId) {
+
+        log.info("Buscando todas as contas do usuário: {}", userId);
+
+        List<Account> accounts = accountRepository.findByUserId(userId);
+
+        log.info("Total de contas encontradas: {}", accounts.size());
+
+        return accounts.stream().map(accountMapper::toAccountResponse).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AccountResponse> getAllAccountsActive(UUID userId) {
+
+        log.info("Buscando todas as contas do usuário: {} ativas", userId);
+
+        List<Account> accountsActive =accountRepository.findByUserIdAndIsActiveTrue(userId);
+
+        log.info("Todas as contas ativas encontradas {}", accountsActive.size());
+
+        return accountsActive.stream().map(accountMapper::toAccountResponse).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AccountResponse> getAllAccountsDisabled(UUID userId) {
+
+        log.info("Buscando todas as contas do usuário: {} desativadas", userId);
+
+        List<Account> accountsDisabled = accountRepository.findByUserIdAndIsActiveFalse(userId);
+
+        log.info("Todas as contas desativadas encontradas {}", accountsDisabled.size());
+
+        return accountsDisabled.stream().map(accountMapper::toAccountResponse).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public AccountResponse getById(UUID id, UUID userId){
 
         log.info("Buscando conta {} para o usuário {}", id, userId);
@@ -77,6 +116,18 @@ public class AccountServiceImpl implements AccountService{
         log.info("Contas encontradas com sucesso {}", accounts);
 
         return accounts.stream().map(accountMapper::toAccountResponse).toList();
+    }
+
+    @Override
+    @jakarta.transaction.Transactional
+    public void deleteAccount(UUID id, UUID userId) {
+
+        Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
+
+        log.warn("Deletando conta permanentemente: {} do usuário {}", account.getName(), account.getUser().getName());
+
+        accountRepository.delete(account);
+
     }
 
 
