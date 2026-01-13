@@ -120,6 +120,67 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @jakarta.transaction.Transactional
+    public AccountResponse updateAccount(UUID id, UUID userId, AccountUpdateRequest request) throws AccountNameDuplicate {
+
+        Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
+
+        log.info("Atualizando informações da conta: {}", account.getName());
+
+        if (request.name() != null && !account.getName().equalsIgnoreCase(request.name())){
+
+            if (accountRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(request.name(), userId, id)){
+
+                    throw new AccountNameDuplicate();
+            }
+        }
+
+        accountMapper.updateAccountFromRequest(request, account);
+
+        Account accountUpdated = accountRepository.save(account);
+
+        log.info("Conta: {} atualizada com sucesso", accountUpdated.getName());
+
+        return accountMapper.toAccountResponse(accountUpdated);
+    }
+
+    @Override
+    @jakarta.transaction.Transactional
+    public void activateAccount(UUID id, UUID userId) {
+
+        log.info("Ativando conta com id: {}", id);
+
+        Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
+
+        if (Boolean.TRUE.equals(account.getActive())){
+            log.warn("Tentativa de ativar conta que já está ativa: {}", id);
+            return;
+        }
+
+        account.setActive(true);
+
+        log.info("Conta: {} ativada com sucesso pelo usuário {}", account.getName(), userId);
+    }
+
+    @Override
+    @jakarta.transaction.Transactional
+    public void deactivateAccount(UUID id, UUID userId) {
+
+        log.info("Desativando conta com id: {}", id);
+
+        Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
+
+        if (Boolean.FALSE.equals(account.getActive())){
+            log.warn("Tentativa de desativar conta que já está inativa: {}", id);
+            return;
+        }
+
+        account.setActive(false);
+
+        log.info("Conta: {} desativada com sucesso pelo usuário {}", account.getName(), userId);
+    }
+
+    @Override
+    @jakarta.transaction.Transactional
     public void deleteAccount(UUID id, UUID userId) {
 
         Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);

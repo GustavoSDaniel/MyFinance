@@ -33,4 +33,22 @@ public class AccountMapper {
                 account.getInitialBalance()
         );
     }
+
+    public void updateAccountFromRequest(AccountUpdateRequest request, Account account){
+
+        if (request.name() != null && !request.name().isBlank()){
+            account.setName(request.name());
+        }
+
+        if (request.description() != null){
+
+            account.setDescription(request.description());
+
+        }
+
+        if (request.type() != null && !request.type().equals(account.getType())){
+            account.setType(request.type());
+        }
+    }
+
 }

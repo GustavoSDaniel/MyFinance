@@ -17,5 +17,11 @@ public interface AccountService {
 
     List<AccountResponse> searchAccount(String name, UUID userId);
 
+    AccountResponse updateAccount(UUID id, UUID userId, AccountUpdateRequest request) throws AccountNameDuplicate;
+
+    void activateAccount(UUID id, UUID userId);
+
+    void deactivateAccount(UUID id, UUID userId);
+
     void deleteAccount(UUID id, UUID userId);
 }

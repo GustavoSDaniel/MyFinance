@@ -14,6 +14,8 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
 
     boolean existsByNameIgnoreCaseAndUserId(String accountName, UUID userId);
 
+    boolean existsByNameIgnoreCaseAndUserIdAndIdNot(String accountName, UUID userId, UUID id);
+
     List<Account> findByUserId(UUID userId);
 
     List<Account> findByUserIdAndIsActiveTrue(UUID userId);
@@ -29,4 +31,5 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
            """
     )
     List<Account> searchByName(@Param("name") String name, @Param("userId") UUID userId);
+
 }
