@@ -1,14 +1,16 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
+import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
 import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.user.UserMapper;
 import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
 import com.gustavosdaniel.myfinance_api.user.UserRepository;
+import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,14 +35,14 @@ public class AccountServiceImpl implements AccountService{
 
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
-        log.info("Criando uma nova conta para o usuário {}", user.getName());
-
-        Account newAccount = accountMapper.toAccount(accountRequest);
-
         if (accountRepository.existsByNameIgnoreCaseAndUserId(accountRequest.name(), user.getId())){
 
             throw new AccountNameDuplicate();
         }
+
+        log.info("Criando uma nova conta para o usuário {}", user.getName());
+
+        Account newAccount = accountMapper.toAccount(accountRequest);
 
         newAccount.setUser(user);
 
@@ -113,13 +115,29 @@ public class AccountServiceImpl implements AccountService{
 
         List<Account> accounts = accountRepository.searchByName(name, userId);
 
-        log.info("Contas encontradas com sucesso {}", accounts);
+        log.info("Contas encontradas com sucesso {}", accounts.size());
 
         return accounts.stream().map(accountMapper::toAccountResponse).toList();
     }
 
     @Override
-    @jakarta.transaction.Transactional
+    @Transactional
+    public void updateBalance(UUID id, UUID userId, BigDecimal value, TransactionType type) throws InvalidAmountException, InsufficientBalanceException {
+
+        Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
+
+        if (type == TransactionType.RECEITA){
+
+            account.addBalance(value);
+
+        }else if (type == TransactionType.DESPESA){
+            account.removeBalance(value);
+        }
+
+    }
+
+    @Override
+    @Transactional
     public AccountResponse updateAccount(UUID id, UUID userId, AccountUpdateRequest request) throws AccountNameDuplicate {
 
         Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
@@ -144,7 +162,7 @@ public class AccountServiceImpl implements AccountService{
     }
 
     @Override
-    @jakarta.transaction.Transactional
+    @Transactional
     public void activateAccount(UUID id, UUID userId) {
 
         log.info("Ativando conta com id: {}", id);
@@ -162,7 +180,7 @@ public class AccountServiceImpl implements AccountService{
     }
 
     @Override
-    @jakarta.transaction.Transactional
+    @Transactional
     public void deactivateAccount(UUID id, UUID userId) {
 
         log.info("Desativando conta com id: {}", id);
@@ -180,7 +198,7 @@ public class AccountServiceImpl implements AccountService{
     }
 
     @Override
-    @jakarta.transaction.Transactional
+    @Transactional
     public void deleteAccount(UUID id, UUID userId) {
 
         Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
