@@ -34,6 +34,21 @@ public class AccountMapper {
         );
     }
 
+    public AccountResponseInfo toAccountResponseInfo(Account account){
+
+        if (account == null){
+            return null;
+        }
+
+        return new AccountResponseInfo(
+                account.getUser() != null ? account.getUser().getName() : null,
+                account.getName(),
+                account.getType(),
+                account.getDescription(),
+                account.getCurrentBalance()
+        );
+    }
+
     public void updateAccountFromRequest(AccountUpdateRequest request, Account account){
 
         if (request.name() != null && !request.name().isBlank()){

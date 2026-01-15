@@ -11,19 +11,19 @@ public interface AccountService {
 
     AccountResponse createAccount(AccountRequest accountRequest, UUID userId) throws AccountNameDuplicate;
 
-    List<AccountResponse> getAllAccounts(UUID userId);
+    List<AccountResponseInfo> getAllAccounts(UUID userId);
 
-    List<AccountResponse> getAllAccountsActive(UUID userId);
+    List<AccountResponseInfo> getAllAccountsActive(UUID userId);
 
-    List<AccountResponse> getAllAccountsDisabled(UUID userId);
+    List<AccountResponseInfo> getAllAccountsDisabled(UUID userId);
 
-    AccountResponse getById(UUID id, UUID userId);
+    AccountResponseInfo getById(UUID id, UUID userId);
 
-    List<AccountResponse> searchAccount(String name, UUID userId);
+    List<AccountResponseInfo> searchAccount(String name, UUID userId);
 
     void updateBalance(UUID id, UUID userId, BigDecimal value, TransactionType type) throws InvalidAmountException, InsufficientBalanceException;
 
-    AccountResponse updateAccount(UUID id, UUID userId, AccountUpdateRequest request) throws AccountNameDuplicate;
+    AccountResponseInfo updateAccount(UUID id, UUID userId, AccountUpdateRequest request) throws AccountNameDuplicate;
 
     void activateAccount(UUID id, UUID userId);
 

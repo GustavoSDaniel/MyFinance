@@ -40,7 +40,7 @@ public class AccountServiceImpl implements AccountService{
             throw new AccountNameDuplicate();
         }
 
-        log.info("Criando uma nova conta para o usuário {}", user.getName());
+        log.info("Criando uma nova conta para o usuário: {}", user.getName());
 
         Account newAccount = accountMapper.toAccount(accountRequest);
 
@@ -50,14 +50,14 @@ public class AccountServiceImpl implements AccountService{
 
         user.addAccount(newAccount);
 
-        log.info("Nova conta {} adicionada para o usuário: {}", newAccount.getName(), user.getName());
+        log.info("Nova conta: {} adicionada para o usuário: {}", newAccount.getName(), user.getName());
 
         return accountMapper.toAccountResponse(savedAccount);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AccountResponse> getAllAccounts(UUID userId) {
+    public List<AccountResponseInfo> getAllAccounts(UUID userId) {
 
         log.info("Buscando todas as contas do usuário: {}", userId);
 
@@ -65,12 +65,12 @@ public class AccountServiceImpl implements AccountService{
 
         log.info("Total de contas encontradas: {}", accounts.size());
 
-        return accounts.stream().map(accountMapper::toAccountResponse).toList();
+        return accounts.stream().map(accountMapper::toAccountResponseInfo).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AccountResponse> getAllAccountsActive(UUID userId) {
+    public List<AccountResponseInfo> getAllAccountsActive(UUID userId) {
 
         log.info("Buscando todas as contas do usuário: {} ativas", userId);
 
@@ -78,12 +78,12 @@ public class AccountServiceImpl implements AccountService{
 
         log.info("Todas as contas ativas encontradas {}", accountsActive.size());
 
-        return accountsActive.stream().map(accountMapper::toAccountResponse).toList();
+        return accountsActive.stream().map(accountMapper::toAccountResponseInfo).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AccountResponse> getAllAccountsDisabled(UUID userId) {
+    public List<AccountResponseInfo> getAllAccountsDisabled(UUID userId) {
 
         log.info("Buscando todas as contas do usuário: {} desativadas", userId);
 
@@ -91,12 +91,12 @@ public class AccountServiceImpl implements AccountService{
 
         log.info("Todas as contas desativadas encontradas {}", accountsDisabled.size());
 
-        return accountsDisabled.stream().map(accountMapper::toAccountResponse).toList();
+        return accountsDisabled.stream().map(accountMapper::toAccountResponseInfo).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public AccountResponse getById(UUID id, UUID userId){
+    public AccountResponseInfo getById(UUID id, UUID userId){
 
         log.info("Buscando conta {} para o usuário {}", id, userId);
 
@@ -104,12 +104,12 @@ public class AccountServiceImpl implements AccountService{
 
         log.info("Conta encontrada com sucesso");
 
-        return accountMapper.toAccountResponse(account);
+        return accountMapper.toAccountResponseInfo(account);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AccountResponse> searchAccount(String name, UUID userId) {
+    public List<AccountResponseInfo> searchAccount(String name, UUID userId) {
 
         log.info("Buscando contas pelo nome");
 
@@ -117,7 +117,7 @@ public class AccountServiceImpl implements AccountService{
 
         log.info("Contas encontradas com sucesso {}", accounts.size());
 
-        return accounts.stream().map(accountMapper::toAccountResponse).toList();
+        return accounts.stream().map(accountMapper::toAccountResponseInfo).toList();
     }
 
     @Override
@@ -138,7 +138,7 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional
-    public AccountResponse updateAccount(UUID id, UUID userId, AccountUpdateRequest request) throws AccountNameDuplicate {
+    public AccountResponseInfo updateAccount(UUID id, UUID userId, AccountUpdateRequest request) throws AccountNameDuplicate {
 
         Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
 
@@ -158,7 +158,7 @@ public class AccountServiceImpl implements AccountService{
 
         log.info("Conta: {} atualizada com sucesso", accountUpdated.getName());
 
-        return accountMapper.toAccountResponse(accountUpdated);
+        return accountMapper.toAccountResponseInfo(accountUpdated);
     }
 
     @Override
