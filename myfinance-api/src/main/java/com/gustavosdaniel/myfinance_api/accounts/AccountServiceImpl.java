@@ -126,12 +126,18 @@ public class AccountServiceImpl implements AccountService{
 
         Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
 
+        log.info("Atualizando saldo para a conta: {}", account.getName());
+
         if (type == TransactionType.RECEITA){
 
             account.addBalance(value);
 
+            log.info("Valor adicionado com sucesso");
+
         }else if (type == TransactionType.DESPESA){
             account.removeBalance(value);
+
+            log.info("Valor retirado com sucesso");
         }
 
     }

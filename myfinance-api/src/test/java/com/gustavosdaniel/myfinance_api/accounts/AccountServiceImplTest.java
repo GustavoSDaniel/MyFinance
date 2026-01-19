@@ -1,8 +1,10 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
+import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRepository;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
+import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -326,6 +328,175 @@ class AccountServiceImplTest {
             verify(accountRepository).searchByName("car", userId);
             verify(accountMapper).toAccountResponseInfo(account3);
 
+        }
+    }
+
+    @Nested
+    class updateAddBalance{
+
+        @Test
+        @DisplayName("Update add balance with sucesso")
+        void updateAddBalance() throws InvalidAmountException, InsufficientBalanceException {
+
+            UUID accountId = UUID.randomUUID();
+            UUID userId = UUID.randomUUID();
+            BigDecimal initialBalance = new BigDecimal("256.36");
+
+
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Account account = new Account(user, "Teste de conta", AccountType.POUPANCA, "Fundo de emergencia");
+            ReflectionTestUtils.setField(account, "id", accountId);
+            ReflectionTestUtils.setField(account,"currentBalance", initialBalance);
+
+            BigDecimal valueAdd = new BigDecimal("320.54");
+
+            when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+
+            accountService.updateBalance(accountId, userId, valueAdd, TransactionType.RECEITA);
+
+            assertEquals(new BigDecimal("576.90"), account.getCurrentBalance());
+
+            verify(accountRepository).findByIdAndUserId(accountId, userId);
+        }
+    }
+
+    @Nested
+    class updateRemoveBalance{
+
+        @Test
+        @DisplayName("Update remove balance with sucesso")
+        void updateRemoveBalance() throws InvalidAmountException, InsufficientBalanceException {
+
+            UUID accountId = UUID.randomUUID();
+            UUID userId = UUID.randomUUID();
+            BigDecimal initialBalance = new BigDecimal("600.53");
+
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Account account = new Account(user, "Teste de conta", AccountType.POUPANCA, "Fundo de emergencia");
+            ReflectionTestUtils.setField(account, "id", accountId);
+            ReflectionTestUtils.setField(account,"currentBalance", initialBalance);
+
+            BigDecimal valueRemoved = new BigDecimal("320.54");
+
+            when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+
+            accountService.updateBalance(accountId, userId, valueRemoved, TransactionType.DESPESA);
+
+            assertEquals(new BigDecimal("279.99"), account.getCurrentBalance());
+
+            verify(accountRepository).findByIdAndUserId(accountId, userId);
+        }
+    }
+
+    @Nested
+    class updatedAccount{
+
+        @Test
+        @DisplayName("Should updated a information account with sucesso")
+        void updateAccount() throws AccountNameDuplicate {
+
+            UUID userId = UUID.randomUUID();
+            UUID accountId = UUID.randomUUID();
+
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+            Account account = new Account(user, "Conta de test", AccountType.POUPANCA, "Conta para testar");
+            ReflectionTestUtils.setField(account, "id", accountId);
+
+            AccountUpdateRequest request = new AccountUpdateRequest("Conta de test update","Conta de teste para atualizar", AccountType.WALLET);
+            AccountResponseInfo response = new AccountResponseInfo(user.getName(), "Conta de test update",AccountType.WALLET, "Conta de teste para atualizar", new BigDecimal("3325.69"));
+
+            when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+            accountMapper.updateAccountFromRequest(request, account);
+            when(accountRepository.save(any(Account.class))).thenReturn(account);
+            when(accountMapper.toAccountResponseInfo(account)).thenReturn(response);
+
+            AccountResponseInfo output = accountService.updateAccount(accountId, userId, request);
+
+            assertNotNull(output);
+            assertEquals(output, response);
+
+            verify(accountRepository).findByIdAndUserId(accountId, userId);
+            verify(accountRepository).save(any(Account.class));
+            verify(accountMapper).toAccountResponseInfo(account);
+
+        }
+    }
+
+    @Nested
+    class activateAccount{
+
+        @Test
+        @DisplayName("Should activate account with sucesso")
+        void activateAccount(){
+
+            UUID accountId = UUID.randomUUID();
+            UUID userId = UUID.randomUUID();
+
+            User user = new User("gustavosdaniel@gmail.com", "gustavo", UserRole.ADMIN);
+            ReflectionTestUtils.setField(user, "id", userId);
+            Account account = new Account(user, "Conta par ativar", AccountType.POUPANCA, "Ativando conta poupança");
+            ReflectionTestUtils.setField(account, "id", accountId);
+
+            when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+            account.setActive(false);
+
+            accountService.activateAccount(accountId, userId);
+
+            verify(accountRepository).findByIdAndUserId(accountId, userId);
+
+        }
+    }
+
+    @Nested
+    class deactivateAccount{
+
+        @Test
+        @DisplayName("Should deactivate account with sucesso")
+        void deactivateAccount(){
+
+            UUID accountId = UUID.randomUUID();
+            UUID userId = UUID.randomUUID();
+
+            User user = new User("gustavosdaniel@gmail.com", "gustavo", UserRole.ADMIN);
+            ReflectionTestUtils.setField(user, "id", userId);
+            Account account = new Account(user, "Conta para desativar", AccountType.POUPANCA, "Desativando conta poupança");
+            ReflectionTestUtils.setField(account, "id", accountId);
+
+            when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+            account.setActive(true);
+
+            accountService.deactivateAccount(accountId, userId);
+
+            verify(accountRepository).findByIdAndUserId(accountId, userId);
+
+        }
+    }
+
+    @Nested
+    class deletedAccount{
+
+        @Test
+        @DisplayName("Should deleted account with sucesso")
+        void deletedAccount(){
+
+            UUID userId = UUID.randomUUID();
+            UUID accountId = UUID.randomUUID();
+
+            User user = new User("email@gmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+            Account account = new Account(user, "Cartáo de credito", AccountType.CREDIT_CARD,"Apagando conta" );
+            ReflectionTestUtils.setField(account, "id", accountId);
+
+            when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+
+            accountService.deleteAccount(accountId, userId);
+
+            verify(accountRepository).findByIdAndUserId(accountId, userId);
         }
     }
 }
