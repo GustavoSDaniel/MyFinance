@@ -104,6 +104,13 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public User findByEmail(String email) {
+
+        return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public UserResponse getUserById(UUID id) {
 
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);

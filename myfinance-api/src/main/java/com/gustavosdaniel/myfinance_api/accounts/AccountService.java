@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
 import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
+import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 
 import java.math.BigDecimal;
@@ -9,7 +10,7 @@ import java.util.UUID;
 
 public interface AccountService {
 
-    AccountResponse createAccount(AccountRequest accountRequest, UUID userId) throws AccountNameDuplicate;
+    AccountResponse createAccount(AccountRequest accountRequest, User user) throws AccountNameDuplicate;
 
     List<AccountResponseInfo> getAllAccounts(UUID userId);
 

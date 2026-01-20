@@ -56,6 +56,7 @@ class AccountServiceImplTest {
             Account newAccount = new Account(user, "Conta fixa", AccountType.WALLET, "Constas do mes");
 
             AccountResponse response = new AccountResponse(
+                    UUID.randomUUID(),
                     user.getName(),
                     "Conta fixa",
                     AccountType.WALLET,
@@ -68,7 +69,7 @@ class AccountServiceImplTest {
             when(accountRepository.save(any(Account.class))).thenReturn(newAccount);
             when(accountMapper.toAccountResponse(newAccount)).thenReturn(response);
 
-            AccountResponse output = accountService.createAccount(request, userId);
+            AccountResponse output = accountService.createAccount(request, user);
 
             assertNotNull(output);
 

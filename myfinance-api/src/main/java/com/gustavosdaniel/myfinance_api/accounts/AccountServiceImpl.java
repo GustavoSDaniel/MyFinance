@@ -31,9 +31,7 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional
-    public AccountResponse createAccount(AccountRequest accountRequest, UUID userId) throws AccountNameDuplicate {
-
-        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+    public AccountResponse createAccount(AccountRequest accountRequest, User user) throws AccountNameDuplicate {
 
         if (accountRepository.existsByNameIgnoreCaseAndUserId(accountRequest.name(), user.getId())){
 

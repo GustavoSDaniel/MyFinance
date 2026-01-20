@@ -87,4 +87,19 @@ public class GlobalExceptionHandle {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
     }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex){
+
+        log.warn("Usuário não autorizado{}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Usuário não autorizado",
+                "O usuário não foi autorizado a realizar essa ação",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(erro);
+    }
 }
