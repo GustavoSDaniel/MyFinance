@@ -12,11 +12,7 @@ public interface AccountService {
 
     AccountResponse createAccount(AccountRequest accountRequest, User user) throws AccountNameDuplicate;
 
-    List<AccountResponseInfo> getAllAccounts(UUID userId);
-
-    List<AccountResponseInfo> getAllAccountsActive(UUID userId);
-
-    List<AccountResponseInfo> getAllAccountsDisabled(UUID userId);
+    List<AccountResponseInfo> getAllAccounts(UUID userId, String status);
 
     AccountResponseInfo getById(UUID id, UUID userId);
 

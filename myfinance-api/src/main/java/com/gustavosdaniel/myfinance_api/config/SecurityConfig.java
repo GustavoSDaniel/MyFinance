@@ -50,6 +50,10 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE, "/api/v1/users/*")
                                 .hasAnyRole("ADMIN", "USER")
 
+                        //account
+                                .requestMatchers(HttpMethod.POST, "/api/v1/accounts/**").hasAnyRole("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.GET, "/api/v1/accounts/**").hasAnyRole("ADMIN", "USER")
+
                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

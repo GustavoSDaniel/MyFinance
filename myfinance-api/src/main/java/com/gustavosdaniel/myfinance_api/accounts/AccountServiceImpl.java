@@ -55,42 +55,30 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional(readOnly = true)
-    public List<AccountResponseInfo> getAllAccounts(UUID userId) {
+    public List<AccountResponseInfo> getAllAccounts(UUID userId, String status) {
 
-        log.info("Buscando todas as contas do usuário: {}", userId);
+        log.info("Buscando todas as contas do usuário: {} com status: {}", userId, status);
 
-        List<Account> accounts = accountRepository.findByUserId(userId);
+        List<Account> accounts;
+
+        if ("active".equalsIgnoreCase(status)){
+
+            accounts = accountRepository.findByUserIdAndIsActiveTrue(userId);
+
+        }  else if ("disabled".equalsIgnoreCase(status)) {
+
+            accounts = accountRepository.findByUserIdAndIsActiveFalse(userId);
+        } else {
+
+            accounts = accountRepository.findByUserId(userId);
+        }
 
         log.info("Total de contas encontradas: {}", accounts.size());
 
         return accounts.stream().map(accountMapper::toAccountResponseInfo).toList();
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<AccountResponseInfo> getAllAccountsActive(UUID userId) {
 
-        log.info("Buscando todas as contas do usuário: {} ativas", userId);
-
-        List<Account> accountsActive =accountRepository.findByUserIdAndIsActiveTrue(userId);
-
-        log.info("Todas as contas ativas encontradas {}", accountsActive.size());
-
-        return accountsActive.stream().map(accountMapper::toAccountResponseInfo).toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<AccountResponseInfo> getAllAccountsDisabled(UUID userId) {
-
-        log.info("Buscando todas as contas do usuário: {} desativadas", userId);
-
-        List<Account> accountsDisabled = accountRepository.findByUserIdAndIsActiveFalse(userId);
-
-        log.info("Todas as contas desativadas encontradas {}", accountsDisabled.size());
-
-        return accountsDisabled.stream().map(accountMapper::toAccountResponseInfo).toList();
-    }
 
     @Override
     @Transactional(readOnly = true)

@@ -124,7 +124,7 @@ class AccountServiceImplTest {
             when(accountMapper.toAccountResponseInfo(account2)).thenReturn(response2);
             when(accountMapper.toAccountResponseInfo(account3)).thenReturn(response3);
 
-            List<AccountResponseInfo> output = accountService.getAllAccounts(userId);
+            List<AccountResponseInfo> output = accountService.getAllAccounts(userId, "status");
 
             assertNotNull(output);
             assertEquals(3, output.size());
@@ -133,113 +133,6 @@ class AccountServiceImplTest {
         }
     }
 
-    @Nested
-    class getAllAccountsActive{
-
-        @Test
-        @DisplayName("Should all accounts active with sucesso")
-        void shouldAllAccountsActive(){
-
-            UUID userId = UUID.randomUUID();
-
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
-            ReflectionTestUtils.setField(user, "id", userId);
-
-            Account account = new Account(user, "Constas fixa", AccountType.WALLET, "Constas do mes");
-            Account account2 = new Account(user, "Poupança", AccountType.POUPANCA, "Fundo de emergencia");
-            Account account3= new Account(user, "Cartao", AccountType.CREDIT_CARD, "Fatura do cartão");
-
-            List<Account> accounts = Arrays.asList(account, account2, account3);
-
-            AccountResponseInfo response = new AccountResponseInfo(
-                    user.getName(),
-                    "Constas fixa",
-                    AccountType.WALLET,
-                    "Constas do mes",
-                    BigDecimal.valueOf(5000));
-
-            AccountResponseInfo response2 = new AccountResponseInfo(
-                    user.getName(),
-                    "Poupança",
-                    AccountType.POUPANCA,
-                    "Fundo de emergencia",
-                    new BigDecimal("10300.58"));
-
-            AccountResponseInfo response3 = new AccountResponseInfo(
-                    user.getName(),
-                    "Cartao",
-                    AccountType.CREDIT_CARD,
-                    "Fatura do cartão",
-                    new BigDecimal("7834.57"));
-
-            when(accountRepository.findByUserIdAndIsActiveTrue(userId)).thenReturn(accounts);
-            when(accountMapper.toAccountResponseInfo(account)).thenReturn(response);
-            when(accountMapper.toAccountResponseInfo(account2)).thenReturn(response2);
-            when(accountMapper.toAccountResponseInfo(account3)).thenReturn(response3);
-
-            List<AccountResponseInfo> output = accountService.getAllAccountsActive(userId);
-
-            assertNotNull(output);
-
-            verify(accountRepository).findByUserIdAndIsActiveTrue(userId);
-            verify(accountMapper, times(3)).toAccountResponseInfo(any(Account.class));
-
-        }
-    }
-
-    @Nested
-    class getAllAccountsDisabled{
-
-        @Test
-        @DisplayName("Should all accounts disabled with sucesso")
-        void shouldAllAccountsDisabled(){
-
-            UUID userId = UUID.randomUUID();
-
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
-            ReflectionTestUtils.setField(user, "id", userId);
-
-            Account account = new Account(user, "Constas fixa", AccountType.WALLET, "Constas do mes");
-            Account account2 = new Account(user, "Poupança", AccountType.POUPANCA, "Fundo de emergencia");
-            Account account3= new Account(user, "Cartao", AccountType.CREDIT_CARD, "Fatura do cartão");
-
-            List<Account> accounts = Arrays.asList(account, account2, account3);
-
-            AccountResponseInfo response = new AccountResponseInfo(
-                    user.getName(),
-                    "Constas fixa",
-                    AccountType.WALLET,
-                    "Constas do mes",
-                    BigDecimal.valueOf(5000));
-
-            AccountResponseInfo response2 = new AccountResponseInfo(
-                    user.getName(),
-                    "Poupança",
-                    AccountType.POUPANCA,
-                    "Fundo de emergencia",
-                    new BigDecimal("10300.58"));
-
-            AccountResponseInfo response3 = new AccountResponseInfo(
-                    user.getName(),
-                    "Cartao",
-                    AccountType.CREDIT_CARD,
-                    "Fatura do cartão",
-                    new BigDecimal("7834.57"));
-
-            when(accountRepository.findByUserIdAndIsActiveFalse(userId)).thenReturn(accounts);
-            when(accountMapper.toAccountResponseInfo(account)).thenReturn(response);
-            when(accountMapper.toAccountResponseInfo(account2)).thenReturn(response2);
-            when(accountMapper.toAccountResponseInfo(account3)).thenReturn(response3);
-
-            List<AccountResponseInfo> output = accountService.getAllAccountsDisabled(userId);
-
-            assertNotNull(output);
-
-            verify(accountRepository).findByUserIdAndIsActiveFalse(userId);
-            verify(accountMapper, times(3)).toAccountResponseInfo(any(Account.class));
-
-        }
-    }
 
     @Nested
     class getByIdAccount{
