@@ -1,10 +1,6 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
-import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
 import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
-
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,8 +13,6 @@ public interface AccountService {
     AccountResponseInfo getById(UUID id, UUID userId);
 
     List<AccountResponseInfo> searchAccount(String name, UUID userId);
-
-    void updateBalance(UUID id, UUID userId, BigDecimal value, TransactionType type) throws InvalidAmountException, InsufficientBalanceException;
 
     AccountResponseInfo updateAccount(UUID id, UUID userId, AccountUpdateRequest request) throws AccountNameDuplicate;
 

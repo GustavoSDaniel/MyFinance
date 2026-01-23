@@ -79,7 +79,6 @@ public class AccountServiceImpl implements AccountService{
     }
 
 
-
     @Override
     @Transactional(readOnly = true)
     public AccountResponseInfo getById(UUID id, UUID userId){
@@ -104,28 +103,6 @@ public class AccountServiceImpl implements AccountService{
         log.info("Contas encontradas com sucesso {}", accounts.size());
 
         return accounts.stream().map(accountMapper::toAccountResponseInfo).toList();
-    }
-
-    @Override
-    @Transactional
-    public void updateBalance(UUID id, UUID userId, BigDecimal value, TransactionType type) throws InvalidAmountException, InsufficientBalanceException {
-
-        Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
-
-        log.info("Atualizando saldo para a conta: {}", account.getName());
-
-        if (type == TransactionType.RECEITA){
-
-            account.addBalance(value);
-
-            log.info("Valor adicionado com sucesso");
-
-        }else if (type == TransactionType.DESPESA){
-            account.removeBalance(value);
-
-            log.info("Valor retirado com sucesso");
-        }
-
     }
 
     @Override
@@ -168,6 +145,8 @@ public class AccountServiceImpl implements AccountService{
 
         account.setActive(true);
 
+        accountRepository.save(account);
+
         log.info("Conta: {} ativada com sucesso pelo usuário {}", account.getName(), userId);
     }
 
@@ -185,6 +164,8 @@ public class AccountServiceImpl implements AccountService{
         }
 
         account.setActive(false);
+
+        accountRepository.save(account);
 
         log.info("Conta: {} desativada com sucesso pelo usuário {}", account.getName(), userId);
     }

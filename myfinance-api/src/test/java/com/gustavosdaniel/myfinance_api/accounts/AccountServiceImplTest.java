@@ -226,67 +226,6 @@ class AccountServiceImplTest {
     }
 
     @Nested
-    class updateAddBalance{
-
-        @Test
-        @DisplayName("Update add balance with sucesso")
-        void updateAddBalance() throws InvalidAmountException, InsufficientBalanceException {
-
-            UUID accountId = UUID.randomUUID();
-            UUID userId = UUID.randomUUID();
-            BigDecimal initialBalance = new BigDecimal("256.36");
-
-
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
-            ReflectionTestUtils.setField(user, "id", userId);
-
-            Account account = new Account(user, "Teste de conta", AccountType.POUPANCA, "Fundo de emergencia");
-            ReflectionTestUtils.setField(account, "id", accountId);
-            ReflectionTestUtils.setField(account,"currentBalance", initialBalance);
-
-            BigDecimal valueAdd = new BigDecimal("320.54");
-
-            when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
-
-            accountService.updateBalance(accountId, userId, valueAdd, TransactionType.RECEITA);
-
-            assertEquals(new BigDecimal("576.90"), account.getCurrentBalance());
-
-            verify(accountRepository).findByIdAndUserId(accountId, userId);
-        }
-    }
-
-    @Nested
-    class updateRemoveBalance{
-
-        @Test
-        @DisplayName("Update remove balance with sucesso")
-        void updateRemoveBalance() throws InvalidAmountException, InsufficientBalanceException {
-
-            UUID accountId = UUID.randomUUID();
-            UUID userId = UUID.randomUUID();
-            BigDecimal initialBalance = new BigDecimal("600.53");
-
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
-            ReflectionTestUtils.setField(user, "id", userId);
-
-            Account account = new Account(user, "Teste de conta", AccountType.POUPANCA, "Fundo de emergencia");
-            ReflectionTestUtils.setField(account, "id", accountId);
-            ReflectionTestUtils.setField(account,"currentBalance", initialBalance);
-
-            BigDecimal valueRemoved = new BigDecimal("320.54");
-
-            when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
-
-            accountService.updateBalance(accountId, userId, valueRemoved, TransactionType.DESPESA);
-
-            assertEquals(new BigDecimal("279.99"), account.getCurrentBalance());
-
-            verify(accountRepository).findByIdAndUserId(accountId, userId);
-        }
-    }
-
-    @Nested
     class updatedAccount{
 
         @Test
