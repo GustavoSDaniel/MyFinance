@@ -2,6 +2,7 @@ package com.gustavosdaniel.myfinance_api.exception;
 
 import com.gustavosdaniel.myfinance_api.accounts.AccountNameDuplicate;
 import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
+import com.gustavosdaniel.myfinance_api.categories.CategoryNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
 import jakarta.xml.bind.ValidationException;
 import org.slf4j.Logger;
@@ -42,6 +43,23 @@ public class GlobalExceptionHandle {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erros);
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex){
+
+        log.warn("Usuário não autorizado{}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Usuário não autorizado",
+                "O usuário não foi autorizado a realizar essa ação",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(erro);
+    }
+
+    //USER
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex){
 
@@ -57,6 +75,8 @@ public class GlobalExceptionHandle {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 
     }
+
+    // ACCOUNT
 
     @ExceptionHandler(AccountNameDuplicate.class)
     public ResponseEntity<ErrorResponse> handleAccountNameDuplicate(AccountNameDuplicate ex){
@@ -88,18 +108,19 @@ public class GlobalExceptionHandle {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
     }
 
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex){
+    @ExceptionHandler(CategoryNameDuplicateException.class)
+    public ResponseEntity<ErrorResponse> handleCategoryNameDuplicateException(CategoryNameDuplicateException ex){
 
-        log.warn("Usuário não autorizado{}", ex.getMessage());
+        log.warn("Categoria com nome já em uso: {}", ex.getMessage());
 
         ErrorResponse erro = new ErrorResponse(
-                "Usuário não autorizado",
-                "O usuário não foi autorizado a realizar essa ação",
+                "Nome duplicado",
+                "Categoria com nome já em uso",
                 LocalDateTime.now(),
                 null
         );
 
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(erro);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
     }
+
 }

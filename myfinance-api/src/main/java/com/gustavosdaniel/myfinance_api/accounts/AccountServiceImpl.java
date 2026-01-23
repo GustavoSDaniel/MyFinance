@@ -1,16 +1,12 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
-import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
 import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
-import com.gustavosdaniel.myfinance_api.user.UserRepository;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,12 +16,10 @@ public class AccountServiceImpl implements AccountService{
     private final Logger log = LoggerFactory.getLogger(AccountServiceImpl.class);
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
-    private final UserRepository userRepository;
 
-    public AccountServiceImpl(AccountRepository accountRepository, AccountMapper accountMapper, UserRepository userRepository) {
+    public AccountServiceImpl(AccountRepository accountRepository, AccountMapper accountMapper ) {
         this.accountRepository = accountRepository;
         this.accountMapper = accountMapper;
-        this.userRepository = userRepository;
     }
 
 
