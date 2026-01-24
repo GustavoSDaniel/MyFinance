@@ -3,6 +3,7 @@ package com.gustavosdaniel.myfinance_api.exception;
 import com.gustavosdaniel.myfinance_api.accounts.AccountNameDuplicate;
 import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNameDuplicateException;
+import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
 import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
 import jakarta.xml.bind.ValidationException;
 import org.slf4j.Logger;
@@ -108,6 +109,7 @@ public class GlobalExceptionHandle {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
     }
 
+    // CATEGORY
     @ExceptionHandler(CategoryNameDuplicateException.class)
     public ResponseEntity<ErrorResponse> handleCategoryNameDuplicateException(CategoryNameDuplicateException ex){
 
@@ -121,6 +123,21 @@ public class GlobalExceptionHandle {
         );
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCategoryNotFoundException(CategoryNotFoundException ex){
+
+        log.warn("Categoria não encontrada: {}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Categoria não encontrada",
+        "A categoria pesquisada não existe",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
     }
 
 }

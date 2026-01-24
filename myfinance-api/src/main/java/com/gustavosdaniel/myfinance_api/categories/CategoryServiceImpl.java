@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Service
 public class CategoryServiceImpl implements CategoryService{
 
@@ -41,5 +44,19 @@ public class CategoryServiceImpl implements CategoryService{
         log.info("Categoria: {} salva com sucesso", saveCategory.getName());
 
         return categoryMapper.toCategoryResponse(saveCategory);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CategoryResponse getById(UUID id, UUID userId) {
+
+        log.info("Buscando categoria através do id: {}", id);
+
+        Category category = categoryRepository
+                .findByIdAndUserId(id, userId).orElseThrow(CategoryNotFoundException::new);
+
+        log.info("Categoria: {}, encontrado com sucesso", category.getName());
+
+        return categoryMapper.toCategoryResponse(category);
     }
 }

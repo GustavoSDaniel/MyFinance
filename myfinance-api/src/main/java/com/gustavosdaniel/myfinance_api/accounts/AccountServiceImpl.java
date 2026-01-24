@@ -27,7 +27,7 @@ public class AccountServiceImpl implements AccountService{
     @Transactional
     public AccountResponse createAccount(AccountRequest accountRequest, User user) throws AccountNameDuplicate {
 
-        if (accountRepository.existsByNameIgnoreCaseAndUserId(accountRequest.name(), user.getId())){
+        if (accountRepository.existsByNameIgnoreCaseAndUserId(accountRequest.name().trim(), user.getId())){
 
             throw new AccountNameDuplicate();
         }
