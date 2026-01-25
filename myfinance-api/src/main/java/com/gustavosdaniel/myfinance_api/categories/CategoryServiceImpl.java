@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.IllegalFormatCodePointException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,6 +50,38 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     @Transactional(readOnly = true)
+    public List<CategoryResponse> getAllCategories(UUID userId, String status) {
+
+        List<Category> categories;
+
+        if ("active".equalsIgnoreCase(status)){
+
+            log.info("Buscando categorias ativas do usuário: {}", userId);
+
+            categories = categoryRepository.findByUserIdAndIsActiveTrue(userId);
+
+        } else if ("disabled".equalsIgnoreCase(status)) {
+
+            log.info("Buscando categorias desativadas do usuário: {}", userId);
+
+            categories = categoryRepository.findByUserIdAndIsActiveFalse(userId);
+
+        } else {
+
+            log.info("Buscando todas as categorias do usuário: {}", userId);
+
+            categories = categoryRepository.findByUserId(userId);
+        }
+
+        log.info("Total encontrado: {}", categories.size());
+
+        return categories.stream()
+                .map(categoryMapper::toCategoryResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public CategoryResponse getById(UUID id, UUID userId) {
 
         log.info("Buscando categoria através do id: {}", id);
@@ -59,4 +93,55 @@ public class CategoryServiceImpl implements CategoryService{
 
         return categoryMapper.toCategoryResponse(category);
     }
+
+    @Override
+    @Transactional
+    public void deactivateCategory(UUID id, UUID userId) {
+
+        log.info("Desativando categoria {} do usuário: {}",id, userId);
+
+        Category category = categoryRepository
+                .findByIdAndUserId(id, userId)
+                .orElseThrow(CategoryNotFoundException::new);
+
+        if (Boolean.FALSE.equals(category.getIsActive())){
+
+            log.warn("Categoria {} já está desativada", category.getName());
+
+            return;
+        }
+
+        category.deactivate();
+
+        categoryRepository.save(category);
+
+        log.info("Categoria: {} desativada com sucesso", category.getName());
+    }
+
+    @Override
+    @Transactional
+    public void activateCategory(UUID id, UUID userId) {
+
+        log.info("Ativando categoria {} do usuário: {} ", id, userId);
+
+        Category category = categoryRepository
+                .findByIdAndUserId(id, userId)
+                .orElseThrow(CategoryNotFoundException::new);
+
+        if (Boolean.TRUE.equals(category.getIsActive())){
+
+            log.warn("Categoria {} já está ativada", category.getName());
+
+            return;
+        }
+
+        category.activate();
+
+        categoryRepository.save(category);
+
+        log.info("Categoria: {}, ativada com sucesso", category.getName());
+
+    }
+
+
 }
