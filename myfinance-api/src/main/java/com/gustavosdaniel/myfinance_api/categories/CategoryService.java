@@ -12,7 +12,11 @@ public interface CategoryService {
 
     List<CategoryResponse> getAllCategories(UUID userId, String status);
 
+    List<CategoryResponse> searchByName(UUID userId,String name);
+
    CategoryResponse getById(UUID id, UUID userId);
+
+   CategoryResponse updateCategory(UUID id, UUID userId, CategoryRequestUpdate request) throws CategoryNameDuplicateException;
 
    void deactivateCategory(UUID id, UUID userId);
 

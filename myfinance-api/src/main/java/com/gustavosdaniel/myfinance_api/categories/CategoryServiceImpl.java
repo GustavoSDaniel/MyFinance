@@ -82,6 +82,19 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     @Transactional(readOnly = true)
+    public List<CategoryResponse> searchByName(UUID userId, String name) {
+
+        log.info("Buscando categoria pelo nome");
+
+        List<Category> categories = categoryRepository.searchByName(name, userId);
+
+        log.info("Categorias {} encontradas com sucesso", categories.size());
+
+        return categories.stream().map(categoryMapper::toCategoryResponse).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public CategoryResponse getById(UUID id, UUID userId) {
 
         log.info("Buscando categoria através do id: {}", id);
@@ -92,6 +105,37 @@ public class CategoryServiceImpl implements CategoryService{
         log.info("Categoria: {}, encontrado com sucesso", category.getName());
 
         return categoryMapper.toCategoryResponse(category);
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse updateCategory(UUID id, UUID userId, CategoryRequestUpdate request)
+            throws CategoryNameDuplicateException {
+
+        log.info("Atualizando categoria {} ", id);
+
+        Category category = categoryRepository
+                .findByIdAndUserId(id, userId)
+                .orElseThrow(CategoryNotFoundException::new);
+
+        CategoryType typeToCheck = request.type() != null ? request.type() : category.getType();
+
+        if (request.name() != null && !request.name().equalsIgnoreCase(category.getName())){
+
+            if (categoryRepository
+                    .existsByNameIgnoreCaseAndUserIdAndType(request.name(), userId, typeToCheck)){
+
+                throw new CategoryNameDuplicateException();
+            }
+        }
+
+        categoryMapper.toCategoryUpdate(category, request);
+
+        Category savedCategory = categoryRepository.save(category);
+
+        log.info("Categoria {} atualizada com sucesso", savedCategory.getName());
+
+        return categoryMapper.toCategoryResponse(savedCategory);
     }
 
     @Override

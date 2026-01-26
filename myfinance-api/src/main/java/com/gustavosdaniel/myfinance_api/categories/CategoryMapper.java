@@ -22,4 +22,28 @@ public class CategoryMapper {
 
         return new CategoryResponse(category.getId(), category.getName(), category.getType(), category.getColor());
     }
+
+    public void toCategoryUpdate(Category category, CategoryRequestUpdate request){
+
+        if (request.name() != null && !request.name().isBlank()){
+
+            category.setName(request.name().trim());
+        }
+
+        if (request.type() != null){
+
+            category.setType(request.type());
+        }
+
+        if (request.color() != null && !request.color().isBlank()){
+
+            category.setColor(request.color());
+        }
+
+        if (request.description() != null && !request.description().isBlank()){
+
+            category.setDescription(request.description());
+        }
+
+    }
 }
