@@ -45,5 +45,10 @@ public class CategoryMapper {
             category.setDescription(request.description());
         }
 
+        if (request.icon() != null){
+
+            category.setIcon(request.icon());
+        }
+
     }
 }

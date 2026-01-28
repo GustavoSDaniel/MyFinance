@@ -5,7 +5,6 @@ import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
 import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
-import jakarta.xml.bind.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

@@ -11,6 +11,8 @@ public record CategoryRequestUpdate(
                 message = "Cor deve estar no formato hexadecimal (#FFFFFF)")
         String color,
 
-        String description
+        String description,
+
+        String icon
 ) {
 }

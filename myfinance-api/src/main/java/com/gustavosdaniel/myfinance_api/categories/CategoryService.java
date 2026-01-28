@@ -22,4 +22,6 @@ public interface CategoryService {
 
    void  activateCategory(UUID id, UUID userId);
 
+   void deleteCategory(UUID id , UUID userId);
+
 }

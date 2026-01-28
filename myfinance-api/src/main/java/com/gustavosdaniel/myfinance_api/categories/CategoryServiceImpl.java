@@ -6,9 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.IllegalFormatCodePointException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -185,6 +183,21 @@ public class CategoryServiceImpl implements CategoryService{
 
         log.info("Categoria: {}, ativada com sucesso", category.getName());
 
+    }
+
+    @Override
+    @Transactional
+    public void deleteCategory(UUID id, UUID userId) {
+
+        log.info("Solicitação para deletar categoria {}", id);
+
+        Category category = categoryRepository
+                .findByIdAndUserId(id, userId)
+                .orElseThrow(CategoryNotFoundException::new);
+
+        categoryRepository.delete(category);
+
+        log.info("Categoria {} deletada com sucesso", category.getName());
     }
 
 
