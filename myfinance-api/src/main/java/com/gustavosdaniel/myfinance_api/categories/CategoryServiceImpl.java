@@ -41,7 +41,7 @@ public class CategoryServiceImpl implements CategoryService{
 
         Category saveCategory = categoryRepository.save(newCategory);
 
-        log.info("Categoria: {} salva com sucesso", saveCategory.getName());
+        log.info("Categoria: {} criada com sucesso", saveCategory.getName());
 
         return categoryMapper.toCategoryResponse(saveCategory);
     }
@@ -71,7 +71,7 @@ public class CategoryServiceImpl implements CategoryService{
             categories = categoryRepository.findByUserId(userId);
         }
 
-        log.info("Total encontrado: {}", categories.size());
+        log.info("Total de categorias encontrados: {}", categories.size());
 
         return categories.stream()
                 .map(categoryMapper::toCategoryResponse)
