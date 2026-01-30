@@ -107,7 +107,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     @Transactional
-    public CategoryResponse updateCategory(UUID id, UUID userId, CategoryRequestUpdate request)
+    public CategoryResponseUpdate updateCategory(UUID id, UUID userId, CategoryRequestUpdate request)
             throws CategoryNameDuplicateException {
 
         log.info("Atualizando categoria {} ", id);
@@ -131,9 +131,9 @@ public class CategoryServiceImpl implements CategoryService{
 
         Category savedCategory = categoryRepository.save(category);
 
-        log.info("Categoria {} atualizada com sucesso", savedCategory.getName());
+        log.info("Categoria {} atualizada com sucesso", savedCategory.getId());
 
-        return categoryMapper.toCategoryResponse(savedCategory);
+        return categoryMapper.toCategoryResponseUpdate(savedCategory);
     }
 
     @Override

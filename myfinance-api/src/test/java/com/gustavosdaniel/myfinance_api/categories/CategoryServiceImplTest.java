@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -106,6 +107,125 @@ class CategoryServiceImplTest {
             assertNotNull(output);
 
             verify(categoryMapper, times(3)).toCategoryResponse(any(Category.class));
+        }
+    }
+
+    @Nested
+    class searchName{
+
+        @Test
+        @DisplayName("Should search name with sucesso")
+        void shouldName(){
+
+            UUID userId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+
+            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Category category = new Category(user, "Viajem", CategoryType.DESPESA, "#ffffff");
+            Category category2 = new Category(user, "Lazer", CategoryType.DESPESA, "#008000");
+            Category category3 = new Category(user, "Porquinho", CategoryType.RECEITA, "#000000");
+
+            List<Category> categories = List.of(category, category2, category3);
+
+            CategoryResponse response =
+                    new CategoryResponse(categoryId,"Viajem", CategoryType.DESPESA, "#ffffff");
+            CategoryResponse response2 =
+                    new CategoryResponse(categoryId,"Lazer", CategoryType.DESPESA, "#008000");
+            CategoryResponse response3 =
+                    new CategoryResponse(categoryId,"Porquinho", CategoryType.RECEITA, "#000000");
+
+            when(categoryMapper.toCategoryResponse(category)).thenReturn(response);
+            when(categoryMapper.toCategoryResponse(category2)).thenReturn(response2);
+            when(categoryMapper.toCategoryResponse(category3)).thenReturn(response3);
+            when(categoryRepository.searchByName(category2.getName(), userId)).thenReturn(categories);
+
+            List<CategoryResponse> output = categoryService.searchByName(userId, response2.name());
+
+            assertNotNull(output);
+
+            verify(categoryMapper, times(3)).toCategoryResponse(any(Category.class));
+            verify(categoryRepository).searchByName(category2.getName(), userId);
+        }
+    }
+
+    @Nested
+    class findBtId{
+
+        @Test
+        @DisplayName("Should category by ID with sucesso")
+        void shouldCategoryById(){
+
+            UUID userId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+
+            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Category category = new Category(user, "Lazer", CategoryType.DESPESA, "000000");
+            ReflectionTestUtils.setField(category, "id", categoryId);
+
+            CategoryResponse response =
+                    new CategoryResponse(categoryId, "Lazer", CategoryType.DESPESA, "000000");
+
+            when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
+            when(categoryMapper.toCategoryResponse(category)).thenReturn(response);
+
+            CategoryResponse output = categoryService.getById(categoryId, userId);
+
+            assertNotNull(output);
+            assertEquals(response, output);
+
+            verify(categoryRepository).findByIdAndUserId(categoryId, userId);
+            verify(categoryMapper).toCategoryResponse(category);
+        }
+    }
+
+    @Nested
+    class updateCategory{
+
+        @Test
+        @DisplayName("Should update category with sucesso")
+        void shouldUpdateCategory() throws CategoryNameDuplicateException {
+
+            UUID userId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+
+            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Category category = new Category(user, "Lazer", CategoryType.DESPESA, "000000");
+            ReflectionTestUtils.setField(category, "id", categoryId);
+
+            CategoryRequestUpdate request = new CategoryRequestUpdate(
+                    "Investimento",
+                    CategoryType.RECEITA,
+                    "FFFFFF",
+                    "Investimento para comprar o priomeiro carro",
+                    "caminho da imagem do icone");
+
+            CategoryResponseUpdate response = new CategoryResponseUpdate(
+                    categoryId,
+                    "Investimento",
+                    CategoryType.RECEITA,
+                    "FFFFFF",
+                    "Investimento para comprar o priomeiro carro",
+                    "caminho da imagem do icone");
+
+            when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
+            when(categoryRepository.save(any(Category.class))).thenReturn(category);
+            when(categoryMapper.toCategoryResponseUpdate(category)).thenReturn(response);
+
+            CategoryResponseUpdate output = categoryService.updateCategory(categoryId, userId, request);
+
+            assertNotNull(output);
+            assertEquals(response, output);
+
+            verify(categoryRepository).findByIdAndUserId(categoryId, userId);
+            verify(categoryRepository).save(category);
+            verify(categoryMapper).toCategoryResponseUpdate(category);
+
         }
     }
 

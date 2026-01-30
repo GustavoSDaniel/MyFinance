@@ -37,7 +37,7 @@ public class CategoryMapper {
 
         if (request.color() != null && !request.color().isBlank()){
 
-            category.setColor(request.color());
+            category.setColor(request.color().trim());
         }
 
         if (request.description() != null && !request.description().isBlank()){
@@ -45,10 +45,26 @@ public class CategoryMapper {
             category.setDescription(request.description());
         }
 
-        if (request.icon() != null){
+        if (request.icon() != null && !request.icon().isBlank()){
 
             category.setIcon(request.icon());
         }
 
+    }
+
+    public CategoryResponseUpdate toCategoryResponseUpdate(Category category){
+
+        if (category == null){
+            return null;
+        }
+
+        return new CategoryResponseUpdate(
+                category.getId(),
+                category.getName(),
+                category.getType(),
+                category.getColor(),
+                category.getDescription(),
+                category.getIcon()
+        );
     }
 }
