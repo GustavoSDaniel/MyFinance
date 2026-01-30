@@ -229,4 +229,86 @@ class CategoryServiceImplTest {
         }
     }
 
+    @Nested
+    class deactivateCategory{
+
+        @Test
+        @DisplayName("Should deactivate category with sucesso")
+        void shouldDeactivateCategory(){
+
+            UUID userId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+            Boolean isActive = true;
+
+            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Category category = new Category(user, "Lazer", CategoryType.DESPESA, "000000");
+            ReflectionTestUtils.setField(category, "id", categoryId);
+            ReflectionTestUtils.setField(category, "isActive", isActive);
+
+            when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
+            when(categoryRepository.save(any(Category.class))).thenReturn(category);
+
+            categoryService.deactivateCategory(categoryId, userId);
+
+            verify(categoryRepository).findByIdAndUserId(categoryId, userId);
+            verify(categoryRepository).save(category);
+
+        }
+    }
+
+    @Nested
+    class activateCategory{
+
+        @Test
+        @DisplayName("Should activate category with sucesso")
+        void shouldActivateCategory(){
+
+            UUID userId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+            Boolean isActive = false;
+
+            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Category category = new Category(user, "Lazer", CategoryType.DESPESA, "000000");
+            ReflectionTestUtils.setField(category, "id", categoryId);
+            ReflectionTestUtils.setField(category, "isActive", isActive);
+
+            when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
+            when(categoryRepository.save(any(Category.class))).thenReturn(category);
+
+            categoryService.activateCategory(categoryId, userId);
+
+            verify(categoryRepository).findByIdAndUserId(categoryId, userId);
+            verify(categoryRepository).save(category);
+
+        }
+    }
+
+    @Nested
+    class deleteCategory{
+
+        @Test
+        @DisplayName("Should delete category with sucesso")
+        void shouldDeleteCategory(){
+
+            UUID userId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+
+            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Category category = new Category(user, "Lazer", CategoryType.DESPESA, "000000");
+            ReflectionTestUtils.setField(category, "id", categoryId);
+
+            when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
+
+            categoryService.deleteCategory(categoryId, userId);
+
+            verify(categoryRepository).findByIdAndUserId(categoryId, userId);
+        }
+    }
+
 }
