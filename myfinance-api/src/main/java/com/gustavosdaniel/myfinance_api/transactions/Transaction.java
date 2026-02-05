@@ -26,13 +26,15 @@ public class Transaction {
         this.isRecurring = false;
     }
 
-    public Transaction(User user, Account account, Category category, BigDecimal amount, TransactionType type,LocalDateTime time, Boolean isRecurring, RecurrenceType recurrenceType) throws InvalidAmountException {
+    public Transaction(User user, Account account, Category category, String description, BigDecimal amount, TransactionType type,LocalDateTime time, Boolean isRecurring, RecurrenceType recurrenceType) throws InvalidAmountException {
 
         validateAmount(amount);
+        validateCategoryType(category, type);
 
         this.user = user;
         this.account = account;
         this.category = category;
+        this.description = description;
         this.amount = amount;
         this.type = type;
         this.time = time != null ? time : LocalDateTime.now();
@@ -94,6 +96,17 @@ public class Transaction {
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0){
             throw new InvalidAmountException("O valor da transação deve ser positivo");
+        }
+    }
+
+    private void validateCategoryType (Category category, TransactionType type){
+
+        if (category != null && !category.getType().name().equals(type.name())){
+
+            throw new IllegalArgumentException(
+                    "O tipo da categoria (" + category.getType() + ") " +
+                            "diverge do tipo da transação (" + type + ")"
+            );
         }
     }
 
