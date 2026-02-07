@@ -4,6 +4,8 @@ import com.gustavosdaniel.myfinance_api.accounts.AccountNameDuplicate;
 import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
+import com.gustavosdaniel.myfinance_api.transactions.BusinessRuleException;
+import com.gustavosdaniel.myfinance_api.transactions.TransactionNotFoundException;
 import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,6 +134,38 @@ public class GlobalExceptionHandle {
         ErrorResponse erro = new ErrorResponse(
                 "Categoria não encontrada",
         "A categoria pesquisada não existe",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
+    }
+
+    // TRANSACTION
+
+    @ExceptionHandler(TransactionNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleTransactionNotFoundException(TransactionNotFoundException ex){
+
+        log.warn("Transação não encontra: {}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Transação não encontrada",
+                "A transação pesquisada não foi encontrada",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
+    }
+
+    @ExceptionHandler(BusinessRuleException.class)
+    public ResponseEntity<ErrorResponse>handleBusinessRuleException(BusinessRuleException ex){
+
+        log.warn("Não é possivel apagar transações CONFIRMADAS");
+
+        ErrorResponse erro = new ErrorResponse(
+                "Não é possiveld etelar trasação",
+                "Erro ao tentar pagar transação",
                 LocalDateTime.now(),
                 null
         );
