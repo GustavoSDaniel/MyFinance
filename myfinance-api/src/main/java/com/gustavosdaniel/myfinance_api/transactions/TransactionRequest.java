@@ -31,6 +31,8 @@ public record TransactionRequest(
 
         Boolean isRecurring,
 
-        RecurrenceType recurrenceType
-) {
+        RecurrenceType recurrenceType,
+
+        @NotNull(message = "Chave de idempotência é obrigatória")
+        UUID idempotencyKey) {
 }

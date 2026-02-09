@@ -6,6 +6,8 @@ import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -16,6 +18,8 @@ public interface TransactionService {
     void transactionConfirmed(UUID id, UUID userId) throws InvalidAmountException, InsufficientBalanceException;
 
     void transactionCancel(UUID id, UUID userId) throws InvalidAmountException, InsufficientBalanceException;
+
+    void transfer(User user, TransferRequest transferRequest) throws InvalidAmountException, InsufficientBalanceException;
 
     TransactionResponse getTransactionById(UUID id, UUID userId);
 

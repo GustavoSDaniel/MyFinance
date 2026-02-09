@@ -24,6 +24,7 @@ public class TransactionMapper {
         }
 
         return new  Transaction(
+                request.idempotencyKey(),
                 user,
                 account,
                 category,

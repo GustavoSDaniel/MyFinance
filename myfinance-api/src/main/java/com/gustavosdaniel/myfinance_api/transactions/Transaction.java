@@ -26,12 +26,13 @@ public class Transaction {
         this.isRecurring = false;
     }
 
-    public Transaction(User user, Account account, Category category, String description, BigDecimal amount, TransactionType type,LocalDateTime time, Boolean isRecurring, RecurrenceType recurrenceType) throws InvalidAmountException {
+    public Transaction(UUID idempotencyKey, User user, Account account, Category category, String description, BigDecimal amount, TransactionType type,LocalDateTime time, Boolean isRecurring, RecurrenceType recurrenceType) throws InvalidAmountException {
 
         validateAmount(amount);
         validateCategoryType(category, type);
 
         this.user = user;
+        this.idempotencyKey = idempotencyKey;
         this.account = account;
         this.category = category;
         this.description = description;
@@ -48,6 +49,9 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name = "idempotency_key", unique = true, updatable = false)
+    private UUID idempotencyKey;
+
     @ManyToOne(fetch = FetchType.LAZY )
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -59,6 +63,8 @@ public class Transaction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+
+
 
     @Column(length = 255)
     private String description;
@@ -146,6 +152,10 @@ public class Transaction {
 
     public UUID getId() {
         return id;
+    }
+
+    public UUID getIdempotencyKey() {
+        return idempotencyKey;
     }
 
     public User getUser() {

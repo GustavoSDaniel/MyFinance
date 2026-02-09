@@ -5,6 +5,7 @@ import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
 import com.gustavosdaniel.myfinance_api.transactions.BusinessRuleException;
+import com.gustavosdaniel.myfinance_api.transactions.TransactionEqualsAccountException;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionNotFoundException;
 import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
 import org.slf4j.Logger;
@@ -161,11 +162,26 @@ public class GlobalExceptionHandle {
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<ErrorResponse>handleBusinessRuleException(BusinessRuleException ex){
 
-        log.warn("Não é possivel apagar transações CONFIRMADAS");
+        log.warn("Não é possivel apagar transações CONFIRMADAS {}", ex.getMessage());
 
         ErrorResponse erro = new ErrorResponse(
                 "Não é possiveld etelar trasação",
                 "Erro ao tentar pagar transação",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
+    @ExceptionHandler(TransactionEqualsAccountException.class)
+    ResponseEntity<ErrorResponse> handleTransactionEqualsAccountException(TransactionEqualsAccountException ex){
+
+        log.warn("Não é possivel fazer tranferencia para a mesma conta {}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Mesma conta",
+                "Não é possivel fazer transferencia para a mesma conta",
                 LocalDateTime.now(),
                 null
         );

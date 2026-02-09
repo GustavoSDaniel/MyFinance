@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface TransactionRepository extends JpaRepository<Transaction, UUID>, JpaSpecificationExecutor<Transaction> {
 
     Optional<Transaction> findByIdAndUserId(UUID id, UUID userId);
+
+    boolean existsIdempotencyKeyAndUserId(UUID idempotencyKey, UUID userId);
 }

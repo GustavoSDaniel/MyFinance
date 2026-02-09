@@ -1,8 +1,11 @@
 package com.gustavosdaniel.myfinance_api.transactions;
 
-import com.gustavosdaniel.myfinance_api.accounts.AccountRepository;
-import com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException;
+import com.gustavosdaniel.myfinance_api.accounts.*;
+import com.gustavosdaniel.myfinance_api.categories.Category;
+import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
+import com.gustavosdaniel.myfinance_api.categories.CategoryRepository;
 import com.gustavosdaniel.myfinance_api.user.User;
+import com.gustavosdaniel.myfinance_api.user.UserRepository;
 import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,17 +15,23 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class TransactionServiceImpl implements TransactionService{
 
+    private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
     private final TransactionRepository transactionRepository;
     private final TransactionMapper transactionMapper;
     private final AccountRepository accountRepository;
     private final Logger log = LoggerFactory.getLogger(TransactionServiceImpl.class);
 
-    public TransactionServiceImpl(TransactionRepository transactionRepository, TransactionMapper transactionMapper, AccountRepository accountRepository) {
+    public TransactionServiceImpl(UserRepository userRepository, CategoryRepository categoryRepository, TransactionRepository transactionRepository, TransactionMapper transactionMapper, AccountRepository accountRepository) {
+        this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository;
         this.transactionRepository = transactionRepository;
         this.transactionMapper = transactionMapper;
         this.accountRepository = accountRepository;
@@ -90,6 +99,77 @@ public class TransactionServiceImpl implements TransactionService{
         log.info("Transaction {} canceled with sucesso", id);
 
     }
+
+    @Override
+    @Transactional
+    public void transfer(User user, TransferRequest transferRequest) throws InvalidAmountException, InsufficientBalanceException {
+
+        log.info("Iniciando transferência da conta: {} para a conta{ {}",
+                transferRequest.fromAccountId(), transferRequest.toAccountId());
+
+        if (transactionRepository.existsIdempotencyKeyAndUserId(
+                transferRequest.idempotencyKey(), user.getId())){
+
+            log.warn("Transferência já processada anteriormente. idempotencyKey = {}",
+                    transferRequest.idempotencyKey());
+
+            return;
+        }
+
+        Account fromAccount = accountRepository.findByIdAndUserId(
+                transferRequest.fromAccountId(), user.getId()).orElseThrow(AccountNotFoundException::new);
+
+        Account toAccount = accountRepository.findByIdAndUserId(
+                transferRequest.toAccountId(), user.getId()).orElseThrow(AccountNotFoundException::new);
+
+        Category category = categoryRepository.findByIdAndUserId
+                (transferRequest.categoryId(), user.getId()).orElseThrow(CategoryNotFoundException::new);
+
+        if (fromAccount.equals(toAccount)){
+
+            throw new TransactionEqualsAccountException();
+        }
+
+        LocalDateTime transactionDate = transferRequest.date() != null
+                ? transferRequest.date().atStartOfDay()
+                : LocalDateTime.now();
+
+
+        Transaction from = new Transaction(
+                transferRequest.idempotencyKey(),
+                user,
+                fromAccount,
+                category,
+                transferRequest.description(),
+                transferRequest.amount(),
+                TransactionType.DESPESA,
+                transactionDate,
+                null,
+                null
+                );
+
+        Transaction to = new Transaction(transferRequest.idempotencyKey(),
+                user,
+                toAccount,
+                category,
+                transferRequest.description(),
+                transferRequest.amount(),
+                TransactionType.RECEITA,
+                transactionDate,
+                null,
+                null
+        );
+
+        from.process();
+        to.process();
+
+        transactionRepository.saveAll(List.of(from,to));
+        accountRepository.saveAll(List.of(fromAccount, toAccount));
+
+        log.info("Transferência realizada com sucesso: {} -> {} valor: {}",
+                fromAccount.getName(), toAccount.getName(), transferRequest.amount());
+    }
+
 
     @Override
     @Transactional(readOnly = true)
