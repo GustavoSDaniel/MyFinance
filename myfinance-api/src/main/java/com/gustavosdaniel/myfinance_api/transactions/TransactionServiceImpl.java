@@ -22,15 +22,13 @@ import java.util.UUID;
 @Service
 public class TransactionServiceImpl implements TransactionService{
 
-    private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final TransactionRepository transactionRepository;
     private final TransactionMapper transactionMapper;
     private final AccountRepository accountRepository;
     private final Logger log = LoggerFactory.getLogger(TransactionServiceImpl.class);
 
-    public TransactionServiceImpl(UserRepository userRepository, CategoryRepository categoryRepository, TransactionRepository transactionRepository, TransactionMapper transactionMapper, AccountRepository accountRepository) {
-        this.userRepository = userRepository;
+    public TransactionServiceImpl(CategoryRepository categoryRepository, TransactionRepository transactionRepository, TransactionMapper transactionMapper, AccountRepository accountRepository) {
         this.categoryRepository = categoryRepository;
         this.transactionRepository = transactionRepository;
         this.transactionMapper = transactionMapper;
