@@ -3,6 +3,7 @@ package com.gustavosdaniel.myfinance_api.transactions;
 import com.gustavosdaniel.myfinance_api.accounts.Account;
 import com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException;
 import com.gustavosdaniel.myfinance_api.categories.Category;
+import com.gustavosdaniel.myfinance_api.categories.CategoryType;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 import jakarta.persistence.*;
@@ -64,9 +65,6 @@ public class Transaction {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-
-
-    @Column(length = 255)
     private String description;
 
     @Column(nullable = false, precision = 15, scale = 2)
@@ -106,6 +104,11 @@ public class Transaction {
     }
 
     private void validateCategoryType (Category category, TransactionType type){
+
+        if (category.getType() == CategoryType.TRANSFERENCIA) {
+
+            return ;
+        }
 
         if (category != null && !category.getType().name().equals(type.name())){
 

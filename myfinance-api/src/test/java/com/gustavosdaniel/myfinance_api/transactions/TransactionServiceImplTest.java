@@ -23,13 +23,15 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceImplTest {
@@ -234,6 +236,89 @@ class TransactionServiceImplTest {
     }
 
     @Nested
+    class transfer{
+
+        @Test
+        @DisplayName("should transferaction value with sucesso")
+        void shouldTransferWithSucesso() throws InvalidAmountException, InsufficientBalanceException {
+
+            UUID userId = UUID.randomUUID();
+            UUID fromAccountId = UUID.randomUUID();
+            UUID toAccountId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+            UUID idempotencyKey = UUID.randomUUID();
+            BigDecimal toCurrentBalance = new BigDecimal("5000.00");
+            BigDecimal fromCurrentBalance = new BigDecimal("300.00");
+            LocalDateTime dateTime = LocalDateTime.of(2026, 2, 10, 20, 36);
+
+            String descriptionRequest = "Leite das crianças";
+            BigDecimal amountRequest = new BigDecimal("356.89");
+            LocalDate dateRequest = LocalDate.of(2026, 2, 10);
+
+            User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Account fromAccount = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+            ReflectionTestUtils.setField(fromAccount, "currentBalance", toCurrentBalance);
+            Account toAccount = new Account(user, "Praia", AccountType.CORRENTE, "Conta de investimento");
+            ReflectionTestUtils.setField(toAccount, "currentBalance", fromCurrentBalance);
+
+            Category category = new Category(user, "Descanso", CategoryType.TRANSFERENCIA, "#008000");
+            ReflectionTestUtils.setField(category, "id", categoryId);
+
+            Transaction from = new Transaction(
+                    idempotencyKey,
+                    user,
+                    fromAccount,
+                    category,
+                    "Para curtir o feriado",
+                    toCurrentBalance,
+                    TransactionType.DESPESA,
+                    dateTime,
+                    false,
+                    null);
+            ReflectionTestUtils.setField(from, "id", fromAccountId);
+
+            Transaction to = new Transaction(
+                    idempotencyKey,
+                    user,
+                    toAccount,
+                    category,
+                    "Para curtir o feriado",
+                    fromCurrentBalance,
+                    TransactionType.RECEITA,
+                    dateTime,
+                    false,
+                    null);
+            ReflectionTestUtils.setField(to, "id", toAccountId);
+
+            TransferRequest request = new TransferRequest(fromAccountId, toAccountId, amountRequest, categoryId, idempotencyKey, descriptionRequest, dateRequest);
+
+            List<Account> accounts = Arrays.asList(fromAccount, toAccount);
+            List<Transaction> transactions = Arrays.asList(from, to);
+
+            when(transactionRepository.existsIdempotencyKeyAndUserId(idempotencyKey,userId)).thenReturn(false);
+
+            when(accountRepository.findByIdAndUserId(fromAccountId, userId)).thenReturn(Optional.of(fromAccount));
+            when(accountRepository.findByIdAndUserId(toAccountId, userId)).thenReturn(Optional.of(toAccount));
+            when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
+
+            when(transactionRepository.saveAll(anyList())).thenReturn(transactions);
+            when(accountRepository.saveAll(anyList())).thenReturn(accounts);
+
+            transactionService.transfer(user, request);
+
+            verify(transactionRepository).existsIdempotencyKeyAndUserId(idempotencyKey, userId);
+            verify(accountRepository).findByIdAndUserId(fromAccountId, userId);
+            verify(accountRepository).findByIdAndUserId(toAccountId, userId);
+            verify(categoryRepository).findByIdAndUserId(categoryId, userId);
+            verify(transactionRepository).saveAll(anyList());
+            verify(accountRepository).saveAll(anyList());
+
+        }
+    }
+
+    @Nested
     class getByIdTransaction {
 
         @Test
@@ -293,6 +378,57 @@ class TransactionServiceImplTest {
 
             verify(transactionRepository).findByIdAndUserId(transactionId, userId);
             verify(transactionMapper).toTransactionResponse(transaction);
+        }
+    }
+
+    @Nested
+    class getAllWithFilter{
+
+        @Test
+        @DisplayName("Should get All With Filter")
+        void shouldGetAllWithFilter(){
+
+            
+        }
+    }
+
+    @Nested
+    class deleteTransaction{
+
+        @Test
+        @DisplayName("Should delete transaction with sucesso")
+        void shouldDeleteTransaction() throws InvalidAmountException {
+
+            UUID userId = UUID.randomUUID();
+            UUID idempotencyKey = UUID.randomUUID();
+            UUID transactionId = UUID.randomUUID();
+            BigDecimal transactionAMount = new BigDecimal("236.89");
+            LocalDateTime fixedDateTime = LocalDateTime.of(2026, 2, 10, 8, 36);
+
+            User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
+            ReflectionTestUtils.setField(user, "id", userId);
+            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+            Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
+
+            Transaction transaction = new Transaction(
+                    idempotencyKey,
+                    user,
+                    account,
+                    category,
+                    "Para curtir o feriado",
+                    transactionAMount,
+                    TransactionType.DESPESA,
+                    fixedDateTime,
+                    false,
+                    null);
+            ReflectionTestUtils.setField(transaction, "id", transactionId);
+
+            when(transactionRepository.findByIdAndUserId(transactionId, userId)).thenReturn(Optional.of(transaction));
+
+            transactionService.deleteTransaction(transactionId, userId);
+
+            verify(transactionRepository).findByIdAndUserId(transactionId, userId);
+
         }
     }
 }

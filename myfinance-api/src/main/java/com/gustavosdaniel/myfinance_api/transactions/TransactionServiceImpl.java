@@ -102,7 +102,7 @@ public class TransactionServiceImpl implements TransactionService{
     @Transactional
     public void transfer(User user, TransferRequest transferRequest) throws InvalidAmountException, InsufficientBalanceException {
 
-        log.info("Iniciando transferência da conta: {} para a conta{ {}",
+        log.info("Iniciando transferência da conta: {} para a conta: {}",
                 transferRequest.fromAccountId(), transferRequest.toAccountId());
 
         if (transactionRepository.existsIdempotencyKeyAndUserId(
