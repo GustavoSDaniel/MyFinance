@@ -18,6 +18,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -381,14 +386,164 @@ class TransactionServiceImplTest {
         }
     }
 
+
+
+
     @Nested
     class getAllWithFilter{
 
         @Test
         @DisplayName("Should get All With Filter")
-        void shouldGetAllWithFilter(){
+        void shouldGetAllWithFilter() throws InvalidAmountException {
 
-            
+            Pageable pageable = PageRequest.of(0, 10);
+
+            UUID userId = UUID.randomUUID();
+
+            UUID accountId = UUID.randomUUID();
+            UUID accountId2 = UUID.randomUUID();
+            UUID accountId3 = UUID.randomUUID();
+
+            UUID categogryId = UUID.randomUUID();
+            UUID categoryId2 = UUID.randomUUID();
+            UUID categoryId3 = UUID.randomUUID();
+
+            UUID transactionId = UUID.randomUUID();
+            UUID transactionId2 = UUID.randomUUID();
+            UUID transactionId3 = UUID.randomUUID();
+
+            UUID idempotencyKey = UUID.randomUUID();
+            UUID idempotencyKey2 = UUID.randomUUID();
+            UUID idempotencyKey3 = UUID.randomUUID();
+
+            BigDecimal transactionAMount = new BigDecimal("502.553");
+            BigDecimal transactionAMount2 = new BigDecimal("846.79");
+            BigDecimal transactionAMount3 = new BigDecimal("5024.63");
+
+            LocalDateTime fixedDateTime = LocalDateTime.of(2026, 8, 8, 20, 33);
+            LocalDateTime fixedDateTime2 = LocalDateTime.of(2025, 6, 1, 6, 53);
+            LocalDateTime fixedDateTime3 = LocalDateTime.of(2026, 2, 28, 17, 10);
+
+            User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+            Account account2 = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+            Account account3 = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+
+            Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
+            Category category2 = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
+            Category category3 = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
+
+            CategoryResponse categoryResponse =
+                    new CategoryResponse(categogryId,"Descanso", CategoryType.DESPESA, "#008000");
+
+            CategoryResponse categoryResponse2 =
+                    new CategoryResponse(categoryId2,"Descanso", CategoryType.DESPESA, "#008000");
+
+            CategoryResponse categoryResponse3 =
+                    new CategoryResponse(categoryId3,"Descanso", CategoryType.DESPESA, "#008000");
+
+            Transaction transaction = new Transaction(
+                    idempotencyKey,
+                    user,
+                    account,
+                    category,
+                    "Para curtir o feriado",
+                    transactionAMount,
+                    TransactionType.DESPESA,
+                    fixedDateTime,
+                    false,
+                    null);
+            ReflectionTestUtils.setField(transaction, "id", transactionId);
+
+            Transaction transaction2 = new Transaction(
+                    idempotencyKey2,
+                    user,
+                    account2,
+                    category2,
+                    "Para curtir o feriado",
+                    transactionAMount2,
+                    TransactionType.DESPESA,
+                    fixedDateTime2,
+                    false,
+                    null);
+            ReflectionTestUtils.setField(transaction2, "id", transactionId2);
+
+            Transaction transaction3 = new Transaction(
+                    idempotencyKey3,
+                    user,
+                    account3,
+                    category3,
+                    "Para curtir o feriado",
+                    transactionAMount3,
+                    TransactionType.DESPESA,
+                    fixedDateTime3,
+                    false,
+                    null);
+            ReflectionTestUtils.setField(transaction3, "id", transactionId3);
+
+            TransactionResponse response = new TransactionResponse(
+                    transactionId,
+                    "Role do fina de semana",
+                    new BigDecimal("1352.69"),
+                    TransactionType.DESPESA,
+                    LocalDateTime.now(),
+                    TransactionStatus.PENDENTE,
+                    accountId,
+                    account.getName(),
+                    categoryResponse,
+                    false,
+                    null);
+
+            TransactionResponse response2 = new TransactionResponse(
+                    transactionId2,
+                    "Role do fina de semana",
+                    new BigDecimal("1352.69"),
+                    TransactionType.DESPESA,
+                    LocalDateTime.now(),
+                    TransactionStatus.PENDENTE,
+                    accountId2,
+                    account.getName(),
+                    categoryResponse2,
+                    false,
+                    null);
+
+            TransactionResponse response3 = new TransactionResponse(
+                    transactionId3,
+                    "Role do fina de semana",
+                    new BigDecimal("1352.69"),
+                    TransactionType.DESPESA,
+                    LocalDateTime.now(),
+                    TransactionStatus.PENDENTE,
+                    accountId3,
+                    account.getName(),
+                    categoryResponse3,
+                    false,
+                    null);
+
+            TransactionSearchFilter filter = new TransactionSearchFilter(null, null, null, null, null, null, null);
+
+            List<Transaction> transactions = Arrays.asList(transaction, transaction2, transaction3);
+
+            Page<Transaction> transactionPage = new PageImpl<>(transactions, pageable, transactions.size());
+
+            when(transactionRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(transactionPage);
+            when(transactionMapper.toTransactionResponse(transaction)).thenReturn(response);
+            when(transactionMapper.toTransactionResponse(transaction2)).thenReturn(response2);
+            when(transactionMapper.toTransactionResponse(transaction3)).thenReturn(response3);
+
+            Page<TransactionResponse> output = transactionService.getAllWithFilter(user, filter, pageable);
+
+            assertNotNull(output);
+            assertEquals(3, output.getTotalElements());
+
+
+            verify(transactionRepository, times(1)).findAll(any(Specification.class), eq(pageable));
+            verify(transactionMapper).toTransactionResponse(transaction);
+            verify(transactionMapper).toTransactionResponse(transaction2);
+            verify(transactionMapper).toTransactionResponse(transaction3);
+
         }
     }
 

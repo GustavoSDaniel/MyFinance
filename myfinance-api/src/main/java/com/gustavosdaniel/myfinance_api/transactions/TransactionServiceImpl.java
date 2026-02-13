@@ -198,7 +198,7 @@ public class TransactionServiceImpl implements TransactionService{
             return Page.empty();
         }
 
-        log.info("Todas as transaçÕes encontrada {} ", transactions.getSize());
+        log.info("Total de transações encontrada {} transações", transactions.getTotalElements());
 
         return transactions.map(transactionMapper::toTransactionResponse);
     }

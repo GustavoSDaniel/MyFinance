@@ -110,14 +110,37 @@ public class TransactionSpecification {
 
     public static Specification<Transaction> filters(UUID userId, TransactionSearchFilter filter){
 
-        return Specification
-                .where(byUserId(userId))
-                .and(byAccount(filter.accountId()))
-                .and(byCategoryId(filter.categoryId()))
-                .and(byDescription(filter.description()))
-                .and(byTransactionType(filter.type()))
-                .and(byTransactionStatus(filter.status()))
-                .and(byDateRange(filter.startDate(), filter.endDate()));
+        Specification<Transaction> specification = Specification.where(byUserId(userId));
+
+        if (filter.accountId() != null){
+
+            specification.and(byAccount(filter.accountId()));
+        }
+
+        if (filter.categoryId() != null){
+            specification.and(byCategoryId(filter.categoryId()));
+        }
+
+        if (filter.description() != null){
+            specification.and(byDescription(filter.description()));
+        }
+
+        if (filter.type() != null){
+
+            specification.and(byTransactionType(filter.type()));
+        }
+
+        if (filter.status() != null){
+
+            specification.and(byTransactionStatus(filter.status()));
+        }
+
+        if (filter.startDate() != null || filter.endDate() != null ){
+
+            specification.and(byDateRange(filter.startDate(), filter.endDate()));
+        }
+
+        return specification;
 
     }
 }
