@@ -20,6 +20,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Compilando o Spring Boot (Maven)
+        working-directory: ./myfinance-api
         run: mvn clean package -DskipTests
 
       - name: Preparando emulador ARM (Vital para a Oracle Cloud!)
@@ -37,7 +38,7 @@ jobs:
       - name: Criando Imagem e Mandando pro Docker Hub
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./myfinance-api
           platforms: linux/arm64 # Gera a imagem compatível com a sua nuvem
           push: true
           # MUDE AQUI PARA O SEU USUÁRIO DO DOCKER HUB
