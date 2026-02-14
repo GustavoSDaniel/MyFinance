@@ -96,7 +96,7 @@ public class User {
         this.accounts.add(account);
     }
 
-    public void remove(Account account){
+    public void removeAccount(Account account){
         this.accounts.remove(account);
         if (account != null){
             account.setUser(null);

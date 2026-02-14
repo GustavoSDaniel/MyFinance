@@ -73,7 +73,7 @@ class TransactionServiceImplTest {
 
 
             User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
-            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             ReflectionTestUtils.setField(account, "currentBalance", currentBalance);
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
             ReflectionTestUtils.setField(category, "id", categoryID);
@@ -157,7 +157,7 @@ class TransactionServiceImplTest {
 
             User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
-            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             ReflectionTestUtils.setField(account, "currentBalance", currentBalance);
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
             ReflectionTestUtils.setField(category, "id", categoryID);
@@ -207,7 +207,7 @@ class TransactionServiceImplTest {
 
             User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
-            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             ReflectionTestUtils.setField(account, "currentBalance", currentBalance);
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
             ReflectionTestUtils.setField(category, "id", categoryID);;
@@ -264,9 +264,9 @@ class TransactionServiceImplTest {
             User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
 
-            Account fromAccount = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+            Account fromAccount = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             ReflectionTestUtils.setField(fromAccount, "currentBalance", toCurrentBalance);
-            Account toAccount = new Account(user, "Praia", AccountType.CORRENTE, "Conta de investimento");
+            Account toAccount = new Account(user, "Praia", AccountType.CORRENTE, "Conta de investimento", null);
             ReflectionTestUtils.setField(toAccount, "currentBalance", fromCurrentBalance);
 
             Category category = new Category(user, "Descanso", CategoryType.TRANSFERENCIA, "#008000");
@@ -342,7 +342,7 @@ class TransactionServiceImplTest {
 
             User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
-            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
 
             CategoryResponse categoryResponse =
@@ -428,9 +428,9 @@ class TransactionServiceImplTest {
             User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
 
-            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
-            Account account2 = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
-            Account account3 = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
+            Account account2 = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
+            Account account3 = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
 
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
             Category category2 = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
@@ -563,7 +563,7 @@ class TransactionServiceImplTest {
 
             User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
-            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento");
+            Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
 
             Transaction transaction = new Transaction(

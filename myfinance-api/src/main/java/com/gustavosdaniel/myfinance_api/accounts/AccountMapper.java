@@ -15,8 +15,9 @@ public class AccountMapper {
                 null,
                 request.name(),
                 request.type(),
-                request.description()
-        );
+                request.description(),
+                request.initialBalance()
+                );
     }
 
     public AccountResponse toAccountResponse(Account account){

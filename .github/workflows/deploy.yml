@@ -1,6 +1,5 @@
 name: Deploy Automático para Oracle Cloud
 
-# O robô só vai rodar quando você der push na branch 'main'
 on:
   push:
     branches:
@@ -39,8 +38,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./myfinance-api
-          platforms: linux/arm64 # Gera a imagem compatível com a sua nuvem
+          platforms: linux/arm64
           push: true
-          # MUDE AQUI PARA O SEU USUÁRIO DO DOCKER HUB
           tags: gustavosdaniel/my-finance-app:latest
 

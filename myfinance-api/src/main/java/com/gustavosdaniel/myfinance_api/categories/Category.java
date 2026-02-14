@@ -16,7 +16,11 @@ import java.util.UUID;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "categories")
+@Table(name = "categories", indexes = {
+
+        @Index(name = "idx_category_user_type_active", columnList = "user_id, category_type, is_active")
+
+})
 public class Category {
 
     public Category(){this.isActive = true;}

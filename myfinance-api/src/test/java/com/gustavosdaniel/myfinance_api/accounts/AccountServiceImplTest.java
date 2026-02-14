@@ -51,9 +51,9 @@ class AccountServiceImplTest {
             ReflectionTestUtils.setField(user,"id",userId);
 
             AccountRequest request =
-                    new AccountRequest("Conta fixa", AccountType.WALLET, "Contas do mes");
+                    new AccountRequest("Conta fixa", AccountType.WALLET, null ,"Contas do mes");
 
-            Account newAccount = new Account(user, "Conta fixa", AccountType.WALLET, "Constas do mes");
+            Account newAccount = new Account(user, "Conta fixa", AccountType.WALLET, "Constas do mes", null);
 
             AccountResponse response = new AccountResponse(
                     UUID.randomUUID(),
@@ -63,7 +63,6 @@ class AccountServiceImplTest {
                     "Contas do mes",
                     BigDecimal.ZERO);
 
-            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(accountRepository.existsByNameIgnoreCaseAndUserId(request.name(), userId)).thenReturn(false);
             when(accountMapper.toAccount(request)).thenReturn(newAccount);
             when(accountRepository.save(any(Account.class))).thenReturn(newAccount);
@@ -93,9 +92,9 @@ class AccountServiceImplTest {
             User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
-            Account account1 = new Account(user, "Investimento", AccountType.INVESTMENT, "Tesouro direto");
-            Account account2 = new Account(user, "Gasto mensal", AccountType.WALLET, "Para gastar no mes");
-            Account account3 = new Account(user, "Contas dio cartao", AccountType.CREDIT_CARD, "Constas do cartão");
+            Account account1 = new Account(user, "Investimento", AccountType.INVESTMENT, "Tesouro direto", null);
+            Account account2 = new Account(user, "Gasto mensal", AccountType.WALLET, "Para gastar no mes", null);
+            Account account3 = new Account(user, "Contas dio cartao", AccountType.CREDIT_CARD, "Constas do cartão", null);
 
             List<Account> accounts = Arrays.asList(account1, account2, account3);
 
@@ -147,7 +146,7 @@ class AccountServiceImplTest {
             User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
-            Account account = new Account(user, "Poupança",AccountType.POUPANCA, "Fundo de emergencia");
+            Account account = new Account(user, "Poupança",AccountType.POUPANCA, "Fundo de emergencia", null);
             ReflectionTestUtils.setField(account, "id", accountId);
 
             AccountResponseInfo response = new AccountResponseInfo(
@@ -182,9 +181,9 @@ class AccountServiceImplTest {
             User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
-            Account account = new Account(user, "Constas fixa", AccountType.WALLET, "Constas do mes");
-            Account account2 = new Account(user, "Poupança", AccountType.POUPANCA, "Fundo de emergencia");
-            Account account3= new Account(user, "Cartao", AccountType.CREDIT_CARD, "Fatura do cartão");
+            Account account = new Account(user, "Constas fixa", AccountType.WALLET, "Constas do mes", null);
+            Account account2 = new Account(user, "Poupança", AccountType.POUPANCA, "Fundo de emergencia", null);
+            Account account3= new Account(user, "Cartao", AccountType.CREDIT_CARD, "Fatura do cartão", null);
 
             List<Account> accounts = Arrays.asList(account, account2, account3);
 
@@ -237,7 +236,7 @@ class AccountServiceImplTest {
 
             User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
-            Account account = new Account(user, "Conta de test", AccountType.POUPANCA, "Conta para testar");
+            Account account = new Account(user, "Conta de test", AccountType.POUPANCA, "Conta para testar", null);
             ReflectionTestUtils.setField(account, "id", accountId);
 
             AccountUpdateRequest request = new AccountUpdateRequest("Conta de test update","Conta de teste para atualizar", AccountType.WALLET);
@@ -272,7 +271,7 @@ class AccountServiceImplTest {
 
             User user = new User("gustavosdaniel@gmail.com", "gustavo", UserRole.ADMIN);
             ReflectionTestUtils.setField(user, "id", userId);
-            Account account = new Account(user, "Conta par ativar", AccountType.POUPANCA, "Ativando conta poupança");
+            Account account = new Account(user, "Conta par ativar", AccountType.POUPANCA, "Ativando conta poupança", null);
             ReflectionTestUtils.setField(account, "id", accountId);
 
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
@@ -297,7 +296,7 @@ class AccountServiceImplTest {
 
             User user = new User("gustavosdaniel@gmail.com", "gustavo", UserRole.ADMIN);
             ReflectionTestUtils.setField(user, "id", userId);
-            Account account = new Account(user, "Conta para desativar", AccountType.POUPANCA, "Desativando conta poupança");
+            Account account = new Account(user, "Conta para desativar", AccountType.POUPANCA, "Desativando conta poupança", null);
             ReflectionTestUtils.setField(account, "id", accountId);
 
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
@@ -322,7 +321,7 @@ class AccountServiceImplTest {
 
             User user = new User("email@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
-            Account account = new Account(user, "Cartáo de credito", AccountType.CREDIT_CARD,"Apagando conta" );
+            Account account = new Account(user, "Cartáo de credito", AccountType.CREDIT_CARD,"Apagando conta", null );
             ReflectionTestUtils.setField(account, "id", accountId);
 
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));

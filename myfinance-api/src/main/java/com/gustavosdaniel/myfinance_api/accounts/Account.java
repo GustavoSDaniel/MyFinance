@@ -15,7 +15,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "accounts")
+@Table(name = "accounts", indexes = {
+
+        @Index(name = "idx_account_user", columnList = "user_id"),
+        @Index(name = "idx_account_user_active", columnList = "user_id, is_active")
+})
 @EntityListeners(AuditingEntityListener.class)
 public class Account {
 
@@ -25,7 +29,7 @@ public class Account {
         this.isActive = true;
     }
 
-    public Account(User user, String name, AccountType type, String description) {
+    public Account(User user, String name, AccountType type, String description, BigDecimal initialBalance) {
 
         this.user = user;
         this.name = name;

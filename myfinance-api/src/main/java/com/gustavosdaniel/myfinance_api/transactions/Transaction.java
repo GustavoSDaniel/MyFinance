@@ -17,7 +17,12 @@ import java.util.UUID;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "transactions")
+@Table(name = "transactions", indexes = {
+
+        @Index(name = "idx_transaction_idempotency", columnList = "idempotency_key, user_id", unique = true),
+        @Index(name = "idx_transaction_account", columnList = "account_id"),
+        @Index(name = "idx_transaction_category", columnList = "category_id")
+})
 public class Transaction {
 
     public Transaction(){
