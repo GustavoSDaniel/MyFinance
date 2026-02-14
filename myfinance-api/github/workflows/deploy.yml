@@ -1,0 +1,45 @@
+name: Deploy Automático para Oracle Cloud
+
+# O robô só vai rodar quando você der push na branch 'main'
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixando o Código do GitHub
+        uses: actions/checkout@v4
+
+      - name: Configurando o Java 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Compilando o Spring Boot (Maven)
+        run: mvn clean package -DskipTests
+
+      - name: Preparando emulador ARM (Vital para a Oracle Cloud!)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Configurando Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Criando Imagem e Mandando pro Docker Hub
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/arm64 # Gera a imagem compatível com a sua nuvem
+          push: true
+          # MUDE AQUI PARA O SEU USUÁRIO DO DOCKER HUB
+          tags: gustavosdaniel/my-finance-app:latest
+

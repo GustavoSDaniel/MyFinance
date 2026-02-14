@@ -73,6 +73,20 @@ services:
     depends_on:
       - postgres
 
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower-my-finance
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - --interval
+      - "60"
+      - my-finance-app
+    networks:
+      - myfinance-network
+
+
 networks:
   myfinance-network:
     driver: bridge
