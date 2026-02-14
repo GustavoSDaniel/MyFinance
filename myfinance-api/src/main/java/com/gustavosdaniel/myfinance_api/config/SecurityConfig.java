@@ -59,6 +59,9 @@ public class SecurityConfig {
                         //category
                                 .requestMatchers("/api/v1/categories/**").hasAnyRole("ADMIN", "USER")
 
+                        // Transaction
+                                .requestMatchers("/api/v1/transactions/**").hasAnyRole("ADMIN", "USER")
+
 
                 .anyRequest().authenticated()
                 )

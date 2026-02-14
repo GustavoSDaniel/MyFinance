@@ -81,7 +81,6 @@ class TransactionServiceImplTest {
             CategoryResponse categoryResponse =
                     new CategoryResponse(categoryID,"Descanso", CategoryType.DESPESA, "#008000");
 
-            TransactionProfile profile = new TransactionProfile(user, account, category);
 
             TransactionRequest request = new TransactionRequest(
                     "Para meu amigo",
@@ -120,19 +119,21 @@ class TransactionServiceImplTest {
                     false,
                     null);
 
+            when(accountRepository.findByIdAndUserId(accountId, user.getId())).thenReturn(Optional.of(account));
+            when(categoryRepository.findByIdAndUserId(categoryID, user.getId())).thenReturn(Optional.of(category));
             when(transactionMapper.toTransaction(
-                    request, profile.user(), profile.account(), profile.category())).thenReturn(transaction);
+                    request, user, account, category)).thenReturn(transaction);
             when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
             when(transactionMapper.toTransactionResponse(transaction)).thenReturn(response);
 
             when(accountRepository.save(any(Account.class))).thenReturn(account);
 
-            TransactionResponse output = transactionService.createTransaction(profile, request);
+            TransactionResponse output = transactionService.createTransaction(user, request);
 
             assertNotNull(output);
             assertEquals(response, output);
 
-            verify(transactionMapper).toTransaction(request, profile.user(), profile.account(), profile.category());
+            verify(transactionMapper).toTransaction(request, user, account, category);
             verify(transactionRepository).save(transaction);
             verify(transactionMapper).toTransactionResponse(transaction);
             verify(accountRepository).save(account);
@@ -302,7 +303,7 @@ class TransactionServiceImplTest {
             List<Account> accounts = Arrays.asList(fromAccount, toAccount);
             List<Transaction> transactions = Arrays.asList(from, to);
 
-            when(transactionRepository.existsIdempotencyKeyAndUserId(idempotencyKey,userId)).thenReturn(false);
+            when(transactionRepository.existsByIdempotencyKeyAndUserId(idempotencyKey,userId)).thenReturn(false);
 
             when(accountRepository.findByIdAndUserId(fromAccountId, userId)).thenReturn(Optional.of(fromAccount));
             when(accountRepository.findByIdAndUserId(toAccountId, userId)).thenReturn(Optional.of(toAccount));
@@ -313,7 +314,7 @@ class TransactionServiceImplTest {
 
             transactionService.transfer(user, request);
 
-            verify(transactionRepository).existsIdempotencyKeyAndUserId(idempotencyKey, userId);
+            verify(transactionRepository).existsByIdempotencyKeyAndUserId(idempotencyKey, userId);
             verify(accountRepository).findByIdAndUserId(fromAccountId, userId);
             verify(accountRepository).findByIdAndUserId(toAccountId, userId);
             verify(categoryRepository).findByIdAndUserId(categoryId, userId);

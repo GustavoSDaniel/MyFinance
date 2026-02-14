@@ -1,5 +1,6 @@
 CREATE TABLE transactions (
                               id              UUID                        NOT NULL,
+                              idempotency_key UUID                        NOT NULL,
                               user_id         UUID                        NOT NULL,
                               account_id      UUID                        NOT NULL,
                               category_id     UUID                        NOT NULL,

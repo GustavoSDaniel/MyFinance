@@ -38,13 +38,26 @@ public class TransactionServiceImpl implements TransactionService{
     @Override
     @Transactional
     public TransactionResponse createTransaction(
-            TransactionProfile profile,
+            User user,
             TransactionRequest request) throws InvalidAmountException, InsufficientBalanceException {
 
         log.info("Criando transação");
 
+        if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(), user.getId())){
+
+            log.warn("Transação já processada anteriormente. idempotencyKey = {}", request.idempotencyKey());
+
+            throw new IdempotencyKeyException();
+        }
+
+        Account account = accountRepository
+                .findByIdAndUserId(request.accountId(), user.getId()).orElseThrow(AccountNotFoundException::new);
+
+        Category category = categoryRepository
+                .findByIdAndUserId(request.categoryId(), user.getId()).orElseThrow(CategoryNotFoundException::new);
+
         Transaction transaction = transactionMapper
-                .toTransaction(request,profile.user(), profile.account(), profile.category());
+                .toTransaction(request,user, account, category);
 
         transaction.process();
 
@@ -105,7 +118,7 @@ public class TransactionServiceImpl implements TransactionService{
         log.info("Iniciando transferência da conta: {} para a conta: {}",
                 transferRequest.fromAccountId(), transferRequest.toAccountId());
 
-        if (transactionRepository.existsIdempotencyKeyAndUserId(
+        if (transactionRepository.existsByIdempotencyKeyAndUserId(
                 transferRequest.idempotencyKey(), user.getId())){
 
             log.warn("Transferência já processada anteriormente. idempotencyKey = {}",

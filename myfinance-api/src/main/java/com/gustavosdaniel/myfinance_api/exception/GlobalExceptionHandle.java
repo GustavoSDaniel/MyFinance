@@ -5,6 +5,7 @@ import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
 import com.gustavosdaniel.myfinance_api.transactions.BusinessRuleException;
+import com.gustavosdaniel.myfinance_api.transactions.IdempotencyKeyException;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionEqualsAccountException;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionNotFoundException;
 import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
@@ -175,7 +176,7 @@ public class GlobalExceptionHandle {
     }
 
     @ExceptionHandler(TransactionEqualsAccountException.class)
-    ResponseEntity<ErrorResponse> handleTransactionEqualsAccountException(TransactionEqualsAccountException ex){
+    public ResponseEntity<ErrorResponse> handleTransactionEqualsAccountException(TransactionEqualsAccountException ex){
 
         log.warn("Não é possivel fazer tranferencia para a mesma conta {}", ex.getMessage());
 
@@ -188,5 +189,21 @@ public class GlobalExceptionHandle {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
     }
+
+    @ExceptionHandler(IdempotencyKeyException.class)
+    public ResponseEntity<ErrorResponse> handleIdempotencyKeyException(IdempotencyKeyException ex){
+
+        log.warn("Transação já realizada {}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Transação já enviada",
+                "A transação já foi realizada",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
 
 }

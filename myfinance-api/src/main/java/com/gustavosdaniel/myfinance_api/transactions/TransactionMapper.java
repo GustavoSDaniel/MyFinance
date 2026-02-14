@@ -25,9 +25,9 @@ public class TransactionMapper {
 
         return new  Transaction(
                 request.idempotencyKey(),
-                user,
-                account,
-                category,
+                null,
+                null,
+                null,
                 request.description(),
                 request.amount(),
                 request.type(),
