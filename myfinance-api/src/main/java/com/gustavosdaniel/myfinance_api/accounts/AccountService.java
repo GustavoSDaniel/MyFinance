@@ -20,5 +20,5 @@ public interface AccountService {
 
     void deactivateAccount(UUID id, UUID userId);
 
-    void deleteAccount(UUID id, UUID userId);
+    void deleteAccount(UUID id, User user);
 }

@@ -4,6 +4,8 @@ import com.gustavosdaniel.myfinance_api.accounts.AccountNameDuplicate;
 import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
+import com.gustavosdaniel.myfinance_api.goals.GoalNameDuplicateException;
+import com.gustavosdaniel.myfinance_api.goals.GoalNotFoundException;
 import com.gustavosdaniel.myfinance_api.transactions.BusinessRuleException;
 import com.gustavosdaniel.myfinance_api.transactions.IdempotencyKeyException;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionEqualsAccountException;
@@ -205,5 +207,35 @@ public class GlobalExceptionHandle {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
     }
 
+    // GOAL
 
+    @ExceptionHandler(GoalNameDuplicateException.class)
+    public ResponseEntity<ErrorResponse> handleGoalNameDuplicateException(GoalNameDuplicateException ex){
+
+        log.warn("Nome desse Goal já em uso {}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Nome já em uso",
+                "O nome usado já está em uso em outra META",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
+    }
+
+    @ExceptionHandler(GoalNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleGoalNotFoundException(GoalNotFoundException ex){
+
+        log.warn("Goal não encontrado {}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Meta não encontra",
+                "A meta buscada não foi encontrada",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
+    }
 }

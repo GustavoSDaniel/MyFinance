@@ -166,9 +166,11 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional
-    public void deleteAccount(UUID id, UUID userId) {
+    public void deleteAccount(UUID id, User user) {
 
-        Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
+        Account account = accountRepository.findByIdAndUserId(id, user.getId()).orElseThrow(AccountNotFoundException::new);
+
+        user.removeAccount(account);
 
         log.warn("Deletando conta permanentemente: {} do usuário {}", account.getName(), account.getUser().getName());
 

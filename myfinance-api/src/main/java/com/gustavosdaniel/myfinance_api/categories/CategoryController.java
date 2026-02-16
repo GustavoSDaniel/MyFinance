@@ -148,7 +148,7 @@ public class CategoryController {
     {
         User user = authHelper.getCurrentUser(principal);
 
-        categoryService.deleteCategory(id, user.getId());
+        categoryService.deleteCategory(id, user);
 
         return ResponseEntity.noContent().build();
     }

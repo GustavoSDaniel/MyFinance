@@ -305,7 +305,7 @@ class CategoryServiceImplTest {
 
             when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
 
-            categoryService.deleteCategory(categoryId, userId);
+            categoryService.deleteCategory(categoryId, user);
 
             verify(categoryRepository).findByIdAndUserId(categoryId, userId);
         }

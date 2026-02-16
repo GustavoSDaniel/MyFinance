@@ -326,7 +326,7 @@ class AccountServiceImplTest {
 
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
 
-            accountService.deleteAccount(accountId, userId);
+            accountService.deleteAccount(accountId, user);
 
             verify(accountRepository).findByIdAndUserId(accountId, userId);
         }

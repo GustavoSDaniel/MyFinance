@@ -38,6 +38,7 @@ public class CategoryServiceImpl implements CategoryService{
 
         Category newCategory = categoryMapper.toCategory(request);
         newCategory.setUser(user);
+        user.addCategory(newCategory);
 
         Category saveCategory = categoryRepository.save(newCategory);
 
@@ -187,14 +188,15 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     @Transactional
-    public void deleteCategory(UUID id, UUID userId) {
+    public void deleteCategory(UUID id, User user) {
 
         log.info("Solicitação para deletar categoria {}", id);
 
         Category category = categoryRepository
-                .findByIdAndUserId(id, userId)
+                .findByIdAndUserId(id, user.getId())
                 .orElseThrow(CategoryNotFoundException::new);
 
+        user.removeCategory(category);
         categoryRepository.delete(category);
 
         log.info("Categoria {} deletada com sucesso", category.getName());

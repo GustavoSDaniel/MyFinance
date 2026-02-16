@@ -134,7 +134,7 @@ public class AccountController {
     ){
         User user = authHelper.getCurrentUser(principal);
 
-        accountService.deleteAccount(id, user.getId());
+        accountService.deleteAccount(id, user);
 
         return ResponseEntity.noContent().build();
     }
