@@ -1,18 +1,19 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
+import com.gustavosdaniel.myfinance_api.user.User;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AccountMapper {
 
-    public Account toAccount(AccountRequest request){
+    public Account toAccount(User user, AccountRequest request){
 
         if (request == null){
             return null;
         }
 
         return new Account(
-                null,
+                user,
                 request.name(),
                 request.type(),
                 request.description(),

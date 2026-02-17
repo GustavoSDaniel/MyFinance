@@ -34,9 +34,7 @@ public class AccountServiceImpl implements AccountService{
 
         log.info("Criando uma nova conta para o usuário: {}", user.getName());
 
-        Account newAccount = accountMapper.toAccount(accountRequest);
-
-        newAccount.setUser(user);
+        Account newAccount = accountMapper.toAccount(user, accountRequest);
 
         Account savedAccount = accountRepository.save(newAccount);
 

@@ -64,7 +64,7 @@ class AccountServiceImplTest {
                     BigDecimal.ZERO);
 
             when(accountRepository.existsByNameIgnoreCaseAndUserId(request.name(), userId)).thenReturn(false);
-            when(accountMapper.toAccount(request)).thenReturn(newAccount);
+            when(accountMapper.toAccount(user, request)).thenReturn(newAccount);
             when(accountRepository.save(any(Account.class))).thenReturn(newAccount);
             when(accountMapper.toAccountResponse(newAccount)).thenReturn(response);
 
@@ -72,7 +72,7 @@ class AccountServiceImplTest {
 
             assertNotNull(output);
 
-            verify(accountMapper).toAccount(request);
+            verify(accountMapper).toAccount(user, request);
             verify(accountRepository).save(newAccount);
             verify(accountMapper).toAccountResponse(newAccount);
 

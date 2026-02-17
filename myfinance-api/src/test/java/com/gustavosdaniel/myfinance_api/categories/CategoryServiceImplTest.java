@@ -56,7 +56,7 @@ class CategoryServiceImplTest {
 
             when(categoryRepository.existsByNameIgnoreCaseAndUserIdAndType(
                     category.getName().trim(), userId, category.getType())).thenReturn(false);
-            when(categoryMapper.toCategory(request)).thenReturn(category);
+            when(categoryMapper.toCategory(user, request)).thenReturn(category);
             when(categoryRepository.save(any(Category.class))).thenReturn(category);
             when(categoryMapper.toCategoryResponse(category)).thenReturn(response);
 
@@ -65,7 +65,7 @@ class CategoryServiceImplTest {
             assertNotNull(output);
             assertEquals(response, output);
 
-            verify(categoryMapper).toCategory(request);
+            verify(categoryMapper).toCategory(user, request);
             verify(categoryRepository).save(category);
             verify(categoryMapper).toCategoryResponse(category);
         }

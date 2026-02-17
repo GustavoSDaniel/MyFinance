@@ -36,8 +36,7 @@ public class CategoryServiceImpl implements CategoryService{
             throw new CategoryNameDuplicateException();
         }
 
-        Category newCategory = categoryMapper.toCategory(request);
-        newCategory.setUser(user);
+        Category newCategory = categoryMapper.toCategory(user, request);
         user.addCategory(newCategory);
 
         Category saveCategory = categoryRepository.save(newCategory);

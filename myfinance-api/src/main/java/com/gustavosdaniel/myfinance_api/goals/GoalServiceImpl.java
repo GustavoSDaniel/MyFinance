@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -39,11 +41,9 @@ public class GoalServiceImpl implements GoalService{
         }
 
         Category category = categoryRepository
-                .findByIdAndUserId(user.getId(), request.categoryId()).orElseThrow(CategoryNotFoundException::new);
+                .findByIdAndUserId(request.categoryId(), user.getId()).orElseThrow(CategoryNotFoundException::new);
 
         Goal newGoal = goalMapper.toGoal(request, user, category);
-        user.addGoals(newGoal);
-        category.addGoal(newGoal);
 
         Goal saveGoal = goalRepository.save(newGoal);
 
@@ -63,6 +63,26 @@ public class GoalServiceImpl implements GoalService{
         log.info("Goal {} encontrada com sucesso", goal.getName());
 
         return goalMapper.toGoalResponse(goal);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GoalResponse> searchGoal(User user, String name) {
+
+        log.info("Buscando Goals pelo nome {}", name);
+
+        List<Goal> goals = goalRepository.searchName(name, user.getId());
+
+        if (goals.isEmpty()){
+
+            log.warn("Nenhum Goal desse usuário {}  encontrado com esse nome {}", user.getName(), name);
+
+            return List.of();
+        }
+
+        log.info("Total de Goals encontrados {}", goals.size());
+
+        return goals.stream().map(goalMapper::toGoalResponse).toList();
     }
 
     @Override
@@ -100,5 +120,61 @@ public class GoalServiceImpl implements GoalService{
         return goals.map(goalMapper::toGoalResponse);
     }
 
+    @Override
+    @Transactional
+    public GoalResponse updateGoal(UUID id, GoalRequestUpdate requestUpdate, User user) {
+
+        log.info("Atualizando Goal {}, do usuário {}", id, user.getName());
+
+        Goal goal = goalRepository.findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
+
+        Category category = null;
+
+        if (requestUpdate.categoryId() != null) {
+
+           category = categoryRepository
+                    .findByIdAndUserId(requestUpdate.categoryId(), user.getId())
+                    .orElseThrow(CategoryNotFoundException::new);
+
+        }
+
+        if (requestUpdate.name() != null && !requestUpdate.name().equalsIgnoreCase(goal.getName())) {
+
+            if (goalRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(requestUpdate.name(), user.getId(), id)) {
+
+                throw new GoalNameDuplicateException();
+
+            }
+        }
+
+
+        goalMapper.toGoalUpdate(requestUpdate, goal, category);
+
+        Goal saveGoal = goalRepository.save(goal);
+
+        log.info("Goal atualizado com sucesso {}", saveGoal.getName());
+
+        return goalMapper.toGoalResponse(saveGoal);
+    }
+
+    @Override
+    @Transactional
+    public void deleteGoal(UUID id, User user) {
+
+        log.info("Deletando Goal {}", id);
+
+        Goal goal = goalRepository.findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
+
+        if (goal.getCurrentAmount().compareTo(BigDecimal.ZERO) > 0){
+
+            throw new IllegalArgumentException(
+                    "Não é possível deletar a Goal pois ela contém saldo. Resgate o dinheiro antes.");
+        }
+
+        user.removeGoals(goal);
+        goalRepository.delete(goal);
+
+        log.info("Goal deletada com sucesso!");
+    }
 
 }

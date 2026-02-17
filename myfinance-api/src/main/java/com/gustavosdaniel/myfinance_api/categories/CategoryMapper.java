@@ -1,17 +1,18 @@
 package com.gustavosdaniel.myfinance_api.categories;
 
+import com.gustavosdaniel.myfinance_api.user.User;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CategoryMapper {
 
-    public Category toCategory(CategoryRequest request){
+    public Category toCategory(User user, CategoryRequest request){
 
         if (request == null){
             return null;
         }
 
-       return new Category(null, request.name(), request.type(), request.color());
+       return new Category(user, request.name(), request.type(), request.color());
     }
 
     public CategoryResponse toCategoryResponse(Category category){

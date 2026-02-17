@@ -42,4 +42,32 @@ public class GoalMapper {
                 goal.getDeadline()
         );
     }
+
+    public void toGoalUpdate(GoalRequestUpdate requestUpdate, Goal goal, Category category){
+
+        if (category != null){
+
+            goal.setCategory(category);
+        }
+
+        if (requestUpdate.name() != null && !requestUpdate.name().isBlank()){
+
+            goal.setName(requestUpdate.name().trim());
+        }
+
+        if (requestUpdate.description() != null){
+
+            goal.setDescription(requestUpdate.description().trim());
+        }
+
+        if (requestUpdate.deadLine() != null){
+
+            goal.setDeadline(requestUpdate.deadLine());
+        }
+
+        if (requestUpdate.priority() != null){
+
+            goal.setPriority(requestUpdate.priority());
+        }
+    }
 }

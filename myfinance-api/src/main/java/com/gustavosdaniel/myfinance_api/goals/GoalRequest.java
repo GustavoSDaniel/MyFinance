@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -23,6 +24,7 @@ public record GoalRequest(
         BigDecimal targetAmount,
 
         @NotNull(message = "A data final da meta é obrigatório")
+        @Future(message = "Data limite deve ser no futuro")
         LocalDate deadLine,
 
         @NotNull(message = "A prioridade é obrigatória")

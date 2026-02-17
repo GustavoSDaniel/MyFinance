@@ -4,6 +4,7 @@ import com.gustavosdaniel.myfinance_api.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface GoalService {
@@ -12,5 +13,11 @@ public interface GoalService {
 
      GoalResponse getGoalById(UUID id, User user);
 
+     List<GoalResponse> searchGoal(User user, String name);
+
      Page<GoalResponse> getAllGoals(User user, String status,  Pageable pageable);
+
+     GoalResponse updateGoal(UUID id, GoalRequestUpdate requestUpdate, User user);
+
+     void deleteGoal(UUID id, User user);
 }
