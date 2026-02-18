@@ -1,9 +1,17 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
+import com.gustavosdaniel.myfinance_api.accounts.Account;
+import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
+import com.gustavosdaniel.myfinance_api.accounts.AccountRepository;
 import com.gustavosdaniel.myfinance_api.categories.Category;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryRepository;
+import com.gustavosdaniel.myfinance_api.transactions.IdempotencyKeyException;
+import com.gustavosdaniel.myfinance_api.transactions.Transaction;
+import com.gustavosdaniel.myfinance_api.transactions.TransactionRepository;
+import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
 import com.gustavosdaniel.myfinance_api.user.User;
+import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -12,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,12 +30,16 @@ public class GoalServiceImpl implements GoalService{
     private final GoalRepository goalRepository;
     private final GoalMapper goalMapper;
     private final CategoryRepository categoryRepository;
+    private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
     private final Logger log = LoggerFactory.getLogger(GoalServiceImpl.class);
 
-    public GoalServiceImpl(GoalRepository goalRepository, GoalMapper goalMapper, CategoryRepository categoryRepository) {
+    public GoalServiceImpl(GoalRepository goalRepository, GoalMapper goalMapper, CategoryRepository categoryRepository, AccountRepository accountRepository, TransactionRepository transactionRepository) {
         this.goalRepository = goalRepository;
         this.goalMapper = goalMapper;
         this.categoryRepository = categoryRepository;
+        this.accountRepository = accountRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     @Transactional
@@ -44,6 +57,7 @@ public class GoalServiceImpl implements GoalService{
                 .findByIdAndUserId(request.categoryId(), user.getId()).orElseThrow(CategoryNotFoundException::new);
 
         Goal newGoal = goalMapper.toGoal(request, user, category);
+        category.addGoal(newGoal);
 
         Goal saveGoal = goalRepository.save(newGoal);
 
@@ -154,6 +168,93 @@ public class GoalServiceImpl implements GoalService{
 
         log.info("Goal atualizado com sucesso {}", saveGoal.getName());
 
+        return goalMapper.toGoalResponse(saveGoal);
+    }
+
+    @Override
+    @Transactional
+    public GoalResponse depositToGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+
+        log.info("Realizando transação da conta {}, para o Goal {}", transfer.accountId(), id);
+
+        if (transactionRepository.existsByIdempotencyKeyAndUserId(transfer.idempotencyKey(), user.getId())){
+
+            log.warn("Transação já processada anteriormente. idempotencyKey = {}", transfer.idempotencyKey());
+
+            throw new IdempotencyKeyException();
+        }
+
+        Goal goal = goalRepository
+                .findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
+
+        Account account = accountRepository
+                .findByIdAndUserId(transfer.accountId(), user.getId()).orElseThrow(AccountNotFoundException::new);
+
+        Transaction transaction = new Transaction(
+                transfer.idempotencyKey(),
+                user,
+                account,
+                goal.getCategory(),
+                transfer.description(),
+                transfer.amount(),
+                TransactionType.DESPESA,
+                LocalDateTime.now(),
+                null,
+                null
+        );
+
+        goal.addAmount(transfer.amount());
+        transaction.process();
+
+        Goal saveGoal = goalRepository.save(goal);
+        accountRepository.save(account);
+        transactionRepository.save(transaction);
+
+        log.info("Transação para o Goal {} realizada com sucesso", goal.getName());
+
+        return goalMapper.toGoalResponse(saveGoal);
+    }
+
+    @Override
+    @Transactional
+    public GoalResponse withdrawFromGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+
+        log.info("Resgatando valor do Goal {} para a conta {}", id, transfer.accountId());
+
+        if (transactionRepository.existsByIdempotencyKeyAndUserId(transfer.idempotencyKey(), user.getId())){
+
+            log.warn("Transação já processada anteriormente. idempotencyKey = {}", transfer.idempotencyKey());
+
+            throw new IdempotencyKeyException();
+        }
+
+        Goal goal = goalRepository
+                .findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
+
+        Account account = accountRepository
+                .findByIdAndUserId(transfer.accountId(), user.getId()).orElseThrow(AccountNotFoundException::new);
+
+        Transaction transaction = new Transaction(
+                transfer.idempotencyKey(),
+                user,
+                account,
+                goal.getCategory(),
+                transfer.description(),
+                transfer.amount(),
+                TransactionType.RECEITA,
+                LocalDateTime.now(),
+                null,
+                null
+        );
+
+        goal.removeAmount(transfer.amount());
+        transaction.process();
+
+        Goal saveGoal = goalRepository.save(goal);
+        accountRepository.save(account);
+        transactionRepository.save(transaction);
+
+        log.info("Resgate de {} realizado com sucesso para a conta {}", transfer.amount(), account.getName());
         return goalMapper.toGoalResponse(saveGoal);
     }
 

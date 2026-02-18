@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
 import com.gustavosdaniel.myfinance_api.user.User;
+import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -18,6 +19,10 @@ public interface GoalService {
      Page<GoalResponse> getAllGoals(User user, String status,  Pageable pageable);
 
      GoalResponse updateGoal(UUID id, GoalRequestUpdate requestUpdate, User user);
+
+     GoalResponse depositToGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException;
+
+     GoalResponse withdrawFromGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException;
 
      void deleteGoal(UUID id, User user);
 }
