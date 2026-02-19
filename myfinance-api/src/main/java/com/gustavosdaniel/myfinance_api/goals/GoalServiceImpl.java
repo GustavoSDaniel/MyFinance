@@ -46,7 +46,7 @@ public class GoalServiceImpl implements GoalService{
     @Override
     public GoalResponse createGoal(User user, GoalRequest request) throws InvalidAmountException {
 
-        log.info("Criando Goal para o usuário: {}", user.getName());
+        log.info("Criando Meta para o usuário: {}", user.getName());
 
         if (goalRepository.existsByNameIgnoreCaseAndUserId(request.name().trim(), user.getId())){
 
@@ -61,7 +61,7 @@ public class GoalServiceImpl implements GoalService{
 
         Goal saveGoal = goalRepository.save(newGoal);
 
-        log.info("Goal criado com sucesso: {}", saveGoal.getName());
+        log.info("Meta criado com sucesso: {}", saveGoal.getName());
 
         return goalMapper.toGoalResponse(saveGoal);
     }
@@ -70,11 +70,11 @@ public class GoalServiceImpl implements GoalService{
     @Override
     public GoalResponse getGoalById(UUID id, User user) {
 
-        log.info("Buscando Goal pelo id {}", id);
+        log.info("Buscando Meta pelo id {}", id);
 
         Goal goal = goalRepository.findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
 
-        log.info("Goal {} encontrada com sucesso", goal.getName());
+        log.info("Meta {} encontrada com sucesso", goal.getName());
 
         return goalMapper.toGoalResponse(goal);
     }
@@ -83,18 +83,18 @@ public class GoalServiceImpl implements GoalService{
     @Transactional(readOnly = true)
     public List<GoalResponse> searchGoal(User user, String name) {
 
-        log.info("Buscando Goals pelo nome {}", name);
+        log.info("Buscando Metas pelo nome {}", name);
 
         List<Goal> goals = goalRepository.searchName(name, user.getId());
 
         if (goals.isEmpty()){
 
-            log.warn("Nenhum Goal desse usuário {}  encontrado com esse nome {}", user.getName(), name);
+            log.warn("Nenhuma Meta desse usuário {}  encontrado com esse nome {}", user.getName(), name);
 
             return List.of();
         }
 
-        log.info("Total de Goals encontrados {}", goals.size());
+        log.info("Total de Metas encontrados {}", goals.size());
 
         return goals.stream().map(goalMapper::toGoalResponse).toList();
     }
