@@ -15,6 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
@@ -270,6 +274,180 @@ class GoalServiceImplTest {
         }
     }
 
+    @Nested
+    class getAllGoals{
 
+        @Test
+        @DisplayName("Should with sucesso all goals")
+        void shouldWithSucessoAllGoals() throws InvalidAmountException {
+
+            Pageable pageable = PageRequest.of(0, 10);
+
+            UUID userId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+
+            UUID goalId = UUID.randomUUID();
+            UUID goalId2 = UUID.randomUUID();
+            UUID goalId3 = UUID.randomUUID();
+
+            String goalName = "Casa nova";
+            String goalName2 = "Carro novo";
+            String goalName3 = "Salário novo";
+
+            String status = "para mostrar todos";
+
+            LocalDate dateMeta = LocalDate.of(2026, 11, 29);
+
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
+            ReflectionTestUtils.setField(category, "id", categoryId);
+
+            Goal goal = new Goal(
+                    user,
+                    category,
+                    goalName,
+                    "Comprar o carro até o final do ano",
+                    new BigDecimal("60300.86"),
+                    dateMeta,
+                    PriorityStatus.MEDIUM );
+            ReflectionTestUtils.setField(goal, "id", goalId);
+
+            Goal goal2 = new Goal(
+                    user,
+                    category,
+                    goalName2,
+                    "Comprar o carro até o final do ano",
+                    new BigDecimal("60300.86"),
+                    dateMeta,
+                    PriorityStatus.MEDIUM );
+            ReflectionTestUtils.setField(goal, "id", goalId2);
+
+            Goal goal3 = new Goal(
+                    user,
+                    category,
+                    goalName3,
+                    "Comprar o carro até o final do ano",
+                    new BigDecimal("60300.86"),
+                    dateMeta,
+                    PriorityStatus.MEDIUM );
+            ReflectionTestUtils.setField(goal, "id", goalId3);
+
+            List<Goal> goals = Arrays.asList(goal3, goal2, goal);
+
+            Page<Goal> goalsPage = new PageImpl<>(goals, pageable, goals.size());
+
+            GoalResponse response = new GoalResponse(
+                    category.getName(),
+                    "Carro novo",
+                    "Comprar o carro até o final do ano",
+                    BigDecimal.ZERO,
+                    new BigDecimal("60300.86"),
+                    PriorityStatus.MEDIUM,
+                    dateMeta);
+
+            GoalResponse response2 = new GoalResponse(
+                    category.getName(),
+                    "Carro novo",
+                    "Comprar o carro até o final do ano",
+                    BigDecimal.ZERO,
+                    new BigDecimal("60300.86"),
+                    PriorityStatus.MEDIUM,
+                    dateMeta);
+
+            GoalResponse response3 = new GoalResponse(
+                    category.getName(),
+                    "Carro novo",
+                    "Comprar o carro até o final do ano",
+                    BigDecimal.ZERO,
+                    new BigDecimal("60300.86"),
+                    PriorityStatus.MEDIUM,
+                    dateMeta);
+
+            when(goalRepository.findByUserId(userId, pageable)).thenReturn(goalsPage);
+            when(goalMapper.toGoalResponse(goal)).thenReturn(response);
+            when(goalMapper.toGoalResponse(goal2)).thenReturn(response2);
+            when(goalMapper.toGoalResponse(goal3)).thenReturn(response3);
+
+            Page<GoalResponse> output = goalService.getAllGoals(user, status, pageable);
+
+            assertNotNull(output);
+
+            verify(goalRepository).findByUserId(userId, pageable);
+            verify(goalMapper).toGoalResponse(goal);
+            verify(goalMapper).toGoalResponse(goal2);
+            verify(goalMapper).toGoalResponse(goal3);
+
+        }
+    }
+
+    @Nested
+    class updateGoal{
+
+        @Test
+        @DisplayName("Should update Goal with sucesso")
+        void shouldUpdateWithSucesso() throws InvalidAmountException {
+
+            UUID userId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+            UUID goalId = UUID.randomUUID();
+
+            String goalName = "Casa nova";
+            String goalNewName = "Casa nova atualizada";
+            String descriptionAtualizado = "Comprar o carro até o final do ano atualizado";
+
+            LocalDate dateMeta = LocalDate.of(2026, 11, 29);
+            LocalDate dateMetaAtualizado = LocalDate.of(2028, 3, 6);
+
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
+            ReflectionTestUtils.setField(category, "id", categoryId);
+
+            Goal goal = new Goal(
+                    user,
+                    category,
+                    goalName,
+                    "Comprar o carro até o final do ano",
+                    new BigDecimal("60300.86"),
+                    dateMeta,
+                    PriorityStatus.MEDIUM );
+            ReflectionTestUtils.setField(goal, "id", goalId);
+
+            GoalRequestUpdate requestUpdate = new GoalRequestUpdate(
+                    null,
+                    goalNewName,
+                    descriptionAtualizado,
+                    dateMetaAtualizado,
+                    PriorityStatus.LOW);
+
+            GoalResponse response = new GoalResponse(
+                    category.getName(),
+                    goalNewName,
+                    descriptionAtualizado,
+                    BigDecimal.ZERO,
+                    new BigDecimal("60300.86"),
+                    PriorityStatus.LOW,
+                    dateMeta);
+
+            when(goalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(goal));
+            when(goalRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(
+                    goalNewName, userId, goalId)).thenReturn(false);
+            when(goalRepository.save(any(Goal.class))).thenReturn(goal);
+            when(goalMapper.toGoalResponse(goal)).thenReturn(response);
+
+            GoalResponse output = goalService.updateGoal(goalId, requestUpdate, user);
+
+            assertNotNull(output);
+            assertEquals(response, output);
+
+            verify(goalRepository).findByIdAndUserId(goalId, userId);
+            verify(goalRepository).existsByNameIgnoreCaseAndUserIdAndIdNot(goalNewName, userId, goalId);
+            verify(goalRepository).save(goal);
+            verify(goalMapper).toGoalResponse(goal);
+        }
+    }
 
 }

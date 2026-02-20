@@ -109,24 +109,24 @@ public class GoalServiceImpl implements GoalService{
 
             goals = goalRepository.findAchievedGoals(user.getId(), pageable);
 
-            log.info("Todos os Goals já alcançados {}", goals.getTotalElements());
+            log.info("Todos as Metas já alcançados {}", goals.getTotalElements());
 
         } else if ("progress".equalsIgnoreCase(status)) {
 
             goals = goalRepository.findPendingGoals(user.getId(), pageable);
 
-            log.info("Todos os Goals em progresso {}", goals.getTotalElements());
+            log.info("Todos as Metas  em progresso {}", goals.getTotalElements());
 
 
         } else {
             goals = goalRepository.findByUserId(user.getId(), pageable);
 
-            log.info("Todos os Goals encontrados {}", goals.getTotalElements());
+            log.info("Todos as Metas encontrados {}", goals.getTotalElements());
         }
 
         if (goals.isEmpty()){
 
-            log.info("Nenhum Goal foi encontrado");
+            log.info("Nenhuma Meta foi encontrado");
 
             return Page.empty();
         }
@@ -138,7 +138,7 @@ public class GoalServiceImpl implements GoalService{
     @Transactional
     public GoalResponse updateGoal(UUID id, GoalRequestUpdate requestUpdate, User user) {
 
-        log.info("Atualizando Goal {}, do usuário {}", id, user.getName());
+        log.info("Atualizando Meta {}, do usuário {}", id, user.getName());
 
         Goal goal = goalRepository.findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
 
@@ -166,7 +166,7 @@ public class GoalServiceImpl implements GoalService{
 
         Goal saveGoal = goalRepository.save(goal);
 
-        log.info("Goal atualizado com sucesso {}", saveGoal.getName());
+        log.info("Meta atualizada com sucesso {}", saveGoal.getName());
 
         return goalMapper.toGoalResponse(saveGoal);
     }
