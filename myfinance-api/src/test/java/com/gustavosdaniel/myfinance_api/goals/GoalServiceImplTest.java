@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -70,6 +69,7 @@ class GoalServiceImplTest {
 
             UUID userId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
+            UUID goalId = UUID.randomUUID();
 
             LocalDate dateMeta = LocalDate.of(2026, 11, 29);
 
@@ -96,13 +96,15 @@ class GoalServiceImplTest {
                     PriorityStatus.MEDIUM );
 
             GoalResponse response = new GoalResponse(
+                    goalId,
                     category.getName(),
                     "Carro novo",
                     "Comprar o carro até o final do ano",
                     BigDecimal.ZERO,
                     new BigDecimal("60300.86"),
                     PriorityStatus.MEDIUM,
-                    dateMeta);
+                    dateMeta
+            );
 
             when(goalRepository.existsByNameIgnoreCaseAndUserId(request.name(), userId)).thenReturn(false);
             when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
@@ -154,6 +156,7 @@ class GoalServiceImplTest {
             ReflectionTestUtils.setField(goal, "id", goalId);
 
             GoalResponse response = new GoalResponse(
+                    goalId,
                     category.getName(),
                     "Carro novo",
                     "Comprar o carro até o final do ano",
@@ -235,6 +238,7 @@ class GoalServiceImplTest {
             List<Goal> goals = Arrays.asList(goal3, goal2, goal);
 
             GoalResponse response = new GoalResponse(
+                    goalId,
                     category.getName(),
                     "Carro novo",
                     "Comprar o carro até o final do ano",
@@ -244,6 +248,7 @@ class GoalServiceImplTest {
                     dateMeta);
 
             GoalResponse response2 = new GoalResponse(
+                    goalId2,
                     category.getName(),
                     "Carro novo",
                     "Comprar o carro até o final do ano",
@@ -253,6 +258,7 @@ class GoalServiceImplTest {
                     dateMeta);
 
             GoalResponse response3 = new GoalResponse(
+                    goalId3,
                     category.getName(),
                     "Carro novo",
                     "Comprar o carro até o final do ano",
@@ -345,6 +351,7 @@ class GoalServiceImplTest {
             Page<Goal> goalsPage = new PageImpl<>(goals, pageable, goals.size());
 
             GoalResponse response = new GoalResponse(
+                    goalId,
                     category.getName(),
                     "Carro novo",
                     "Comprar o carro até o final do ano",
@@ -354,6 +361,7 @@ class GoalServiceImplTest {
                     dateMeta);
 
             GoalResponse response2 = new GoalResponse(
+                    goalId2,
                     category.getName(),
                     "Carro novo",
                     "Comprar o carro até o final do ano",
@@ -363,6 +371,7 @@ class GoalServiceImplTest {
                     dateMeta);
 
             GoalResponse response3 = new GoalResponse(
+                    goalId3,
                     category.getName(),
                     "Carro novo",
                     "Comprar o carro até o final do ano",
@@ -430,6 +439,7 @@ class GoalServiceImplTest {
                     PriorityStatus.LOW);
 
             GoalResponse response = new GoalResponse(
+                    goalId,
                     category.getName(),
                     goalNewName,
                     descriptionAtualizado,
@@ -519,6 +529,7 @@ class GoalServiceImplTest {
             ReflectionTestUtils.setField(goal, "id", goalId);
 
             GoalResponse response = new GoalResponse(
+                    goalId,
                     category.getName(),
                     goalName,
                     "Comprar o carro até o final do ano",
@@ -616,6 +627,7 @@ class GoalServiceImplTest {
             ReflectionTestUtils.setField(goal, "currentAmount", currentAmount);
 
             GoalResponse response = new GoalResponse(
+                    goalId,
                     category.getName(),
                     goalName,
                     "Comprar o carro até o final do ano",

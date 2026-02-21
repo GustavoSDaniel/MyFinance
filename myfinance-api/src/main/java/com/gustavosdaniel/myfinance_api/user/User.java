@@ -1,7 +1,6 @@
 package com.gustavosdaniel.myfinance_api.user;
 
 import com.gustavosdaniel.myfinance_api.accounts.Account;
-import com.gustavosdaniel.myfinance_api.budgets.Budget;
 import com.gustavosdaniel.myfinance_api.categories.Category;
 import com.gustavosdaniel.myfinance_api.goals.Goal;
 import com.gustavosdaniel.myfinance_api.transactions.Transaction;
@@ -73,14 +72,6 @@ public class User {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<Budget> budgets = new ArrayList<>();
-
-    @OneToMany(
-            mappedBy = "user",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
     private List<Goal> goals = new ArrayList<>();
 
     @CreatedDate
@@ -113,21 +104,6 @@ public class User {
         this.categories.remove(category);
         if (category != null){
             category.setUser(null);
-        }
-    }
-
-    public void addBudget(Budget budget){
-        budget.setUser(this);
-        this.budgets.add(budget);
-    }
-
-    public void removeBudget(Budget budget){
-
-        this.budgets.remove(budget);
-
-        if (budget != null){
-
-            budget.setUser(null);
         }
     }
 
@@ -215,14 +191,6 @@ public class User {
 
     public void setTransactions(List<Transaction> transactions) {
         this.transactions = transactions;
-    }
-
-    public List<Budget> getBudgets() {
-        return budgets;
-    }
-
-    public void setBudgets(List<Budget> budgets) {
-        this.budgets = budgets;
     }
 
     public List<Goal> getGoals() {
