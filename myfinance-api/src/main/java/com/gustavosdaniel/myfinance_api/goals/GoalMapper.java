@@ -33,6 +33,7 @@ public class GoalMapper {
 
         return new GoalResponse(
 
+                goal.getId(),
                 goal.getCategory().getName(),
                 goal.getName(),
                 goal.getDescription(),

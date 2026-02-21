@@ -2,9 +2,11 @@ package com.gustavosdaniel.myfinance_api.goals;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public record GoalResponse(
 
+        UUID id,
         String category,
         String name,
         String description,

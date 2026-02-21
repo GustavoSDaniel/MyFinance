@@ -62,6 +62,9 @@ public class SecurityConfig {
                         // Transaction
                                 .requestMatchers("/api/v1/transactions/**").hasAnyRole("ADMIN", "USER")
 
+                        // Goal
+                                .requestMatchers("/api/v1/goals/**").hasAnyRole("ADMIN", "USER")
+
 
                 .anyRequest().authenticated()
                 )
