@@ -175,7 +175,7 @@ public class GoalServiceImpl implements GoalService{
     @Transactional
     public GoalResponse depositToGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
-        log.info("Realizando transação da conta {}, para o Goal {}", transfer.accountId(), id);
+        log.info("Realizando transação da conta {}, para a Meta {}", transfer.accountId(), id);
 
         if (transactionRepository.existsByIdempotencyKeyAndUserId(transfer.idempotencyKey(), user.getId())){
 
@@ -210,7 +210,7 @@ public class GoalServiceImpl implements GoalService{
         accountRepository.save(account);
         transactionRepository.save(transaction);
 
-        log.info("Transação para o Goal {} realizada com sucesso", goal.getName());
+        log.info("Transação para a Meta {} realizada com sucesso", goal.getName());
 
         return goalMapper.toGoalResponse(saveGoal);
     }
@@ -254,7 +254,7 @@ public class GoalServiceImpl implements GoalService{
         accountRepository.save(account);
         transactionRepository.save(transaction);
 
-        log.info("Resgate de {} realizado com sucesso para a conta {}", transfer.amount(), account.getName());
+        log.info("Resgate no valor de {} realizado com sucesso para a conta {}", transfer.amount(), account.getName());
         return goalMapper.toGoalResponse(saveGoal);
     }
 
@@ -262,20 +262,19 @@ public class GoalServiceImpl implements GoalService{
     @Transactional
     public void deleteGoal(UUID id, User user) {
 
-        log.info("Deletando Goal {}", id);
+        log.info("Deletando Meta {}", id);
 
         Goal goal = goalRepository.findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
 
         if (goal.getCurrentAmount().compareTo(BigDecimal.ZERO) > 0){
 
             throw new IllegalArgumentException(
-                    "Não é possível deletar a Goal pois ela contém saldo. Resgate o dinheiro antes.");
+                    "Não é possível deletar a Meta pois ela contém saldo. Resgate o dinheiro antes.");
         }
 
         user.removeGoals(goal);
         goalRepository.delete(goal);
 
-        log.info("Goal deletada com sucesso!");
+        log.info("Meta deletada com sucesso!");
     }
-
 }

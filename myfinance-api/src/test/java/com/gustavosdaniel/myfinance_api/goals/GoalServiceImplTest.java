@@ -1,12 +1,17 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
+import com.gustavosdaniel.myfinance_api.accounts.Account;
 import com.gustavosdaniel.myfinance_api.accounts.AccountRepository;
+import com.gustavosdaniel.myfinance_api.accounts.AccountType;
 import com.gustavosdaniel.myfinance_api.categories.Category;
 import com.gustavosdaniel.myfinance_api.categories.CategoryRepository;
 import com.gustavosdaniel.myfinance_api.categories.CategoryType;
+import com.gustavosdaniel.myfinance_api.transactions.Transaction;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionRepository;
+import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
+import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,6 +28,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -447,6 +453,239 @@ class GoalServiceImplTest {
             verify(goalRepository).existsByNameIgnoreCaseAndUserIdAndIdNot(goalNewName, userId, goalId);
             verify(goalRepository).save(goal);
             verify(goalMapper).toGoalResponse(goal);
+        }
+    }
+
+    @Nested
+    class depositToGoal{
+
+        @Test
+        @DisplayName("Should deposit Goal with sucesso")
+        void shouldDepositGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException {
+
+            UUID userId = UUID.randomUUID();
+            UUID goalId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+            UUID accountId = UUID.randomUUID();
+            UUID transactionId = UUID.randomUUID();
+            UUID idempotencyKey = UUID.randomUUID();
+
+            BigDecimal transactionAMount = new BigDecimal("300.96");
+            BigDecimal currentBalance = new BigDecimal("500.25");
+
+            String goalName = "Casa nova";
+
+            LocalDateTime fixedDateTime = LocalDateTime.of(2026, 2, 3, 13, 46);
+            LocalDate dateMeta = LocalDate.of(2026, 11, 29);
+
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
+            ReflectionTestUtils.setField(category, "id", categoryId);
+
+            Account account = new Account(user, "Poupança", AccountType.POUPANCA, "Fundo de emergencia", null);
+            ReflectionTestUtils.setField(account, "id", accountId);
+            ReflectionTestUtils.setField(account, "currentBalance", currentBalance);
+
+            Transaction transaction = new Transaction(
+                    idempotencyKey,
+                    user,
+                    account,
+                    category,
+                    "Para curtir o feriado",
+                    transactionAMount,
+                    TransactionType.DESPESA,
+                    fixedDateTime,
+                    false,
+                    null);
+            ReflectionTestUtils.setField(transaction, "id", transactionId);
+            ReflectionTestUtils.setField(transaction, "idempotencyKey", idempotencyKey);
+
+            GoalTransfer transfer = new GoalTransfer(
+                    transaction.getIdempotencyKey(),
+                    account.getId(),
+                    transaction.getAmount(),
+                    "Realizando transferencia para conta");
+
+            Goal goal = new Goal(
+                    user,
+                    category,
+                    goalName,
+                    "Comprar o carro até o final do ano",
+                    new BigDecimal("60300.86"),
+                    dateMeta,
+                    PriorityStatus.MEDIUM );
+            ReflectionTestUtils.setField(goal, "id", goalId);
+
+            GoalResponse response = new GoalResponse(
+                    category.getName(),
+                    goalName,
+                    "Comprar o carro até o final do ano",
+                    BigDecimal.ZERO,
+                    new BigDecimal("60300.86"),
+                    PriorityStatus.MEDIUM,
+                    dateMeta);
+
+            when(transactionRepository.existsByIdempotencyKeyAndUserId(idempotencyKey, userId)).thenReturn(false);
+            when(goalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(goal));
+            when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+            when(goalRepository.save(any(Goal.class))).thenReturn(goal);
+            when(accountRepository.save(any(Account.class))).thenReturn(account);
+            when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+            when(goalMapper.toGoalResponse(goal)).thenReturn(response);
+
+            GoalResponse output = goalService.depositToGoal(goalId, transfer, user);
+
+            assertNotNull(output);
+            assertEquals(response, output);
+
+            verify(transactionRepository).existsByIdempotencyKeyAndUserId(idempotencyKey, userId);
+            verify(goalRepository).findByIdAndUserId(goalId, userId);
+            verify(accountRepository).findByIdAndUserId(accountId, userId);
+            verify(goalRepository).save(goal);
+            verify(accountRepository).save(account);
+            verify(transactionRepository).save(any(Transaction.class));
+            verify(goalMapper).toGoalResponse(goal);
+
+        }
+    }
+
+    @Nested
+    class withdrawFromGoal{
+
+        @Test
+        @DisplayName("Should draw from Goal with sucesso")
+        void shouldDrawGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException {
+
+            UUID userId = UUID.randomUUID();
+            UUID goalId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+            UUID accountId = UUID.randomUUID();
+            UUID transactionId = UUID.randomUUID();
+            UUID idempotencyKey = UUID.randomUUID();
+
+            BigDecimal transactionAMount = new BigDecimal("300.96");
+            BigDecimal currentBalance = new BigDecimal("500.25");
+            BigDecimal currentAmount = new BigDecimal("854.86");
+
+            String goalName = "Casa nova";
+
+            LocalDateTime fixedDateTime = LocalDateTime.of(2026, 2, 3, 13, 46);
+            LocalDate dateMeta = LocalDate.of(2026, 11, 29);
+
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Category category = new Category(user, "Descanso", CategoryType.TRANSFERENCIA, "#008000");
+            ReflectionTestUtils.setField(category, "id", categoryId);
+
+            Account account = new Account(user, "Poupança", AccountType.POUPANCA, "Fundo de emergencia", null);
+            ReflectionTestUtils.setField(account, "id", accountId);
+            ReflectionTestUtils.setField(account, "currentBalance", currentBalance);
+
+            Transaction transaction = new Transaction(
+                    idempotencyKey,
+                    user,
+                    account,
+                    category,
+                    "Para curtir o feriado",
+                    transactionAMount,
+                    TransactionType.RECEITA,
+                    fixedDateTime,
+                    false,
+                    null);
+            ReflectionTestUtils.setField(transaction, "id", transactionId);
+            ReflectionTestUtils.setField(transaction, "idempotencyKey", idempotencyKey);
+
+            GoalTransfer transfer = new GoalTransfer(
+                    transaction.getIdempotencyKey(),
+                    account.getId(),
+                    transaction.getAmount(),
+                    "Realizando transferencia para conta");
+
+            Goal goal = new Goal(
+                    user,
+                    category,
+                    goalName,
+                    "Comprar o carro até o final do ano",
+                    new BigDecimal("60300.86"),
+                    dateMeta,
+                    PriorityStatus.MEDIUM );
+            ReflectionTestUtils.setField(goal, "id", goalId);
+            ReflectionTestUtils.setField(goal, "currentAmount", currentAmount);
+
+            GoalResponse response = new GoalResponse(
+                    category.getName(),
+                    goalName,
+                    "Comprar o carro até o final do ano",
+                    BigDecimal.ZERO,
+                    new BigDecimal("60300.86"),
+                    PriorityStatus.MEDIUM,
+                    dateMeta);
+
+            when(transactionRepository.existsByIdempotencyKeyAndUserId(idempotencyKey, userId)).thenReturn(false);
+            when(goalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(goal));
+            when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+            when(goalRepository.save(any(Goal.class))).thenReturn(goal);
+            when(accountRepository.save(any(Account.class))).thenReturn(account);
+            when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+            when(goalMapper.toGoalResponse(goal)).thenReturn(response);
+
+            GoalResponse output = goalService.withdrawFromGoal(goalId, transfer, user);
+
+            assertNotNull(output);
+            assertEquals(response, output);
+
+            verify(transactionRepository).existsByIdempotencyKeyAndUserId(idempotencyKey, userId);
+            verify(goalRepository).findByIdAndUserId(goalId, userId);
+            verify(accountRepository).findByIdAndUserId(accountId, userId);
+            verify(goalRepository).save(goal);
+            verify(accountRepository).save(account);
+            verify(transactionRepository).save(any(Transaction.class));
+            verify(goalMapper).toGoalResponse(goal);
+
+        }
+    }
+
+    @Nested
+    class deleteGoal{
+
+        @Test
+        @DisplayName("Delete Goal with sucesso")
+        void deleteGoalWithSucesso() throws InvalidAmountException {
+
+            UUID userId = UUID.randomUUID();
+            UUID goalId = UUID.randomUUID();
+            UUID categoryId = UUID.randomUUID();
+
+            String goalName = "Casa nova";
+
+            LocalDate dateMeta = LocalDate.of(2026, 11, 29);
+
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            ReflectionTestUtils.setField(user, "id", userId);
+
+            Category category = new Category(user, "Descanso", CategoryType.TRANSFERENCIA, "#008000");
+            ReflectionTestUtils.setField(category, "id", categoryId);
+
+            Goal goal = new Goal(
+                    user,
+                    category,
+                    goalName,
+                    "Comprar o carro até o final do ano",
+                    new BigDecimal("60300.86"),
+                    dateMeta,
+                    PriorityStatus.MEDIUM );
+            ReflectionTestUtils.setField(goal, "id", goalId);
+
+            when(goalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(goal));
+
+            goalService.deleteGoal(goalId, user);
+
+            verify(goalRepository).findByIdAndUserId(goalId, userId);
+
+
         }
     }
 
