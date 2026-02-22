@@ -5,6 +5,15 @@ app:
   security:
     admin-emails: ${ADMIN_EMAILS}
 
+  cache:
+    ttl:
+      accounts: 3600
+      categories: 86400
+      users: 3600
+      dashboards: 300
+      goals: 3600
+      transactions: 300
+
 spring:
   application:
     name: myfinance-api
@@ -29,7 +38,7 @@ spring:
 
   data:
     redis:
-      host: redis
+      host: dragonfly
       port: 6379
 
   flyway:

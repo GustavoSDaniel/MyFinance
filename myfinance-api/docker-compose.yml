@@ -10,7 +10,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_HOST=dragonfly
       - SPRING_DATA_REDIS_PORT=6379
       - CLIENT_ID=${CLIENT_ID}
       - CLIENT_SECRET=${CLIENT_SECRET}
@@ -22,7 +22,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      dragonfly:
         condition: service_healthy
 
   postgres:
@@ -45,13 +45,17 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:alpine
-    container_name: redis-cache-my-finance
+  dragonfly:
+    image: docker.io/dragonflydb/dragonfly:v1.27.1
+    container_name: myfinance-dragonfly
+    restart: unless-stopped
     ports:
       - "5052:6379"
     volumes:
-      - redis_data:/data
+      - dragonfly_data:/data
+    command:
+      - "--dbfilename=dump"
+      - "--dir=/data"
     networks:
       - myfinance-network
     healthcheck:
@@ -59,6 +63,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
 
   dbeaver:
     image: dbeaver/cloudbeaver:ea
@@ -93,5 +98,5 @@ networks:
 
 volumes:
   postgres_data:
-  redis_data:
+  dragonfly_data:
   cloudbeaver_data:
