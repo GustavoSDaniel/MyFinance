@@ -65,6 +65,9 @@ public class SecurityConfig {
                         // Goal
                                 .requestMatchers("/api/v1/goals/**").hasAnyRole("ADMIN", "USER")
 
+                        // Dashboard
+                                .requestMatchers("/api/v1/dashboards").hasAnyRole("ADMIN", "USER")
+
 
                 .anyRequest().authenticated()
                 )
