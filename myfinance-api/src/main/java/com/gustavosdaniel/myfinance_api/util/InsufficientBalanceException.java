@@ -1,8 +1,8 @@
 package com.gustavosdaniel.myfinance_api.util;
 
-import com.gustavosdaniel.myfinance_api.exception.BusinesException;
+import com.gustavosdaniel.myfinance_api.exception.BaseExceptionRunTime;
 
-public class InsufficientBalanceException extends BusinesException {
+public class InsufficientBalanceException extends BaseExceptionRunTime {
 
     public InsufficientBalanceException() {
     }

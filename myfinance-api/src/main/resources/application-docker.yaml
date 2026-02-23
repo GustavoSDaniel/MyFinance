@@ -59,3 +59,14 @@ spring:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health,info,prometheus,metrics'
+  endpoint:
+    health:
+      access: unrestricted
+    prometheus:
+      access: unrestricted
