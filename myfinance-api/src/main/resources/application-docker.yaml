@@ -64,9 +64,25 @@ management:
   endpoints:
     web:
       exposure:
-        include: 'health,info,prometheus,metrics'
+        include: health,info,prometheus,metrics
+
   endpoint:
     health:
-      access: unrestricted
-    prometheus:
-      access: unrestricted
+      show-details: always
+
+  metrics:
+    tags:
+      application: myfinance-api
+
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+      percentiles:
+        http.server.requests: 0.5, 0.9, 0.95, 0.99
+
+    enable:
+      jvm: true
+      hikaricp: true
+      process: true
+      system: true
