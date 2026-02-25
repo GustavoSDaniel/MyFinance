@@ -1,18 +1,22 @@
 package com.gustavosdaniel.myfinance_api.user;
 
-import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@CacheConfig(cacheNames = "users")
 public class UserServiceImpl implements UserService{
 
     private final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
@@ -29,6 +33,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public UserInfoResponse createOrUpdateUserFromOAuth(UserRequest request) {
 
         Optional<User> existingUser = userRepository.findByEmail(request.email());
@@ -62,7 +67,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(Pageable pageable) {
 
         Page<User> users = userRepository.findAll(pageable);
@@ -82,7 +87,8 @@ public class UserServiceImpl implements UserService{
 
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
+    @Cacheable(key = "#email", unless = "#result.isEmpty()")
     public Optional<UserResponse> getUserByEmail(String email) {
 
         Optional<User> user = userRepository.findByEmail(email);
@@ -103,14 +109,15 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public User findByEmail(String email) {
 
         return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
+    @Cacheable(key = "#id")
     public UserResponse getUserById(UUID id) {
 
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
@@ -122,6 +129,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void deleteUser(UUID id) {
 
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);

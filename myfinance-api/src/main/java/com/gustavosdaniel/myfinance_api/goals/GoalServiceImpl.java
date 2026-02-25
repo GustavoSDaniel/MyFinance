@@ -14,6 +14,9 @@ import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@CacheConfig(cacheNames = "goals")
 public class GoalServiceImpl implements GoalService{
 
     private final GoalRepository goalRepository;
@@ -44,6 +48,7 @@ public class GoalServiceImpl implements GoalService{
 
     @Transactional
     @Override
+    @CacheEvict(allEntries = true)
     public GoalResponse createGoal(User user, GoalRequest request) throws InvalidAmountException {
 
         log.info("Criando Meta para o usuário: {}", user.getName());
@@ -68,6 +73,7 @@ public class GoalServiceImpl implements GoalService{
 
     @Transactional(readOnly = true)
     @Override
+    @Cacheable(key = "{#id, #user.id}")
     public GoalResponse getGoalById(UUID id, User user) {
 
         log.info("Buscando Meta pelo id {}", id);
@@ -136,6 +142,7 @@ public class GoalServiceImpl implements GoalService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public GoalResponse updateGoal(UUID id, GoalRequestUpdate requestUpdate, User user) {
 
         log.info("Atualizando Meta {}, do usuário {}", id, user.getName());
@@ -173,6 +180,7 @@ public class GoalServiceImpl implements GoalService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public GoalResponse depositToGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
         log.info("Realizando transação da conta {}, para a Meta {}", transfer.accountId(), id);
@@ -217,6 +225,7 @@ public class GoalServiceImpl implements GoalService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public GoalResponse withdrawFromGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
         log.info("Resgatando valor do Goal {} para a conta {}", id, transfer.accountId());
@@ -260,6 +269,7 @@ public class GoalServiceImpl implements GoalService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void deleteGoal(UUID id, User user) {
 
         log.info("Deletando Meta {}", id);

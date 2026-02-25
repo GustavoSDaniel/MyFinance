@@ -3,6 +3,9 @@ package com.gustavosdaniel.myfinance_api.categories;
 import com.gustavosdaniel.myfinance_api.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@CacheConfig(cacheNames = "categories")
 public class CategoryServiceImpl implements CategoryService{
 
     private final CategoryRepository categoryRepository;
@@ -23,6 +27,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public CategoryResponse createCategory(User user, CategoryRequest request) throws CategoryNameDuplicateException {
 
         log.info("Criando categoria para usuário {}", user.getName());
@@ -48,6 +53,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(key = "#userId + '_' + #status")
     public List<CategoryResponse> getAllCategories(UUID userId, String status) {
 
         List<Category> categories;
@@ -93,6 +99,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(key = "{#id, #userId}")
     public CategoryResponse getById(UUID id, UUID userId) {
 
         log.info("Buscando categoria através do id: {}", id);
@@ -107,6 +114,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public CategoryResponseUpdate updateCategory(UUID id, UUID userId, CategoryRequestUpdate request)
             throws CategoryNameDuplicateException {
 
@@ -138,6 +146,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void deactivateCategory(UUID id, UUID userId) {
 
         log.info("Desativando categoria {} do usuário: {}",id, userId);
@@ -162,6 +171,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void activateCategory(UUID id, UUID userId) {
 
         log.info("Ativando categoria {} do usuário: {} ", id, userId);
@@ -187,6 +197,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void deleteCategory(UUID id, User user) {
 
         log.info("Solicitação para deletar categoria {}", id);
@@ -200,6 +211,4 @@ public class CategoryServiceImpl implements CategoryService{
 
         log.info("Categoria {} deletada com sucesso", category.getName());
     }
-
-
 }

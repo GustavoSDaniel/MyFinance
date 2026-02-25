@@ -4,6 +4,9 @@ import com.gustavosdaniel.myfinance_api.user.User;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@CacheConfig(cacheNames = "accounts")
 public class AccountServiceImpl implements AccountService{
 
     private final Logger log = LoggerFactory.getLogger(AccountServiceImpl.class);
@@ -25,6 +29,7 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public AccountResponse createAccount(AccountRequest accountRequest, User user) throws AccountNameDuplicate {
 
         if (accountRepository.existsByNameIgnoreCaseAndUserId(accountRequest.name().trim(), user.getId())){
@@ -47,6 +52,7 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(key = "#userId + '_' + #status")
     public List<AccountResponseInfo> getAllAccounts(UUID userId, String status) {
 
         log.info("Buscando todas as contas do usuário: {} com status: {}", userId, status);
@@ -73,6 +79,7 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(key = "#id + '_' + #userId")
     public AccountResponseInfo getById(UUID id, UUID userId){
 
         log.info("Buscando conta {} para o usuário {}", id, userId);
@@ -99,6 +106,7 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public AccountResponseInfo updateAccount(UUID id, UUID userId, AccountUpdateRequest request) throws AccountNameDuplicate {
 
         Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
@@ -124,6 +132,7 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void activateAccount(UUID id, UUID userId) {
 
         log.info("Ativando conta com id: {}", id);
@@ -144,6 +153,7 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void deactivateAccount(UUID id, UUID userId) {
 
         log.info("Desativando conta com id: {}", id);
@@ -164,6 +174,7 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void deleteAccount(UUID id, User user) {
 
         Account account = accountRepository.findByIdAndUserId(id, user.getId()).orElseThrow(AccountNotFoundException::new);
@@ -175,6 +186,4 @@ public class AccountServiceImpl implements AccountService{
         accountRepository.delete(account);
 
     }
-
-
 }

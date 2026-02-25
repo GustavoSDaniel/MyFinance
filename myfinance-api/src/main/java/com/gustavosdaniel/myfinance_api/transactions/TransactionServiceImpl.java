@@ -9,6 +9,9 @@ import com.gustavosdaniel.myfinance_api.user.UserRepository;
 import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@CacheConfig(cacheNames = "transactions")
 public class TransactionServiceImpl implements TransactionService{
 
     private final CategoryRepository categoryRepository;
@@ -37,6 +41,7 @@ public class TransactionServiceImpl implements TransactionService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public TransactionResponse createTransaction(
             User user,
             TransactionRequest request) throws InvalidAmountException, InsufficientBalanceException {
@@ -71,6 +76,7 @@ public class TransactionServiceImpl implements TransactionService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void transactionConfirmed(UUID id, UUID userId) throws InvalidAmountException, InsufficientBalanceException {
 
         log.info("Processo de confirmação da transação: {}", id);
@@ -95,6 +101,7 @@ public class TransactionServiceImpl implements TransactionService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void transactionCancel(UUID id, UUID userId) throws InvalidAmountException, InsufficientBalanceException {
 
         log.info("Processo de cancelamento de transação: {}", id);
@@ -113,6 +120,7 @@ public class TransactionServiceImpl implements TransactionService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void transfer(User user, TransferRequest transferRequest) throws InvalidAmountException, InsufficientBalanceException {
 
         log.info("Iniciando transferência da conta: {} para a conta: {}",
@@ -124,7 +132,7 @@ public class TransactionServiceImpl implements TransactionService{
             log.warn("Transferência já processada anteriormente. idempotencyKey = {}",
                     transferRequest.idempotencyKey());
 
-            return;
+            throw  new IdempotencyKeyException();
         }
 
         Account fromAccount = accountRepository.findByIdAndUserId(
@@ -184,6 +192,7 @@ public class TransactionServiceImpl implements TransactionService{
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(key = "{#id, #userId}")
     public TransactionResponse getTransactionById(UUID id, UUID userId) {
 
         log.info("Buscando transação pelo id: {}", id);
@@ -218,6 +227,7 @@ public class TransactionServiceImpl implements TransactionService{
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void deleteTransaction(UUID id, UUID userId) {
 
         log.warn("Deletando transação: {}", id);
