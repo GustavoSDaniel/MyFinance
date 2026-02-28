@@ -1,0 +1,30 @@
+services:
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: myfinance-prometheus
+    restart: unless-stopped
+    ports:
+      - "5054:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - myfinance-network
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: myfinance-grafana
+    restart: unless-stopped
+    ports:
+      - "5055:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - myfinance-network
+
+volumes:
+  prometheus_data:
+  grafana_data:

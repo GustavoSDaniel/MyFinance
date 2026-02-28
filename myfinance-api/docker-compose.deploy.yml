@@ -1,0 +1,50 @@
+services:
+  my-finance-app:
+    image: gustavosdaniel/my-finance-app:latest
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATA_REDIS_HOST: dragonfly
+      SPRING_DATA_REDIS_PORT: 6379
+      CLIENT_ID: ${CLIENT_ID}
+      CLIENT_SECRET: ${CLIENT_SECRET}
+      ADMIN_EMAILS: ${ADMIN_EMAILS}
+    depends_on:
+      - postgres
+      - dragonfly
+    networks:
+      - myfinance-network
+
+  nginx:
+    image: nginx:1.26-bookworm
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - nginx_cache:/var/cache/nginx
+    networks:
+      - myfinance-network
+
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - myfinance-network
+
+  dragonfly:
+    image: docker.io/dragonflydb/dragonfly:v1.27.1
+    restart: always
+    volumes:
+      - dragonfly_data:/data
+    networks:
+      - myfinance-network
+
+volumes:
+  postgres_data:
+  dragonfly_data:

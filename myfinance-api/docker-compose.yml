@@ -6,17 +6,7 @@ services:
     container_name: my-finance-app
     restart: unless-stopped
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATA_REDIS_HOST=dragonfly
-      - SPRING_DATA_REDIS_PORT=6379
-      - CLIENT_ID=${CLIENT_ID}
-      - CLIENT_SECRET=${CLIENT_SECRET}
-      - ADMIN_EMAILS=${ADMIN_EMAILS}
-    ports:
-      - "5050:5050"
+      SPRING_PROFILES_ACTIVE: docker
     networks:
       - myfinance-network
     depends_on:
@@ -33,14 +23,12 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5051:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - myfinance-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -49,8 +37,6 @@ services:
     image: docker.io/dragonflydb/dragonfly:v1.27.1
     container_name: myfinance-dragonfly
     restart: unless-stopped
-    ports:
-      - "5052:6379"
     volumes:
       - dragonfly_data:/data
     command:
@@ -59,69 +45,10 @@ services:
     networks:
       - myfinance-network
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-
-  dbeaver:
-    image: dbeaver/cloudbeaver:ea
-    container_name: cloudbeaver-my-finance
-    restart: unless-stopped
-    ports:
-      - "5053:8978"
-    volumes:
-      - cloudbeaver_data:/opt/cloudbeaver/workspace
-    networks:
-      - myfinance-network
-    depends_on:
-      - postgres
-
-  prometheus:
-    image: prom/prometheus:v2.52.0
-    container_name: myfinance-prometheus
-    restart: unless-stopped
-    ports:
-      - "5054:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=15d'
-      - '--storage.tsdb.retention.size=2GB'
-    networks:
-      - myfinance-network
-
-  grafana:
-    image: grafana/grafana:10.4.2
-    container_name: myfinance-grafana
-    restart: unless-stopped
-    ports:
-      - "5055:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - grafana_data:/var/lib/grafana
-    networks:
-      - myfinance-network
-
-
-  watchtower:
-    image: containrrr/watchtower:1.7.1
-    container_name: watchtower-my-finance
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command:
-      - --interval
-      - "300"
-    networks:
-      - myfinance-network
-
 
 networks:
   myfinance-network:
@@ -130,6 +57,3 @@ networks:
 volumes:
   postgres_data:
   dragonfly_data:
-  prometheus_data:
-  grafana_data:
-  cloudbeaver_data:
