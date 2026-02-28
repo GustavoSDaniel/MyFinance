@@ -1,0 +1,15 @@
+services:
+  nginx:
+    image: nginx:1.26-bookworm
+    container_name: myfinance-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt:/etc/letsencrypt
+      - nginx_cache:/var/cache/nginx
+
+volumes:
+  nginx_cache:

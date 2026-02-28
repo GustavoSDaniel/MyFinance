@@ -64,20 +64,6 @@ services:
       timeout: 5s
       retries: 5
 
-
-  dbeaver:
-    image: dbeaver/cloudbeaver:ea
-    container_name: cloudbeaver-my-finance
-    restart: unless-stopped
-    ports:
-      - "5053:8978"
-    volumes:
-      - cloudbeaver_data:/opt/cloudbeaver/workspace
-    networks:
-      - myfinance-network
-    depends_on:
-      - postgres
-
   prometheus:
     image: prom/prometheus:v2.52.0
     container_name: myfinance-prometheus
@@ -103,7 +89,7 @@ services:
       - "5055:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
@@ -132,4 +118,3 @@ volumes:
   dragonfly_data:
   prometheus_data:
   grafana_data:
-  cloudbeaver_data:
