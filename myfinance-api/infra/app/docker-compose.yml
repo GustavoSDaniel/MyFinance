@@ -1,10 +1,10 @@
 services:
   my-finance-app:
-    image: gustavosdaniel/myfinance-api:latest
+    image: gustavosdaniel/my-finance-app:latest
     container_name: my-finance-app
     restart: unless-stopped
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:/${POSTGRES_DB}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:5432/${POSTGRES_DB}
       - SPRING_DATA_REDIS_HOST=${DB_HOST}
       - SPRING_DATA_REDIS_PORT=6379
       - POSTGRES_USER=${POSTGRES_USER}
