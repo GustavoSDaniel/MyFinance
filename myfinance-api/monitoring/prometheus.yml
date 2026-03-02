@@ -6,7 +6,4 @@ scrape_configs:
   - job_name: "myfinance"
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: ["my-finance-app:5050"]
-        labels:
-          application: "myfinance-api"
-          environment: "docker"
+      - targets: ["10.0.0.10:5050"]

@@ -34,7 +34,7 @@ services:
       retries: 5
 
   dragonfly:
-    image: docker.io/dragonflydb/dragonfly:v1.27.1
+    image: ghcr.io/dragonflydb/dragonfly:v1.37.0
     container_name: myfinance-dragonfly
     restart: unless-stopped
     volumes:
@@ -50,6 +50,51 @@ services:
       timeout: 5s
       retries: 5
 
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: myfinance-prometheus
+    restart: unless-stopped
+    ports:
+      - "5054:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--storage.tsdb.retention.size=2GB'
+    networks:
+      - myfinance-network
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: myfinance-grafana
+    restart: unless-stopped
+    ports:
+      - "5055:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - myfinance-network
+
+
+  watchtower:
+    image: containrrr/watchtower:1.7.1
+    container_name: watchtower-my-finance
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - --interval
+      - "300"
+    networks:
+      - myfinance-network
+
+
 networks:
   myfinance-network:
     driver: bridge
@@ -57,3 +102,5 @@ networks:
 volumes:
   postgres_data:
   dragonfly_data:
+  prometheus_data:
+  grafana_data:

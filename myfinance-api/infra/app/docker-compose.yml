@@ -1,0 +1,27 @@
+services:
+  my-finance-app:
+    image: gustavosdaniel/my-finance-app:latest
+    container_name: my-finance-app
+    restart: unless-stopped
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:5432/${POSTGRES_DB}
+      - SPRING_DATA_REDIS_HOST=${DB_HOST}
+      - SPRING_DATA_REDIS_PORT=6379
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=docker
+      - CLIENT_ID=${CLIENT_ID}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - ADMIN_EMAILS=${ADMIN_EMAILS}
+    ports:
+      - "5050:5050"
+
+  watchtower:
+    image: containrrr/watchtower:1.7.1
+    container_name: watchtower-my-finance
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - --interval
+      - "300"
