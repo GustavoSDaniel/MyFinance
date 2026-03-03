@@ -7,6 +7,8 @@ services:
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "5050:5050"
     networks:
       - myfinance-network
     depends_on:
@@ -23,6 +25,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5051:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -37,6 +41,8 @@ services:
     image: ghcr.io/dragonflydb/dragonfly:v1.37.0
     container_name: myfinance-dragonfly
     restart: unless-stopped
+    ports:
+      - "5052:6379"
     volumes:
       - dragonfly_data:/data
     command:

@@ -25,7 +25,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     public OAuth2LoginSuccessHandler(UserService userService, UserMapper userMapper) {
         this.userService = userService;
         this.userMapper = userMapper;
-        this.setDefaultTargetUrl("/api/v1/auth/user");
+        this.setDefaultTargetUrl("/api/v1/dashboards");
     }
 
     @Override
