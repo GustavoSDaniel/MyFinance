@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.config;
 
+import com.gustavosdaniel.myfinance_api.util.CustomOAuth2UserService;
 import com.gustavosdaniel.myfinance_api.util.OAuth2LoginSuccessHandler;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,6 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     public static final String[] PUBLIC_URLS = {
 
@@ -27,10 +29,12 @@ public class SecurityConfig {
             "/webjars/**",
             "/actuator/**"
 
+
     };
 
-    public SecurityConfig(OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+    public SecurityConfig(OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler, CustomOAuth2UserService customOAuth2UserService) {
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+        this.customOAuth2UserService = customOAuth2UserService;
     }
 
     @Bean
@@ -73,6 +77,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(oAuth2LoginSuccessHandler)
                         .failureUrl("/login?error=true")
                 )

@@ -88,7 +88,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(key = "#email", unless = "#result.isEmpty()")
+    @Cacheable(key = "#email", unless = "#result == null")
     public Optional<UserResponse> getUserByEmail(String email) {
 
         Optional<User> user = userRepository.findByEmail(email);

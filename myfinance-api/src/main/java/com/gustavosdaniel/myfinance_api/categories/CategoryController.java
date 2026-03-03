@@ -40,7 +40,7 @@ public class CategoryController {
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand()
+                .buildAndExpand(category.id())
                 .toUri();
 
         return ResponseEntity.created(uri).body(category);
