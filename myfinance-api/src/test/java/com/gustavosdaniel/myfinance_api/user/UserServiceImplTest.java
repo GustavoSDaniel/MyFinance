@@ -110,6 +110,7 @@ class UserServiceImplTest {
         @DisplayName("Should all users with sucesso")
         void shouldAllUserss(){
 
+            UUID userId = UUID.randomUUID();
             Pageable pageable = Pageable.unpaged();
 
             User user1 = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.ADMIN);
@@ -120,9 +121,9 @@ class UserServiceImplTest {
 
             Page<User> userPage = new PageImpl<>(users, pageable, users.size());
 
-            UserResponse userResponse1 = new UserResponse("Gustavo", "gustavosdaniel@gmail.com");
-            UserResponse userResponse2 = new UserResponse("Silva", "silva@gmail.com");
-            UserResponse userResponse3 = new UserResponse("Daniel", "daniel@gmail.com");
+            UserResponse userResponse1 = new UserResponse(userId,"Gustavo", "gustavosdaniel@gmail.com");
+            UserResponse userResponse2 = new UserResponse(userId,"Silva", "silva@gmail.com");
+            UserResponse userResponse3 = new UserResponse(userId,"Daniel", "daniel@gmail.com");
 
             when(userRepository.findAll(pageable)).thenReturn(userPage);
 
@@ -147,11 +148,12 @@ class UserServiceImplTest {
         @DisplayName("Should user by email with sucesso")
         void shouldUserByEmail(){
 
+            UUID userId = UUID.randomUUID();
             String email = "gustavosdaniel@gmail.com";
 
             User user = new User(email,"Gustavo", UserRole.USER);
 
-            UserResponse userResponse = new UserResponse("Gustavo", "gustavosdaniel@gmail.com");
+            UserResponse userResponse = new UserResponse(userId, "Gustavo", "gustavosdaniel@gmail.com");
 
             when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
             when(userMapper.toUserResponse(user)).thenReturn(userResponse);
@@ -176,7 +178,7 @@ class UserServiceImplTest {
             User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
-            UserResponse userResponse = new UserResponse("Gustavo", "gustavosdaniel@gmail.com");
+            UserResponse userResponse = new UserResponse(userId,"Gustavo", "gustavosdaniel@gmail.com");
 
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(userMapper.toUserResponse(user)).thenReturn(userResponse);
