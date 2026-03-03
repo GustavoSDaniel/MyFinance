@@ -1,6 +1,8 @@
 # 💰 MyFinance API
 
-API para **gerenciamento de finanças pessoais**, desenvolvida com **Java + Spring Boot**, focada em **segurança**, **observabilidade** e **arquitetura profissional**, utilizando **OAuth2 (Google)**, **PostgreSQL**, **DragonflyDB (Redis-compatible)**, **Docker**, **Prometheus** e **Grafana**.
+API para **gerenciamento de finanças pessoais**, desenvolvida com **Java + Spring Boot**, focada em **segurança**, **testes unitarios**, **observabilidade** e **arquitetura profissional**.
+
+O projeto simula um ambiente real de produção utilizando **OAuth2 (Google)**, **PostgreSQL**, **DragonflyDB**, **Docker**, **Prometheus** e **Grafana**.
 
 ---
 
@@ -15,13 +17,13 @@ O **MyFinance** permite que usuários gerenciem:
 * 🎯 Metas financeiras
 * 📊 Dashboards de controle
 
-A autenticação é feita **exclusivamente via OAuth2 (Google)**, garantindo segurança e praticidade.
+A autenticação é feita exclusivamente via **OAuth2 (Google)**.
 
 ---
 
 ## 🧱 Arquitetura
 
-O projeto segue uma arquitetura, preparada para ambientes reais de produção:
+Arquitetura preparada para ambientes reais de produção:
 
 ```text
 ┌───────────────┐
@@ -37,7 +39,7 @@ O projeto segue uma arquitetura, preparada para ambientes reais de produção:
 └───────────────────────┘
 ```
 
-E com observabilidade:
+Observabilidade:
 
 ```text
 MyFinance API
@@ -62,7 +64,7 @@ Prometheus → Grafana
 ### Banco de Dados
 
 * PostgreSQL 16
-* DragonflyDB (compatível com Redis)
+* DragonflyDB (Redis-compatible)
 
 ### Infraestrutura
 
@@ -72,6 +74,11 @@ Prometheus → Grafana
 * Prometheus
 * Grafana
 
+### Testes
+
+* JUnit 5
+* Mockito
+
 ### Documentação
 
 * Swagger / OpenAPI 3
@@ -80,19 +87,38 @@ Prometheus → Grafana
 
 ## 🔐 Segurança
 
-* Autenticação via **OAuth2 (Google)**
-* Controle de acesso por **roles (ADMIN / USER)**
+* Autenticação via OAuth2 (Google)
+* Controle de acesso por roles (ADMIN / USER)
+* Proteção de endpoints sensíveis
 * Sessões gerenciadas pelo Spring Security
-* Endpoints sensíveis protegidos
 * Actuator exposto apenas para métricas
+
+---
+
+## 🧪 Testes Unitários
+
+A camada de **Service** possui testes unitários garantindo:
+
+* ✔ Validação das regras de negócio
+* ✔ Testes de cenários de sucesso
+* ✔ Testes de exceções
+* ✔ Mock das dependências com Mockito
+
+Os testes aumentam a confiabilidade da aplicação e seguem boas práticas de desenvolvimento backend.
+
+Para rodar os testes:
+
+```bash
+mvn test
+```
 
 ---
 
 ## 🔑 Autenticação OAuth2
 
-O login é feito **somente via Google**.
+Login realizado exclusivamente via Google.
 
-Após autenticação bem-sucedida:
+Após autenticação:
 
 * O usuário é criado ou atualizado no banco
 * O sistema redireciona para:
@@ -101,23 +127,23 @@ Após autenticação bem-sucedida:
 GET /api/v1/auth/user
 ```
 
-Configuração feita via `OAuth2LoginSuccessHandler`.
+Configuração realizada via `OAuth2LoginSuccessHandler`.
 
 ---
 
-## 📄 Documentação da API (Swagger)
+## 📄 Documentação da API
 
-Disponível em:
+Swagger disponível em:
 
-```http
-http://localhost:8080/swagger-ui.html
+```
+http://localhost:5050/swagger-ui.html
 ```
 
-> ⚠️ O Swagger **não realiza login OAuth2 automaticamente**.
+> ⚠️ O Swagger não realiza o fluxo OAuth2 automaticamente.
 > Para testar endpoints protegidos:
-
-* Faça login pelo navegador via Google
-* Use a mesma sessão para testar os endpoints
+>
+> * Faça login via navegador
+> * Utilize a mesma sessão
 
 ---
 
@@ -125,7 +151,7 @@ http://localhost:8080/swagger-ui.html
 
 ### Actuator
 
-```http
+```
 /actuator/health
 /actuator/prometheus
 ```
@@ -136,41 +162,25 @@ Coleta métricas da aplicação.
 
 ### Grafana
 
-Dashboards com métricas como:
+Dashboards monitorando:
 
 * Uso de memória JVM
 * Threads
 * Tempo de resposta
 * Requests HTTP
 * Erros
-* GC
+* Garbage Collector
 
 ---
 
-## 🐳 Docker — Estrutura
+## 🐳 Executando com Docker
 
-O projeto pode ser separado em **3 ambientes (VMs)**:
-
-```text
-📁 app/
-📁 db/
-📁 monitoring/
-```
-
-Mas também funciona localmente com um único `docker-compose`.
-
----
-
-## ▶️ Como Rodar o Projeto (Passo a Passo)
-
-### 1️⃣ Clonar o repositório
+### 1️⃣ Clonar o projeto
 
 ```bash
 git clone https://github.com/GustavoSDaniel/MyFinance.git
 cd MyFinance
 ```
-
----
 
 ### 2️⃣ Criar arquivo `.env`
 
@@ -184,9 +194,7 @@ CLIENT_SECRET=seu_client_secret_google
 ADMIN_EMAILS=admin@email.com
 ```
 
----
-
-### 3️⃣ Subir a aplicação
+### 3️⃣ Subir containers
 
 ```bash
 docker compose up -d
@@ -194,30 +202,32 @@ docker compose up -d
 
 ---
 
-### 4️⃣ Verificar serviços
+## 🌍 Endpoints Locais
 
-* API: `http://localhost:5050`
-* Swagger: `http://localhost:5050/swagger-ui.html`
-* Prometheus: `http://localhost:5054`
-* Grafana: `http://localhost:5055`
+* API: http://localhost:5050
+* Swagger: http://localhost:5050/swagger-ui.html
+* Prometheus: http://localhost:5054
+* Grafana: http://localhost:5055
 
 ---
 
 ## 🧠 Boas Práticas Aplicadas
 
 * Clean Architecture
-* DTOs e Mappers
+* DTO Pattern
+* Mapper Pattern
 * Separation of Concerns
-* Healthchecks no Docker
-* Observabilidade nativa
+* Testes unitários na camada de Service
 * Configuração via variáveis de ambiente
-* Pronto para CI/CD
+* Healthchecks no Docker
+* Observabilidade integrada
+* Estrutura preparada para CI/CD
 
 ---
 
 ## 🚀 Próximos Passos
 
-* Frontend (React / React Native)
+* Frontend (React ou React Native)
 
 ---
 
@@ -225,17 +235,14 @@ docker compose up -d
 
 **Gustavo Silva Daniel**
 
-* Backend Developer (Java / Spring Boot)
-* Estudante de Desenvolvimento de Software (FATEC)
-* Foco em arquitetura, cloud e microsserviços
+Backend Developer (Java / Spring Boot)
+Estudante de Desenvolvimento de Software – FATEC
 
-🔗 GitHub: https://github.com/GustavoSDaniel
+GitHub: https://github.com/GustavoSDaniel
 
 ---
 
 ## ⭐ Contribuições
 
-Contribuições são bem-vindas!
+Contribuições são bem-vindas.
 Sinta-se à vontade para abrir issues ou pull requests.
-
----
