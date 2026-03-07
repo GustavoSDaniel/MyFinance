@@ -1,5 +1,6 @@
-package com.gustavosdaniel.myfinance_api.accounts;
+package com.gustavosdaniel.myfinance_api.domain.dto;
 
+import com.gustavosdaniel.myfinance_api.domain.po.AccountType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

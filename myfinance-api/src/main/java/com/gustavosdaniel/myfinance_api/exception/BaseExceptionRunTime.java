@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.exception;
 
 public class BaseExceptionRunTime extends RuntimeException {
+
     public BaseExceptionRunTime() {
     }
 

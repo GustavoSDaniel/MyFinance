@@ -1,56 +1,76 @@
-package com.gustavosdaniel.myfinance_api.accounts;
+package com.gustavosdaniel.myfinance_api.service;
 
+import com.gustavosdaniel.myfinance_api.domain.po.Account;
+import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicateException;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountUpdateRequest;
+import com.gustavosdaniel.myfinance_api.exception.AccountNotFoundException;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
+import com.gustavosdaniel.myfinance_api.domain.mapping.AccountMapper;
+import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
 import com.gustavosdaniel.myfinance_api.user.User;
 
+import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @CacheConfig(cacheNames = "accounts")
-public class AccountServiceImpl implements AccountService{
+public class AccountService{
 
-    private final Logger log = LoggerFactory.getLogger(AccountServiceImpl.class);
+    private final Logger log = LoggerFactory.getLogger(AccountService.class);
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
+    private final AuthHelper authHelper;
 
-    public AccountServiceImpl(AccountRepository accountRepository, AccountMapper accountMapper ) {
+    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper, AuthHelper authHelper) {
         this.accountRepository = accountRepository;
         this.accountMapper = accountMapper;
+        this.authHelper = authHelper;
     }
 
 
-    @Override
     @Transactional
     @CacheEvict(allEntries = true)
-    public AccountResponse createAccount(AccountRequest accountRequest, User user) throws AccountNameDuplicate {
+    public ResponseEntity<AccountResponse> createAccount(OAuth2User principal, AccountRequest accountRequest)  {
 
-        if (accountRepository.existsByNameIgnoreCaseAndUserId(accountRequest.name().trim(), user.getId())){
+        User currentUser = authHelper.getCurrentUser(principal);
 
-            throw new AccountNameDuplicate();
-        }
+        if (accountRepository.existsByNameIgnoreCaseAndUserId(accountRequest.name().trim(), currentUser.getId()))
+           throw new AccountNameDuplicateException();
 
-        log.info("Criando uma nova conta para o usuário: {}", user.getName());
+        log.info("Criando uma nova conta para o usuário: {}", currentUser.getName());
 
-        Account newAccount = accountMapper.toAccount(user, accountRequest);
+        Account newAccount = accountMapper.toAccount(currentUser, accountRequest);
 
         Account savedAccount = accountRepository.save(newAccount);
 
-        user.addAccount(newAccount);
+        currentUser.addAccount(newAccount);
 
-        log.info("Nova conta: {} adicionada para o usuário: {}", newAccount.getName(), user.getName());
+        log.info("Nova conta: {} adicionada para o usuário: {}", newAccount.getName(), currentUser.getName());
 
-        return accountMapper.toAccountResponse(savedAccount);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(savedAccount.getId())
+                .toUri();
+
+        return ResponseEntity.created(uri).body(accountMapper.toAccountResponse(savedAccount));
+
     }
 
-    @Override
     @Transactional(readOnly = true)
     @Cacheable(key = "#userId + '_' + #status")
     public List<AccountResponseInfo> getAllAccounts(UUID userId, String status) {
@@ -77,7 +97,6 @@ public class AccountServiceImpl implements AccountService{
     }
 
 
-    @Override
     @Transactional(readOnly = true)
     @Cacheable(key = "#id + '_' + #userId")
     public AccountResponseInfo getById(UUID id, UUID userId){
@@ -91,7 +110,6 @@ public class AccountServiceImpl implements AccountService{
         return accountMapper.toAccountResponseInfo(account);
     }
 
-    @Override
     @Transactional(readOnly = true)
     public List<AccountResponseInfo> searchAccount(String name, UUID userId) {
 
@@ -104,10 +122,9 @@ public class AccountServiceImpl implements AccountService{
         return accounts.stream().map(accountMapper::toAccountResponseInfo).toList();
     }
 
-    @Override
     @Transactional
     @CacheEvict(allEntries = true)
-    public AccountResponseInfo updateAccount(UUID id, UUID userId, AccountUpdateRequest request) throws AccountNameDuplicate {
+    public AccountResponseInfo updateAccount(UUID id, UUID userId, AccountUpdateRequest request)  {
 
         Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
 
@@ -117,7 +134,7 @@ public class AccountServiceImpl implements AccountService{
 
             if (accountRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(request.name(), userId, id)){
 
-                    throw new AccountNameDuplicate();
+                    throw new AccountNameDuplicateException();
             }
         }
 
@@ -130,7 +147,6 @@ public class AccountServiceImpl implements AccountService{
         return accountMapper.toAccountResponseInfo(accountUpdated);
     }
 
-    @Override
     @Transactional
     @CacheEvict(allEntries = true)
     public void activateAccount(UUID id, UUID userId) {
@@ -151,7 +167,6 @@ public class AccountServiceImpl implements AccountService{
         log.info("Conta: {} ativada com sucesso pelo usuário {}", account.getName(), userId);
     }
 
-    @Override
     @Transactional
     @CacheEvict(allEntries = true)
     public void deactivateAccount(UUID id, UUID userId) {
@@ -172,7 +187,6 @@ public class AccountServiceImpl implements AccountService{
         log.info("Conta: {} desativada com sucesso pelo usuário {}", account.getName(), userId);
     }
 
-    @Override
     @Transactional
     @CacheEvict(allEntries = true)
     public void deleteAccount(UUID id, User user) {

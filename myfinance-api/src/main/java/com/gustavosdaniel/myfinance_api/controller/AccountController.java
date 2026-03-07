@@ -1,5 +1,11 @@
-package com.gustavosdaniel.myfinance_api.accounts;
+package com.gustavosdaniel.myfinance_api.controller;
 
+import com.gustavosdaniel.myfinance_api.controller.openapi.AccountOpenApi;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountUpdateRequest;
+import com.gustavosdaniel.myfinance_api.service.AccountService;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,44 +15,30 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/accounts")
-public class AccountController {
+public class AccountController implements AccountOpenApi {
 
     private final AccountService accountService;
+    //TODO remover e colocar dentro do service
     private final AuthHelper authHelper;
 
-    public AccountController(AccountServiceImpl accountService, AuthHelper authHelper) {
+    public AccountController(AccountService accountService, AuthHelper authHelper) {
         this.accountService = accountService;
         this.authHelper = authHelper;
     }
 
-    @PostMapping()
-    @Operation(summary = "Cria uma conta para o usuário logado")
-    public ResponseEntity<AccountResponse> createdAccount(
-            @Valid @RequestBody AccountRequest request,
-            @AuthenticationPrincipal OAuth2User principal) throws AccountNameDuplicate {
-
-        User currentUser = authHelper.getCurrentUser(principal);
-
-        AccountResponse account = accountService.createAccount(request, currentUser);
-
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(account.id())
-                .toUri();
-
-        return ResponseEntity.created(uri).body(account);
+    @PostMapping
+    public ResponseEntity<AccountResponse> createdAccount(@Valid @RequestBody AccountRequest request,
+                                                          @AuthenticationPrincipal OAuth2User principal) {
+        return accountService.createAccount(principal, request);
     }
 
     @GetMapping()
-    @Operation(summary = "Mostra todas as contas do usuário logado")
     public ResponseEntity<List<AccountResponseInfo>> getAllAccounts(
             @AuthenticationPrincipal OAuth2User principal,
             @RequestParam(required = false) String status){
@@ -59,7 +51,6 @@ public class AccountController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "Busca conta através do nome da conta")
     public ResponseEntity<List<AccountResponseInfo>> searchByName(
             @RequestParam @NotBlank String name,
             @AuthenticationPrincipal OAuth2User principal
@@ -73,7 +64,6 @@ public class AccountController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Busca a conta pelo ID")
     public ResponseEntity<AccountResponseInfo> getAccountById(
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal){
@@ -91,7 +81,7 @@ public class AccountController {
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal,
             @Valid @RequestBody AccountUpdateRequest request
-    ) throws AccountNameDuplicate {
+    ) {
 
         User user = authHelper.getCurrentUser(principal);
 

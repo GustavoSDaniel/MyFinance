@@ -1,6 +1,4 @@
-package com.gustavosdaniel.myfinance_api.transactions;
-
-import com.gustavosdaniel.myfinance_api.exception.BaseExceptionRunTime;
+package com.gustavosdaniel.myfinance_api.exception;
 
 public class IdempotencyKeyException extends BaseExceptionRunTime {
 

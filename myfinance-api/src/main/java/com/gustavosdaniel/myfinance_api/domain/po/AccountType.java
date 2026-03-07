@@ -1,4 +1,4 @@
-package com.gustavosdaniel.myfinance_api.accounts;
+package com.gustavosdaniel.myfinance_api.domain.po;
 
 public enum AccountType {
 

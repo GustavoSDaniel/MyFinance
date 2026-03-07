@@ -1,18 +1,24 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
-import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
+import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicateException;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountUpdateRequest;
+import com.gustavosdaniel.myfinance_api.domain.mapping.AccountMapper;
+import com.gustavosdaniel.myfinance_api.domain.po.Account;
+import com.gustavosdaniel.myfinance_api.domain.po.AccountType;
+import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
+import com.gustavosdaniel.myfinance_api.service.AccountService;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRepository;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
-import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -36,14 +42,14 @@ class AccountServiceImplTest {
     private AccountMapper accountMapper;
 
     @InjectMocks
-    private AccountServiceImpl accountService;
+    private AccountService accountService;
 
     @Nested
     class createAccount{
 
         @Test
         @DisplayName("Should create account with sucesso")
-        void shouldCreateAccount() throws AccountNameDuplicate {
+        void shouldCreateAccount() throws AccountNameDuplicateException {
 
             UUID userId = UUID.randomUUID();
 
@@ -229,7 +235,7 @@ class AccountServiceImplTest {
 
         @Test
         @DisplayName("Should updated a information account with sucesso")
-        void updateAccount() throws AccountNameDuplicate {
+        void updateAccount() throws AccountNameDuplicateException {
 
             UUID userId = UUID.randomUUID();
             UUID accountId = UUID.randomUUID();

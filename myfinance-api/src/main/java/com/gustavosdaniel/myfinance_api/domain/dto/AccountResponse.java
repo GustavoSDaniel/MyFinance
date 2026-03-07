@@ -1,5 +1,7 @@
-package com.gustavosdaniel.myfinance_api.accounts;
+package com.gustavosdaniel.myfinance_api.domain.dto;
 
+
+import com.gustavosdaniel.myfinance_api.domain.po.AccountType;
 
 import java.math.BigDecimal;
 import java.util.UUID;

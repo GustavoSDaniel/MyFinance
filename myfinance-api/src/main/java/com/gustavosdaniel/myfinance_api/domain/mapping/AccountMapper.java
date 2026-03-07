@@ -1,5 +1,10 @@
-package com.gustavosdaniel.myfinance_api.accounts;
+package com.gustavosdaniel.myfinance_api.domain.mapping;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountUpdateRequest;
+import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.user.User;
 import org.springframework.stereotype.Component;
 

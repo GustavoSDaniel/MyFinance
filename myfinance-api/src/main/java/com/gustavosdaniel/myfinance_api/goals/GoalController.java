@@ -116,7 +116,7 @@ public class GoalController {
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal,
             @RequestBody @Valid GoalTransfer transfer
-    ) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+    ) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
         User user = authHelper.getCurrentUser(principal);
 
@@ -131,7 +131,7 @@ public class GoalController {
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal,
             @RequestBody @Valid GoalTransfer transfer
-    ) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+    ) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
         User user = authHelper.getCurrentUser(principal);
 

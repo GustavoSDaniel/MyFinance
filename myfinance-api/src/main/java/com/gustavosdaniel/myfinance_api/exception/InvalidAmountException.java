@@ -1,6 +1,4 @@
-package com.gustavosdaniel.myfinance_api.accounts;
-
-import com.gustavosdaniel.myfinance_api.exception.BaseExceptionRunTime;
+package com.gustavosdaniel.myfinance_api.exception;
 
 public class InvalidAmountException extends BaseExceptionRunTime {
 

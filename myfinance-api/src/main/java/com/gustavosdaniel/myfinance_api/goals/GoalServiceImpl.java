@@ -1,12 +1,12 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
-import com.gustavosdaniel.myfinance_api.accounts.Account;
-import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
-import com.gustavosdaniel.myfinance_api.accounts.AccountRepository;
+import com.gustavosdaniel.myfinance_api.domain.po.Account;
+import com.gustavosdaniel.myfinance_api.exception.AccountNotFoundException;
+import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
 import com.gustavosdaniel.myfinance_api.categories.Category;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryRepository;
-import com.gustavosdaniel.myfinance_api.transactions.IdempotencyKeyException;
+import com.gustavosdaniel.myfinance_api.exception.IdempotencyKeyException;
 import com.gustavosdaniel.myfinance_api.transactions.Transaction;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
@@ -181,7 +181,7 @@ public class GoalServiceImpl implements GoalService{
     @Override
     @Transactional
     @CacheEvict(allEntries = true)
-    public GoalResponse depositToGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+    public GoalResponse depositToGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
         log.info("Realizando transação da conta {}, para a Meta {}", transfer.accountId(), id);
 
@@ -226,7 +226,7 @@ public class GoalServiceImpl implements GoalService{
     @Override
     @Transactional
     @CacheEvict(allEntries = true)
-    public GoalResponse withdrawFromGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+    public GoalResponse withdrawFromGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
         log.info("Resgatando valor do Goal {} para a conta {}", id, transfer.accountId());
 

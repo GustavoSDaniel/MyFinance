@@ -1,13 +1,9 @@
 package com.gustavosdaniel.myfinance_api.exception;
 
-import com.gustavosdaniel.myfinance_api.accounts.AccountNameDuplicate;
-import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
 import com.gustavosdaniel.myfinance_api.goals.GoalNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.goals.GoalNotFoundException;
-import com.gustavosdaniel.myfinance_api.transactions.BusinessRuleException;
-import com.gustavosdaniel.myfinance_api.transactions.IdempotencyKeyException;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionEqualsAccountException;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionNotFoundException;
 import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
@@ -60,7 +56,6 @@ public class GlobalExceptionHandle {
                 LocalDateTime.now(),
                 null
         );
-
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(erro);
     }
 
@@ -84,8 +79,8 @@ public class GlobalExceptionHandle {
 
     // ACCOUNT
 
-    @ExceptionHandler(AccountNameDuplicate.class)
-    public ResponseEntity<ErrorResponse> handleAccountNameDuplicate(AccountNameDuplicate ex){
+    @ExceptionHandler(AccountNameDuplicateException.class)
+    public ResponseEntity<ErrorResponse> handleAccountNameDuplicate(AccountNameDuplicateException ex){
 
         log.warn("Conta com esse nome já existe {}", ex.getMessage());
 
