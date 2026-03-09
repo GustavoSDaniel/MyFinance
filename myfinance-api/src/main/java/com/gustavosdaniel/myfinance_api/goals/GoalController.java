@@ -2,7 +2,7 @@ package com.gustavosdaniel.myfinance_api.goals;
 
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
@@ -116,7 +116,7 @@ public class GoalController {
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal,
             @RequestBody @Valid GoalTransfer transfer
-    ) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+    ) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
         User user = authHelper.getCurrentUser(principal);
 
@@ -131,7 +131,7 @@ public class GoalController {
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal,
             @RequestBody @Valid GoalTransfer transfer
-    ) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+    ) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
         User user = authHelper.getCurrentUser(principal);
 

@@ -1,16 +1,5 @@
 package com.gustavosdaniel.myfinance_api.exception;
 
-import com.gustavosdaniel.myfinance_api.accounts.AccountNameDuplicate;
-import com.gustavosdaniel.myfinance_api.accounts.AccountNotFoundException;
-import com.gustavosdaniel.myfinance_api.categories.CategoryNameDuplicateException;
-import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
-import com.gustavosdaniel.myfinance_api.goals.GoalNameDuplicateException;
-import com.gustavosdaniel.myfinance_api.goals.GoalNotFoundException;
-import com.gustavosdaniel.myfinance_api.transactions.BusinessRuleException;
-import com.gustavosdaniel.myfinance_api.transactions.IdempotencyKeyException;
-import com.gustavosdaniel.myfinance_api.transactions.TransactionEqualsAccountException;
-import com.gustavosdaniel.myfinance_api.transactions.TransactionNotFoundException;
-import com.gustavosdaniel.myfinance_api.user.UserNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -84,8 +73,8 @@ public class GlobalExceptionHandle {
 
     // ACCOUNT
 
-    @ExceptionHandler(AccountNameDuplicate.class)
-    public ResponseEntity<ErrorResponse> handleAccountNameDuplicate(AccountNameDuplicate ex){
+    @ExceptionHandler(AccountNameDuplicateException.class)
+    public ResponseEntity<ErrorResponse> handleAccountNameDuplicate(AccountNameDuplicateException ex){
 
         log.warn("Conta com esse nome já existe {}", ex.getMessage());
 
@@ -112,6 +101,36 @@ public class GlobalExceptionHandle {
         );
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
+    }
+
+    @ExceptionHandler(AccountAlreadyActiveException.class)
+    ResponseEntity<ErrorResponse> handleAccountAlreadyActiveException(AccountAlreadyActiveException ex){
+
+        log.warn("A conta já se encontra ativada {}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Aconta já ativa",
+                "A conta já se encontra ativada",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
+    }
+
+    @ExceptionHandler(AccountAlreadyDeactivateException.class)
+    ResponseEntity<ErrorResponse> AccountAlreadyDeactivateException(AccountAlreadyDeactivateException ex){
+
+        log.warn("A conta já se encontra desativada {}", ex.getMessage());
+
+        ErrorResponse erro = new ErrorResponse(
+                "Aconta já desativada",
+                "A conta já se encontra desativada",
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
     }
 
     // CATEGORY

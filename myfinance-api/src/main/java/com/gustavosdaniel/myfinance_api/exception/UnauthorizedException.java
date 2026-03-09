@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.exception;
 
-public class UnauthorizedException extends BaseExceptionRunTime{
+public class UnauthorizedException extends RuntimeException {
 
     public UnauthorizedException() {
     }

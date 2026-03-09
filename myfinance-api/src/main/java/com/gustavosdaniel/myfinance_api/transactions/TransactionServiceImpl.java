@@ -1,12 +1,13 @@
 package com.gustavosdaniel.myfinance_api.transactions;
 
-import com.gustavosdaniel.myfinance_api.accounts.*;
 import com.gustavosdaniel.myfinance_api.categories.Category;
-import com.gustavosdaniel.myfinance_api.categories.CategoryNotFoundException;
-import com.gustavosdaniel.myfinance_api.categories.CategoryRepository;
+import com.gustavosdaniel.myfinance_api.domain.po.Account;
+import com.gustavosdaniel.myfinance_api.exception.*;
+import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
+import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
+import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.user.UserRepository;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheConfig;

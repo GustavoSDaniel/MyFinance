@@ -1,8 +1,6 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
-import com.gustavosdaniel.myfinance_api.exception.BusinesException;
-
-public class InvalidAmountException extends BusinesException {
+public class InvalidAmountException extends RuntimeException {
     public InvalidAmountException() {
     }
 

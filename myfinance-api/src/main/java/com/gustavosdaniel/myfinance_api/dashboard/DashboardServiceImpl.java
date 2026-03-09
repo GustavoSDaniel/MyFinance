@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.dashboard;
 
-import com.gustavosdaniel.myfinance_api.transactions.TransactionRepository;
+import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

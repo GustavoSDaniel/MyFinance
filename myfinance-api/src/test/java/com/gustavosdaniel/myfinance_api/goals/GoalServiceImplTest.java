@@ -1,17 +1,18 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
-import com.gustavosdaniel.myfinance_api.accounts.Account;
-import com.gustavosdaniel.myfinance_api.accounts.AccountRepository;
-import com.gustavosdaniel.myfinance_api.accounts.AccountType;
+import com.gustavosdaniel.myfinance_api.domain.po.Account;
+import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
+import com.gustavosdaniel.myfinance_api.domain.enuns.AccountType;
 import com.gustavosdaniel.myfinance_api.categories.Category;
-import com.gustavosdaniel.myfinance_api.categories.CategoryRepository;
+import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
 import com.gustavosdaniel.myfinance_api.categories.CategoryType;
+import com.gustavosdaniel.myfinance_api.repository.GoalRepository;
 import com.gustavosdaniel.myfinance_api.transactions.Transaction;
-import com.gustavosdaniel.myfinance_api.transactions.TransactionRepository;
+import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -471,7 +472,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should deposit Goal with sucesso")
-        void shouldDepositGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException {
+        void shouldDepositGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException {
 
             UUID userId = UUID.randomUUID();
             UUID goalId = UUID.randomUUID();
@@ -567,7 +568,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should draw from Goal with sucesso")
-        void shouldDrawGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException {
+        void shouldDrawGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException {
 
             UUID userId = UUID.randomUUID();
             UUID goalId = UUID.randomUUID();

@@ -1,5 +1,8 @@
 package com.gustavosdaniel.myfinance_api.categories;
 
+import com.gustavosdaniel.myfinance_api.exception.CategoryNameDuplicateException;
+import com.gustavosdaniel.myfinance_api.exception.CategoryNotFoundException;
+import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
 import com.gustavosdaniel.myfinance_api.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,20 +1,32 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
-import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
+import com.gustavosdaniel.myfinance_api.domain.dto.AccountUpdateRequest;
+import com.gustavosdaniel.myfinance_api.domain.enuns.AccountType;
+import com.gustavosdaniel.myfinance_api.domain.mapping.AccountMapper;
+import com.gustavosdaniel.myfinance_api.domain.po.Account;
+import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicateException;
+import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
+import com.gustavosdaniel.myfinance_api.service.AccountService;
 import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.user.UserRepository;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
-import org.hibernate.mapping.Any;
+import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -30,20 +42,26 @@ class AccountServiceImplTest {
     private AccountRepository accountRepository;
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
     private AccountMapper accountMapper;
 
+    @Mock
+    private AuthHelper authHelper;
+
+    @Mock
+    private OAuth2User principal;
+
     @InjectMocks
-    private AccountServiceImpl accountService;
+    private AccountService accountService;
 
     @Nested
     class createAccount{
 
         @Test
         @DisplayName("Should create account with sucesso")
-        void shouldCreateAccount() throws AccountNameDuplicate {
+        void shouldCreateAccount(){
+
+            MockHttpServletRequest httpRequest = new MockHttpServletRequest();
+            RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(httpRequest));
 
             UUID userId = UUID.randomUUID();
 
@@ -63,12 +81,13 @@ class AccountServiceImplTest {
                     "Contas do mes",
                     BigDecimal.ZERO);
 
-            when(accountRepository.existsByNameIgnoreCaseAndUserId(request.name(), userId)).thenReturn(false);
+            when(accountRepository.existsByNameIgnoreCaseAndUserId(request.name().trim(), userId)).thenReturn(false);
             when(accountMapper.toAccount(user, request)).thenReturn(newAccount);
             when(accountRepository.save(any(Account.class))).thenReturn(newAccount);
             when(accountMapper.toAccountResponse(newAccount)).thenReturn(response);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            AccountResponse output = accountService.createAccount(request, user);
+            ResponseEntity<AccountResponse> output = accountService.createAccount(request, principal);
 
             assertNotNull(output);
 
@@ -119,14 +138,15 @@ class AccountServiceImplTest {
                     new BigDecimal("869.69"));
 
             when(accountRepository.findByUserId(userId)).thenReturn(accounts);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
             when(accountMapper.toAccountResponseInfo(account1)).thenReturn(response1);
             when(accountMapper.toAccountResponseInfo(account2)).thenReturn(response2);
             when(accountMapper.toAccountResponseInfo(account3)).thenReturn(response3);
 
-            List<AccountResponseInfo> output = accountService.getAllAccounts(userId, "status");
+            ResponseEntity<List<AccountResponseInfo>> output = accountService.getAllAccounts(principal, "status");
 
             assertNotNull(output);
-            assertEquals(3, output.size());
+            assertEquals(3, output.getBody().size());
 
             verify(accountMapper, times(3)).toAccountResponseInfo(any(Account.class));
         }
@@ -158,11 +178,13 @@ class AccountServiceImplTest {
 
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
             when(accountMapper.toAccountResponseInfo(account)).thenReturn(response);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            AccountResponseInfo output = accountService.getById(accountId, userId);
+            ResponseEntity<AccountResponseInfo> output = accountService.getById(accountId, principal);
 
             assertNotNull(output);
-            assertEquals(output, response);
+            assertEquals(HttpStatus.OK, output.getStatusCode());
+            assertEquals(response, output.getBody());
 
             verify(accountRepository).findByIdAndUserId(accountId, userId);
             verify(accountMapper).toAccountResponseInfo(account);
@@ -212,11 +234,12 @@ class AccountServiceImplTest {
             when(accountMapper.toAccountResponseInfo(account)).thenReturn(response);
             when(accountMapper.toAccountResponseInfo(account2)).thenReturn(response2);
             when(accountMapper.toAccountResponseInfo(account3)).thenReturn(response3);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            List<AccountResponseInfo> output = accountService.searchAccount("car", userId);
+            ResponseEntity<List<AccountResponseInfo>> output = accountService.searchAccount("car", principal);
 
             assertNotNull(output);
-            assertEquals(3, output.size());
+            assertEquals(3, output.getBody().size());
 
             verify(accountRepository).searchByName("car", userId);
             verify(accountMapper).toAccountResponseInfo(account3);
@@ -229,7 +252,7 @@ class AccountServiceImplTest {
 
         @Test
         @DisplayName("Should updated a information account with sucesso")
-        void updateAccount() throws AccountNameDuplicate {
+        void updateAccount() throws AccountNameDuplicateException {
 
             UUID userId = UUID.randomUUID();
             UUID accountId = UUID.randomUUID();
@@ -246,11 +269,14 @@ class AccountServiceImplTest {
             accountMapper.updateAccountFromRequest(request, account);
             when(accountRepository.save(any(Account.class))).thenReturn(account);
             when(accountMapper.toAccountResponseInfo(account)).thenReturn(response);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            AccountResponseInfo output = accountService.updateAccount(accountId, userId, request);
+
+            ResponseEntity<AccountResponseInfo> output = accountService.updateAccount(accountId, principal, request);
 
             assertNotNull(output);
-            assertEquals(output, response);
+            assertEquals(HttpStatus.OK, output.getStatusCode());
+            assertEquals(output.getBody(), response);
 
             verify(accountRepository).findByIdAndUserId(accountId, userId);
             verify(accountRepository).save(any(Account.class));
@@ -275,9 +301,11 @@ class AccountServiceImplTest {
             ReflectionTestUtils.setField(account, "id", accountId);
 
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
+
             account.setActive(false);
 
-            accountService.activateAccount(accountId, userId);
+            accountService.activateAccount(accountId, principal);
 
             verify(accountRepository).findByIdAndUserId(accountId, userId);
 
@@ -300,9 +328,11 @@ class AccountServiceImplTest {
             ReflectionTestUtils.setField(account, "id", accountId);
 
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
+
             account.setActive(true);
 
-            accountService.deactivateAccount(accountId, userId);
+            accountService.deactivateAccount(accountId, principal);
 
             verify(accountRepository).findByIdAndUserId(accountId, userId);
 
@@ -325,8 +355,9 @@ class AccountServiceImplTest {
             ReflectionTestUtils.setField(account, "id", accountId);
 
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            accountService.deleteAccount(accountId, user);
+            accountService.deleteAccount(accountId, principal);
 
             verify(accountRepository).findByIdAndUserId(accountId, userId);
         }

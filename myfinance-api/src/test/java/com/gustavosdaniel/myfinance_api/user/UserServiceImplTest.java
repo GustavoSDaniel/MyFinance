@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.user;
 
+import com.gustavosdaniel.myfinance_api.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

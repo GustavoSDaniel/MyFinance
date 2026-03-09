@@ -1,5 +1,7 @@
 package com.gustavosdaniel.myfinance_api.user;
 
+import com.gustavosdaniel.myfinance_api.exception.UserNotFoundException;
+import com.gustavosdaniel.myfinance_api.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

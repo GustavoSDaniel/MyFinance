@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.categories;
 
+import com.gustavosdaniel.myfinance_api.exception.CategoryNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.user.User;
 
 import java.util.List;

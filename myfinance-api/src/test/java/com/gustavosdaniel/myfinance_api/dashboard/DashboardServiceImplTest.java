@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.dashboard;
 
-import com.gustavosdaniel.myfinance_api.transactions.TransactionRepository;
+import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
 import org.junit.jupiter.api.DisplayName;
