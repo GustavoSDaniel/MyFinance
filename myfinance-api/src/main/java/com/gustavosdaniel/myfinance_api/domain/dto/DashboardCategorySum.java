@@ -1,10 +1,10 @@
-package com.gustavosdaniel.myfinance_api.dashboard;
+package com.gustavosdaniel.myfinance_api.domain.dto;
 
 import jakarta.validation.constraints.Pattern;
 
 import java.math.BigDecimal;
 
-public record CategorySum(
+public record DashboardCategorySum(
 
         String name,
         @Pattern(regexp = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -13,7 +13,7 @@ public record CategorySum(
         BigDecimal totalAmount
 ) {
 
-    public CategorySum{
+    public DashboardCategorySum {
         if (totalAmount == null){
             totalAmount = BigDecimal.ZERO;
         }

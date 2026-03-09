@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.repository;
 
-import com.gustavosdaniel.myfinance_api.dashboard.CategorySum;
+import com.gustavosdaniel.myfinance_api.domain.dto.DashboardCategorySum;
 import com.gustavosdaniel.myfinance_api.transactions.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -56,7 +56,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
            AND t.createdAt BETWEEN :startDate AND :endDate
            GROUP BY c.name, c.color
            """)
-    List<CategorySum> sumExpensesByCategoryAndPeriod(
+    List<DashboardCategorySum> sumExpensesByCategoryAndPeriod(
             @Param("userId") UUID userId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate

@@ -1,9 +1,15 @@
-package com.gustavosdaniel.myfinance_api.dashboard;
+package com.gustavosdaniel.myfinance_api.service;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.BetweenDateDashboard;
+import com.gustavosdaniel.myfinance_api.domain.dto.DashboardCategorySum;
+import com.gustavosdaniel.myfinance_api.domain.dto.DashboardResponse;
 import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.user.User;
+import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,18 +19,22 @@ import java.util.List;
 
 
 @Service
-public class DashboardServiceImpl implements DashboardService{
+public class DashboardService {
 
     private final TransactionRepository transactionRepository;
-    private final Logger log = LoggerFactory.getLogger(DashboardServiceImpl.class);
+    private final AuthHelper authHelper;
+    private final Logger log = LoggerFactory.getLogger(DashboardService.class);
 
-    public DashboardServiceImpl(TransactionRepository transactionRepository) {
+    public DashboardService(TransactionRepository transactionRepository, AuthHelper authHelper) {
         this.transactionRepository = transactionRepository;
+        this.authHelper = authHelper;
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public DashboardResponse getDashboard(User user, BetweenDate betweenDate) {
+    public ResponseEntity<DashboardResponse> getDashboard(OAuth2User principal,
+                                                          BetweenDateDashboard betweenDate) {
+
+        User user = authHelper.getCurrentUser(principal);
 
         log.info("Gerando Dashboard para usuário {} entre {} á {}",
                 user.getName(), betweenDate.startDate(), betweenDate.endDate());
@@ -46,18 +56,18 @@ public class DashboardServiceImpl implements DashboardService{
 
         BigDecimal balance = incomes.subtract(expenses);
 
-        List<CategorySum> expensesByCategory = transactionRepository
+        List<DashboardCategorySum> expensesByCategory = transactionRepository
                 .sumExpensesByCategoryAndPeriod(user.getId(),
                         betweenDate.startDate().atStartOfDay(),
                         betweenDate.endDate().atTime(LocalTime.MAX));
 
 
-        return new DashboardResponse(
+        return ResponseEntity.ok( new DashboardResponse(
                 incomes,
                 expenses,
                 balance,
                 expensesByCategory
-        );
+        ));
 
     }
 }
