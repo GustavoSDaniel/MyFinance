@@ -2,7 +2,7 @@ package com.gustavosdaniel.myfinance_api.transactions;
 
 
 
-import com.gustavosdaniel.myfinance_api.categories.CategoryResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

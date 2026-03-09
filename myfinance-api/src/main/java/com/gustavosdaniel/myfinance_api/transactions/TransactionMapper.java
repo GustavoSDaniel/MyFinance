@@ -2,8 +2,8 @@ package com.gustavosdaniel.myfinance_api.transactions;
 
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
-import com.gustavosdaniel.myfinance_api.categories.Category;
-import com.gustavosdaniel.myfinance_api.categories.CategoryMapper;
+import com.gustavosdaniel.myfinance_api.domain.po.Category;
+import com.gustavosdaniel.myfinance_api.domain.mapping.CategoryMapper;
 import com.gustavosdaniel.myfinance_api.user.User;
 import org.springframework.stereotype.Component;
 

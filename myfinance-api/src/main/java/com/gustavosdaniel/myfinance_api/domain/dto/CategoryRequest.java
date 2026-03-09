@@ -1,5 +1,6 @@
-package com.gustavosdaniel.myfinance_api.categories;
+package com.gustavosdaniel.myfinance_api.domain.dto;
 
+import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;

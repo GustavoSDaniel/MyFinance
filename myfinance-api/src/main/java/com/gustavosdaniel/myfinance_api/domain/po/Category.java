@@ -1,5 +1,6 @@
-package com.gustavosdaniel.myfinance_api.categories;
+package com.gustavosdaniel.myfinance_api.domain.po;
 
+import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 import com.gustavosdaniel.myfinance_api.exception.CategoryNotParentException;
 import com.gustavosdaniel.myfinance_api.goals.Goal;
 import com.gustavosdaniel.myfinance_api.transactions.Transaction;

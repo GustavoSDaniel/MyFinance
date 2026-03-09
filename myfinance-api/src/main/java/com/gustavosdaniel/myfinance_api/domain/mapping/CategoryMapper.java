@@ -1,5 +1,10 @@
-package com.gustavosdaniel.myfinance_api.categories;
+package com.gustavosdaniel.myfinance_api.domain.mapping;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponseUpdate;
+import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.user.User;
 import org.springframework.stereotype.Component;
 

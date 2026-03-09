@@ -3,7 +3,7 @@ package com.gustavosdaniel.myfinance_api.goals;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.exception.AccountNotFoundException;
 import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
-import com.gustavosdaniel.myfinance_api.categories.Category;
+import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.exception.CategoryNotFoundException;
 import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
 import com.gustavosdaniel.myfinance_api.exception.GoalNameDuplicateException;

@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
-import com.gustavosdaniel.myfinance_api.categories.Category;
+import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.user.User;
 import org.springframework.stereotype.Component;
 

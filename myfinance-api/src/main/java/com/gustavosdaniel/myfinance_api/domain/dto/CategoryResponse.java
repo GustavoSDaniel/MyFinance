@@ -1,4 +1,6 @@
-package com.gustavosdaniel.myfinance_api.categories;
+package com.gustavosdaniel.myfinance_api.domain.dto;
+
+import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 
 import java.util.UUID;
 

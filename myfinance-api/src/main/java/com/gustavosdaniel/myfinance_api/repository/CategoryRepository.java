@@ -1,7 +1,7 @@
 package com.gustavosdaniel.myfinance_api.repository;
 
-import com.gustavosdaniel.myfinance_api.categories.Category;
-import com.gustavosdaniel.myfinance_api.categories.CategoryType;
+import com.gustavosdaniel.myfinance_api.domain.po.Category;
+import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -1,4 +1,4 @@
-package com.gustavosdaniel.myfinance_api.categories;
+package com.gustavosdaniel.myfinance_api.domain.enuns;
 
 public enum CategoryType {
 

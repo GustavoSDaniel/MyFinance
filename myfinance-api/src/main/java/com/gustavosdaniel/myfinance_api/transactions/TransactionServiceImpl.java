@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.transactions;
 
-import com.gustavosdaniel.myfinance_api.categories.Category;
+import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.exception.*;
 import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
