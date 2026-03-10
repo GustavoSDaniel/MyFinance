@@ -1,13 +1,11 @@
 package com.gustavosdaniel.myfinance_api.util;
 
-import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.user.UserMapper;
-import com.gustavosdaniel.myfinance_api.user.UserRequest;
-import com.gustavosdaniel.myfinance_api.user.UserService;
+import com.gustavosdaniel.myfinance_api.domain.mapping.UserMapper;
+import com.gustavosdaniel.myfinance_api.domain.dto.UserRequest;
+import com.gustavosdaniel.myfinance_api.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -18,13 +16,12 @@ import java.io.IOException;
 @Component
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final UserService userService;
     private final UserMapper userMapper;
+    private final UserService userService;
 
-
-    public OAuth2LoginSuccessHandler(UserService userService, UserMapper userMapper) {
-        this.userService = userService;
+    public OAuth2LoginSuccessHandler(UserMapper userMapper, UserService userService) {
         this.userMapper = userMapper;
+        this.userService = userService;
         this.setDefaultTargetUrl("/api/v1/auth/user");
     }
 

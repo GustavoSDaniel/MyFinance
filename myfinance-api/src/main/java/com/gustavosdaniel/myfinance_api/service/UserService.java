@@ -1,5 +1,11 @@
-package com.gustavosdaniel.myfinance_api.user;
+package com.gustavosdaniel.myfinance_api.service;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.UserRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
+import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
+import com.gustavosdaniel.myfinance_api.domain.mapping.UserMapper;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.exception.UserNotFoundException;
 import com.gustavosdaniel.myfinance_api.repository.UserRepository;
 import org.slf4j.Logger;
@@ -10,6 +16,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,21 +29,20 @@ import java.util.UUID;
 
 @Service
 @CacheConfig(cacheNames = "users")
-public class UserServiceImpl implements UserService{
+public class UserService {
 
-    private final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+    private final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
     @Value("${app.security.admin-emails}")
     private  List<String> adminEmails;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
     }
 
-    @Override
     @Transactional
     @CacheEvict(allEntries = true)
     public UserInfoResponse createOrUpdateUserFromOAuth(UserRequest request) {
@@ -68,9 +77,8 @@ public class UserServiceImpl implements UserService{
         return userMapper.toUserInfoResponse(savedUser);
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public Page<UserResponse> getAllUsers(Pageable pageable) {
+    public ResponseEntity<Page<UserResponse>> getAllUsers(Pageable pageable) {
 
         Page<User> users = userRepository.findAll(pageable);
 
@@ -78,20 +86,19 @@ public class UserServiceImpl implements UserService{
 
             log.info("Nenhum usuário encontrado na busca");
 
-            return Page.empty();
+            return ResponseEntity.noContent().build();
         }
 
         log.info("Todos os usuário encontrados {}", users.getNumberOfElements());
 
-        return users.map(userMapper::toUserResponse);
+        return ResponseEntity.ok(users.map(userMapper::toUserResponse));
 
     }
 
 
-    @Override
     @Transactional(readOnly = true)
     @Cacheable(key = "#email", unless = "#result == null")
-    public Optional<UserResponse> getUserByEmail(String email) {
+    public ResponseEntity<UserResponse> getUserByEmail(String email) {
 
         Optional<User> user = userRepository.findByEmail(email);
 
@@ -101,44 +108,64 @@ public class UserServiceImpl implements UserService{
 
             log.warn("Nenhum usuário foi encontrado com esse mail {}", email);
 
-            return Optional.empty();
+            return ResponseEntity.noContent().build();
         }
 
         log.info("Usuário com o email {}, encontrado com sucesso", user.get().getEmail());
 
-        return user.map(userMapper::toUserResponse);
+        UserResponse response = userMapper.toUserResponse(user.get());
+
+        return ResponseEntity.ok(response);
 
     }
 
-    @Override
     @Transactional(readOnly = true)
     public User findByEmail(String email) {
 
         return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
     }
 
-    @Override
     @Transactional(readOnly = true)
     @Cacheable(key = "#id")
-    public UserResponse getUserById(UUID id) {
+    public ResponseEntity<UserResponse> getUserById(UUID id) {
 
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
 
         log.info("Usuário com o id: {} encontrado com sucesso", id);
 
-        return userMapper.toUserResponse(user);
+        return ResponseEntity.ok(userMapper.toUserResponse(user));
     }
 
-    @Override
     @Transactional
     @CacheEvict(allEntries = true)
-    public void deleteUser(UUID id) {
+    public ResponseEntity<Void> deleteUser(UUID id, Authentication authentication) {
 
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+
+        boolean isAdmin = authentication.getAuthorities()
+                .contains(new SimpleGrantedAuthority("ADMIN"));
+
+        if (isAdmin){
+
+            userRepository.deleteById(id);
+
+            return ResponseEntity.noContent().build();
+        }
+
+        String emailLogado = authentication.getName();
+
+        if (!isAdmin && !user.getEmail().equals(emailLogado)) {
+
+            log.warn("Usuário {} tentou deletar a conta de {}", emailLogado, user.getEmail());
+
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         userRepository.delete(user);
 
         log.info("Usuário {} deletado com sucesso", user.getName());
+
+        return ResponseEntity.noContent().build();
     }
 
 }

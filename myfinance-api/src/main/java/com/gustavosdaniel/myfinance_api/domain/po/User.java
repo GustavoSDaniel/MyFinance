@@ -1,9 +1,6 @@
-package com.gustavosdaniel.myfinance_api.user;
+package com.gustavosdaniel.myfinance_api.domain.po;
 
-import com.gustavosdaniel.myfinance_api.domain.po.Account;
-import com.gustavosdaniel.myfinance_api.domain.po.Category;
-import com.gustavosdaniel.myfinance_api.domain.po.Goal;
-import com.gustavosdaniel.myfinance_api.domain.po.Transaction;
+import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import org.springframework.data.annotation.CreatedDate;

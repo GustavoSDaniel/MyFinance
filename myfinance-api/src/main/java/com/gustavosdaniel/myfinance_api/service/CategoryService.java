@@ -10,7 +10,7 @@ import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.exception.CategoryNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.exception.CategoryNotFoundException;
 import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
-import com.gustavosdaniel.myfinance_api.user.User;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

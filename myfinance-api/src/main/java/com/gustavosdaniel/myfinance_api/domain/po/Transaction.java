@@ -7,7 +7,6 @@ import com.gustavosdaniel.myfinance_api.exception.TransactionCanceledException;
 import com.gustavosdaniel.myfinance_api.exception.TransactionStateViolationException;
 import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionStatus;
 import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
-import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;

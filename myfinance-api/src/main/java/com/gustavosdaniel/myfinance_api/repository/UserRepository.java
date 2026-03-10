@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.repository;
 
-import com.gustavosdaniel.myfinance_api.user.User;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

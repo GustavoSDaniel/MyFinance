@@ -1,5 +1,10 @@
-package com.gustavosdaniel.myfinance_api.user;
+package com.gustavosdaniel.myfinance_api.domain.mapping;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.UserRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
+import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 

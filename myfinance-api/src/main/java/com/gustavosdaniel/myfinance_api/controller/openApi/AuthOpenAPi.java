@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.controller.openApi;
 
-import com.gustavosdaniel.myfinance_api.user.UserInfoResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

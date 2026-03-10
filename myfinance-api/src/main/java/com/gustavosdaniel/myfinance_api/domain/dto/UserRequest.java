@@ -1,4 +1,4 @@
-package com.gustavosdaniel.myfinance_api.user;
+package com.gustavosdaniel.myfinance_api.domain.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

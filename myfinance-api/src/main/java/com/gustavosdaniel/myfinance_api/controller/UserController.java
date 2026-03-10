@@ -1,0 +1,53 @@
+package com.gustavosdaniel.myfinance_api.controller;
+
+import com.gustavosdaniel.myfinance_api.controller.openApi.UserOpenApi;
+import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
+import com.gustavosdaniel.myfinance_api.service.UserService;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/users")
+public class UserController implements UserOpenApi {
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/allUsers")
+    public ResponseEntity<Page<UserResponse>> getAllUsers(
+            @ParameterObject
+            @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC)
+            Pageable pageable){
+
+        return userService.getAllUsers(pageable);
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<UserResponse> getEmailByUser(@RequestParam String email){
+
+        return userService.getUserByEmail(email);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id){
+
+        return userService.getUserById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id, Authentication authentication){
+
+        return userService.deleteUser(id, authentication);
+    }
+}

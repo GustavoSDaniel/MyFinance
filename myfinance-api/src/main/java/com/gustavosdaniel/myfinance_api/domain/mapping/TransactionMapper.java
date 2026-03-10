@@ -6,7 +6,7 @@ import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.domain.dto.TransactionRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.TransactionResponse;
-import com.gustavosdaniel.myfinance_api.user.User;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
 import org.springframework.stereotype.Component;
 
 

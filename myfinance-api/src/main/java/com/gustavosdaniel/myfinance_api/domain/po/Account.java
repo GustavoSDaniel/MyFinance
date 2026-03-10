@@ -2,7 +2,6 @@ package com.gustavosdaniel.myfinance_api.domain.po;
 
 import com.gustavosdaniel.myfinance_api.domain.enuns.AccountType;
 import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
-import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;

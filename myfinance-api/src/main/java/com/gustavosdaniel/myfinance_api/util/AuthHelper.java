@@ -1,8 +1,8 @@
 package com.gustavosdaniel.myfinance_api.util;
 
 import com.gustavosdaniel.myfinance_api.exception.UnauthorizedException;
-import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.user.UserService;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
+import com.gustavosdaniel.myfinance_api.service.UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 

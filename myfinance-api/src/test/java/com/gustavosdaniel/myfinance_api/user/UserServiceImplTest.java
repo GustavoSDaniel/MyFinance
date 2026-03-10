@@ -1,22 +1,36 @@
 package com.gustavosdaniel.myfinance_api.user;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.UserRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
+import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
+import com.gustavosdaniel.myfinance_api.domain.mapping.UserMapper;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.repository.UserRepository;
+
+import com.gustavosdaniel.myfinance_api.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -33,7 +47,7 @@ class UserServiceImplTest {
     private UserMapper userMapper;
 
     @InjectMocks
-    UserServiceImpl userService;
+    UserService userService;
 
 
     @Nested
@@ -132,7 +146,7 @@ class UserServiceImplTest {
             when(userMapper.toUserResponse(user2)).thenReturn(userResponse2);
             when(userMapper.toUserResponse(user3)).thenReturn(userResponse3);
 
-            Page<UserResponse> output = userService.getAllUsers(pageable);
+            ResponseEntity<Page<UserResponse>> output = userService.getAllUsers(pageable);
 
             assertNotNull(output);
 
@@ -159,7 +173,7 @@ class UserServiceImplTest {
             when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
             when(userMapper.toUserResponse(user)).thenReturn(userResponse);
 
-            Optional<UserResponse> output = userService.getUserByEmail(email);
+            ResponseEntity<UserResponse> output = userService.getUserByEmail(email);
 
             assertNotNull(output);
 
@@ -184,7 +198,7 @@ class UserServiceImplTest {
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(userMapper.toUserResponse(user)).thenReturn(userResponse);
 
-            UserResponse output = userService.getUserById(userId);
+            ResponseEntity<UserResponse> output = userService.getUserById(userId);
 
             assertNotNull(output);
 
@@ -195,23 +209,32 @@ class UserServiceImplTest {
     }
 
     @Nested
-    class deleteUser{
+    class DeleteUser {
 
         @Test
-        @DisplayName("Should delete user with sucesso")
-        void shouldDeleteUser(){
+        @DisplayName("Should delete user successfully when admin")
+        void shouldDeleteUserWhenAdmin() {
 
             UUID userId = UUID.randomUUID();
-            User user = new User("gustavosdaniel@gmail.com","Gustavo",UserRole.USER);
+
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
-            when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+            Authentication authentication = mock(Authentication.class);
 
-            userService.deleteUser(userId);
+            when(authentication.getAuthorities())
+                    .thenReturn((Collection) List.of(new SimpleGrantedAuthority("ADMIN")));
+
+
+            when(userRepository.findById(userId))
+                    .thenReturn(Optional.of(user));
+
+            ResponseEntity<Void> response = userService.deleteUser(userId, authentication);
 
             verify(userRepository).findById(userId);
-            verify(userRepository).delete(user);
+            verify(userRepository).deleteById(userId);
 
+            assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         }
     }
 

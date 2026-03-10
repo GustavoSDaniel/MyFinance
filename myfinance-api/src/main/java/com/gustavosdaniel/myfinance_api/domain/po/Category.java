@@ -2,7 +2,6 @@ package com.gustavosdaniel.myfinance_api.domain.po;
 
 import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 import com.gustavosdaniel.myfinance_api.exception.CategoryNotParentException;
-import com.gustavosdaniel.myfinance_api.user.User;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;

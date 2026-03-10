@@ -1,8 +1,7 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
 import com.gustavosdaniel.myfinance_api.controller.openApi.AuthOpenAPi;
-import com.gustavosdaniel.myfinance_api.user.UserInfoResponse;
-import io.swagger.v3.oas.annotations.Operation;
+import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;

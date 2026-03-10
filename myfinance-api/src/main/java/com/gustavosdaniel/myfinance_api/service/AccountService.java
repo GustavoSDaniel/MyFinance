@@ -11,7 +11,7 @@ import com.gustavosdaniel.myfinance_api.exception.AccountAlreadyDeactivateExcept
 import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.exception.AccountNotFoundException;
 import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
-import com.gustavosdaniel.myfinance_api.user.User;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
 
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.slf4j.Logger;

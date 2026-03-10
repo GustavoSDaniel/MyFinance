@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
+import com.gustavosdaniel.myfinance_api.controller.openApi.TransactionOpenApi;
 import com.gustavosdaniel.myfinance_api.domain.dto.TransactionRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.TransactionResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.TransactionSearchFilter;
@@ -21,14 +22,12 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/transactions")
-public class TransactionController {
+public class TransactionController implements TransactionOpenApi {
 
     private final TransactionService transactionService;
-    private final AuthHelper authHelper;
 
-    public TransactionController(TransactionService transactionService, AuthHelper authHelper) {
+    public TransactionController(TransactionService transactionService) {
         this.transactionService = transactionService;
-        this.authHelper = authHelper;
     }
 
 
