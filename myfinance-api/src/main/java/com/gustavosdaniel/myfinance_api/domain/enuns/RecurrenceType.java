@@ -1,4 +1,4 @@
-package com.gustavosdaniel.myfinance_api.transactions;
+package com.gustavosdaniel.myfinance_api.domain.enuns;
 
 public enum RecurrenceType {
 

@@ -1,11 +1,12 @@
-package com.gustavosdaniel.myfinance_api.transactions;
+package com.gustavosdaniel.myfinance_api.domain.po;
 
-import com.gustavosdaniel.myfinance_api.domain.po.Account;
+import com.gustavosdaniel.myfinance_api.domain.enuns.RecurrenceType;
 import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
-import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 import com.gustavosdaniel.myfinance_api.exception.TransactionCanceledException;
 import com.gustavosdaniel.myfinance_api.exception.TransactionStateViolationException;
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionStatus;
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
 import jakarta.persistence.*;
@@ -34,7 +35,7 @@ public class Transaction {
         this.isRecurring = false;
     }
 
-    public Transaction(UUID idempotencyKey, User user, Account account, Category category, String description, BigDecimal amount, TransactionType type,LocalDateTime time, Boolean isRecurring, RecurrenceType recurrenceType) throws InvalidAmountException {
+    public Transaction(UUID idempotencyKey, User user, Account account, Category category, String description, BigDecimal amount, TransactionType type, LocalDateTime time, Boolean isRecurring, RecurrenceType recurrenceType) throws InvalidAmountException {
 
         validateAmount(amount);
         validateCategoryType(category, type);

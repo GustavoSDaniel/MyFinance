@@ -1,7 +1,7 @@
 package com.gustavosdaniel.myfinance_api.repository;
 
 import com.gustavosdaniel.myfinance_api.domain.dto.DashboardCategorySum;
-import com.gustavosdaniel.myfinance_api.transactions.Transaction;
+import com.gustavosdaniel.myfinance_api.domain.po.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;

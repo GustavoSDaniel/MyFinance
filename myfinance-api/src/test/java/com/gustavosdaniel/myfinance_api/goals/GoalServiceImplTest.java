@@ -15,9 +15,9 @@ import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
 import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 import com.gustavosdaniel.myfinance_api.repository.GoalRepository;
 import com.gustavosdaniel.myfinance_api.service.GoalService;
-import com.gustavosdaniel.myfinance_api.transactions.Transaction;
+import com.gustavosdaniel.myfinance_api.domain.po.Transaction;
 import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
-import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
 import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
@@ -87,7 +87,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should create goal with sucesso")
-        void createGoalWithSucesso() throws InvalidAmountException {
+        void createGoalWithSucesso(){
 
             MockHttpServletRequest httpRequest = new MockHttpServletRequest();
             RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(httpRequest));

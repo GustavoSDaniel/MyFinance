@@ -1,5 +1,9 @@
-package com.gustavosdaniel.myfinance_api.transactions;
+package com.gustavosdaniel.myfinance_api.repository;
 
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionStatus;
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
+import com.gustavosdaniel.myfinance_api.domain.po.Transaction;
+import com.gustavosdaniel.myfinance_api.domain.dto.TransactionSearchFilter;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;

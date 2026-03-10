@@ -1,17 +1,23 @@
 package com.gustavosdaniel.myfinance_api.transactions;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.*;
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionStatus;
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
+import com.gustavosdaniel.myfinance_api.domain.mapping.TransactionMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
+import com.gustavosdaniel.myfinance_api.domain.po.Transaction;
 import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
 import com.gustavosdaniel.myfinance_api.domain.enuns.AccountType;
 import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponse;
 import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
+import com.gustavosdaniel.myfinance_api.service.TransactionService;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
 import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,7 +30,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -49,20 +60,29 @@ class TransactionServiceImplTest {
     private TransactionRepository transactionRepository;
 
     @Mock
-    private  TransactionMapper transactionMapper;
+    private TransactionMapper transactionMapper;
 
     @Mock
     private  AccountRepository accountRepository;
 
+    @Mock
+    private AuthHelper authHelper;
+
+    @Mock
+    private OAuth2User principal;
+
     @InjectMocks
-    private TransactionServiceImpl transactionService;
+    private TransactionService transactionService;
 
     @Nested
     class createTransaction{
 
         @Test
         @DisplayName("Should created with sucesso transaction")
-        void shouldCreateTransaction() throws InvalidAmountException, InsufficientBalanceException {
+        void shouldCreateTransaction() {
+
+            MockHttpServletRequest httpRequest = new MockHttpServletRequest();
+            RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(httpRequest));
 
             UUID transactionId = UUID.randomUUID();
             UUID accountId = UUID.randomUUID();
@@ -126,13 +146,14 @@ class TransactionServiceImplTest {
                     request, user, account, category)).thenReturn(transaction);
             when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
             when(transactionMapper.toTransactionResponse(transaction)).thenReturn(response);
-
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
             when(accountRepository.save(any(Account.class))).thenReturn(account);
 
-            TransactionResponse output = transactionService.createTransaction(user, request);
+            ResponseEntity<TransactionResponse> output = transactionService
+                    .createTransaction(principal, request);
 
             assertNotNull(output);
-            assertEquals(response, output);
+            assertEquals(response, output.getBody());
 
             verify(transactionMapper).toTransaction(request, user, account, category);
             verify(transactionRepository).save(transaction);
@@ -180,8 +201,9 @@ class TransactionServiceImplTest {
                     .findByIdAndUserId(transactionId, userId)).thenReturn(Optional.of(transaction));
             when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
             when(accountRepository.save(any(Account.class))).thenReturn(account);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            transactionService.transactionConfirmed(transactionId, userId);
+            transactionService.transactionConfirmed(transactionId, principal);
 
             verify(transactionRepository).findByIdAndUserId(transactionId, userId);
             verify(transactionRepository).save(transaction);
@@ -231,9 +253,10 @@ class TransactionServiceImplTest {
             when(transactionRepository.findByIdAndUserId(transactionId, userId)).thenReturn(Optional.of(transaction));
             when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
             when(accountRepository.save(any(Account.class))).thenReturn(account);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
 
-            transactionService.transactionCancel(transactionId, userId);
+            transactionService.transactionCancel(transactionId, principal);
 
             verify(transactionRepository).findByIdAndUserId(transactionId, userId);
             verify(transactionRepository).save(transaction);
@@ -309,11 +332,11 @@ class TransactionServiceImplTest {
             when(accountRepository.findByIdAndUserId(fromAccountId, userId)).thenReturn(Optional.of(fromAccount));
             when(accountRepository.findByIdAndUserId(toAccountId, userId)).thenReturn(Optional.of(toAccount));
             when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
-
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
             when(transactionRepository.saveAll(anyList())).thenReturn(transactions);
             when(accountRepository.saveAll(anyList())).thenReturn(accounts);
 
-            transactionService.transfer(user, request);
+            transactionService.transfer(principal, request);
 
             verify(transactionRepository).existsByIdempotencyKeyAndUserId(idempotencyKey, userId);
             verify(accountRepository).findByIdAndUserId(fromAccountId, userId);
@@ -377,11 +400,13 @@ class TransactionServiceImplTest {
 
             when(transactionRepository.findByIdAndUserId(transactionId, userId)).thenReturn(Optional.of(transaction));
             when(transactionMapper.toTransactionResponse(transaction)).thenReturn(response);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            TransactionResponse output = transactionService.getTransactionById(transactionId, userId);
+            ResponseEntity<TransactionResponse> output = transactionService
+                    .getTransactionById(transactionId, principal);
 
             assertNotNull(output);
-            assertEquals(response, output);
+            assertEquals(response, output.getBody());
 
             verify(transactionRepository).findByIdAndUserId(transactionId, userId);
             verify(transactionMapper).toTransactionResponse(transaction);
@@ -534,11 +559,13 @@ class TransactionServiceImplTest {
             when(transactionMapper.toTransactionResponse(transaction)).thenReturn(response);
             when(transactionMapper.toTransactionResponse(transaction2)).thenReturn(response2);
             when(transactionMapper.toTransactionResponse(transaction3)).thenReturn(response3);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            Page<TransactionResponse> output = transactionService.getAllWithFilter(user, filter, pageable);
+            ResponseEntity<Page<TransactionResponse>> output = transactionService
+                    .getAllWithFilter(principal, filter, pageable);
 
             assertNotNull(output);
-            assertEquals(3, output.getTotalElements());
+            assertEquals(3, output.getBody().getTotalElements());
 
 
             verify(transactionRepository, times(1)).findAll(any(Specification.class), eq(pageable));
@@ -580,9 +607,11 @@ class TransactionServiceImplTest {
                     null);
             ReflectionTestUtils.setField(transaction, "id", transactionId);
 
-            when(transactionRepository.findByIdAndUserId(transactionId, userId)).thenReturn(Optional.of(transaction));
+            when(transactionRepository.findByIdAndUserId(transactionId, userId))
+                    .thenReturn(Optional.of(transaction));
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            transactionService.deleteTransaction(transactionId, userId);
+            transactionService.deleteTransaction(transactionId, principal);
 
             verify(transactionRepository).findByIdAndUserId(transactionId, userId);
 

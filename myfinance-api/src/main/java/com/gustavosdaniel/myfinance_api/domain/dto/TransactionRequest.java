@@ -1,12 +1,12 @@
-package com.gustavosdaniel.myfinance_api.transactions;
+package com.gustavosdaniel.myfinance_api.domain.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.gustavosdaniel.myfinance_api.domain.enuns.RecurrenceType;
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record TransactionRequest(

@@ -1,8 +1,10 @@
-package com.gustavosdaniel.myfinance_api.transactions;
+package com.gustavosdaniel.myfinance_api.domain.dto;
 
 
 
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponse;
+import com.gustavosdaniel.myfinance_api.domain.enuns.RecurrenceType;
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionStatus;
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
