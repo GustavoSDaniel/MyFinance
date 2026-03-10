@@ -1,6 +1,7 @@
-package com.gustavosdaniel.myfinance_api.goals;
+package com.gustavosdaniel.myfinance_api.domain.po;
 
-import com.gustavosdaniel.myfinance_api.domain.po.Category;
+import com.gustavosdaniel.myfinance_api.domain.enuns.PriorityStatus;
+import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
 import com.gustavosdaniel.myfinance_api.user.User;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;

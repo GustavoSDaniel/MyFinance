@@ -1,4 +1,6 @@
-package com.gustavosdaniel.myfinance_api.goals;
+package com.gustavosdaniel.myfinance_api.domain.dto;
+
+import com.gustavosdaniel.myfinance_api.domain.enuns.PriorityStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

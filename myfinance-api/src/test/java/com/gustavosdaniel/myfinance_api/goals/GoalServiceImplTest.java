@@ -1,18 +1,28 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.GoalResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.GoalTransfer;
+import com.gustavosdaniel.myfinance_api.domain.enuns.PriorityStatus;
+import com.gustavosdaniel.myfinance_api.domain.mapping.GoalMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
+import com.gustavosdaniel.myfinance_api.domain.po.Goal;
 import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
 import com.gustavosdaniel.myfinance_api.domain.enuns.AccountType;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
 import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 import com.gustavosdaniel.myfinance_api.repository.GoalRepository;
+import com.gustavosdaniel.myfinance_api.service.GoalService;
 import com.gustavosdaniel.myfinance_api.transactions.Transaction;
 import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
 import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.util.AuthHelper;
+import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,7 +34,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -57,8 +72,14 @@ class GoalServiceImplTest {
     @Mock
     private TransactionRepository transactionRepository;
 
+    @Mock
+    private OAuth2User principal;
+
+    @Mock
+    private AuthHelper authHelper;
+
     @InjectMocks
-    private GoalServiceImpl goalService;
+    private GoalService goalService;
 
 
     @Nested
@@ -67,6 +88,9 @@ class GoalServiceImplTest {
         @Test
         @DisplayName("Should create goal with sucesso")
         void createGoalWithSucesso() throws InvalidAmountException {
+
+            MockHttpServletRequest httpRequest = new MockHttpServletRequest();
+            RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(httpRequest));
 
             UUID userId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
@@ -112,11 +136,12 @@ class GoalServiceImplTest {
             when(goalMapper.toGoal(request, user, category)).thenReturn(goal);
             when(goalRepository.save(any(Goal.class))).thenReturn(goal);
             when(goalMapper.toGoalResponse(goal)).thenReturn(response);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            GoalResponse output = goalService.createGoal(user, request);
+            ResponseEntity<GoalResponse> output = goalService.createGoal(principal, request);
 
             assertNotNull(output);
-            assertEquals(response, output);
+            assertEquals(response, output.getBody());
 
             verify(goalRepository).existsByNameIgnoreCaseAndUserId(request.name(), userId);
             verify(categoryRepository).findByIdAndUserId(categoryId, userId);
@@ -168,11 +193,12 @@ class GoalServiceImplTest {
 
             when(goalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(goal));
             when(goalMapper.toGoalResponse(goal)).thenReturn(response);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            GoalResponse output = goalService.getGoalById(goalId, user);
+            ResponseEntity<GoalResponse> output = goalService.getGoalById(goalId, principal);
 
             assertNotNull(output);
-            assertEquals(response, output);
+            assertEquals(response, output.getBody());
 
             verify(goalRepository).findByIdAndUserId(goalId, userId);
             verify(goalMapper).toGoalResponse(goal);
@@ -272,11 +298,12 @@ class GoalServiceImplTest {
             when(goalMapper.toGoalResponse(goal)).thenReturn(response);
             when(goalMapper.toGoalResponse(goal2)).thenReturn(response2);
             when(goalMapper.toGoalResponse(goal3)).thenReturn(response3);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            List<GoalResponse> output = goalService.searchGoal(user, goalName);
+            ResponseEntity<List<GoalResponse>> output = goalService.searchGoal(principal, goalName);
 
             assertNotNull(output);
-            assertEquals(3, output.size());
+            assertEquals(3, output.getBody().size());
 
             verify(goalRepository).searchName(goalName, userId);
             verify(goalMapper).toGoalResponse(goal);
@@ -385,8 +412,10 @@ class GoalServiceImplTest {
             when(goalMapper.toGoalResponse(goal)).thenReturn(response);
             when(goalMapper.toGoalResponse(goal2)).thenReturn(response2);
             when(goalMapper.toGoalResponse(goal3)).thenReturn(response3);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            Page<GoalResponse> output = goalService.getAllGoals(user, status, pageable);
+            ResponseEntity<Page<GoalResponse>> output = goalService
+                    .getAllGoals(principal, status, pageable);
 
             assertNotNull(output);
 
@@ -454,11 +483,13 @@ class GoalServiceImplTest {
                     goalNewName, userId, goalId)).thenReturn(false);
             when(goalRepository.save(any(Goal.class))).thenReturn(goal);
             when(goalMapper.toGoalResponse(goal)).thenReturn(response);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            GoalResponse output = goalService.updateGoal(goalId, requestUpdate, user);
+            ResponseEntity<GoalResponse> output = goalService
+                    .updateGoal(goalId, requestUpdate, principal);
 
             assertNotNull(output);
-            assertEquals(response, output);
+            assertEquals(response, output.getBody());
 
             verify(goalRepository).findByIdAndUserId(goalId, userId);
             verify(goalRepository).existsByNameIgnoreCaseAndUserIdAndIdNot(goalNewName, userId, goalId);
@@ -546,11 +577,13 @@ class GoalServiceImplTest {
             when(accountRepository.save(any(Account.class))).thenReturn(account);
             when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
             when(goalMapper.toGoalResponse(goal)).thenReturn(response);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            GoalResponse output = goalService.depositToGoal(goalId, transfer, user);
+            ResponseEntity<GoalResponse> output = goalService
+                    .depositToGoal(goalId, transfer, principal);
 
             assertNotNull(output);
-            assertEquals(response, output);
+            assertEquals(response, output.getBody());
 
             verify(transactionRepository).existsByIdempotencyKeyAndUserId(idempotencyKey, userId);
             verify(goalRepository).findByIdAndUserId(goalId, userId);
@@ -644,11 +677,13 @@ class GoalServiceImplTest {
             when(accountRepository.save(any(Account.class))).thenReturn(account);
             when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
             when(goalMapper.toGoalResponse(goal)).thenReturn(response);
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            GoalResponse output = goalService.withdrawFromGoal(goalId, transfer, user);
+            ResponseEntity<GoalResponse> output = goalService
+                    .withdrawFromGoal(goalId, transfer, principal);
 
             assertNotNull(output);
-            assertEquals(response, output);
+            assertEquals(response, output.getBody());
 
             verify(transactionRepository).existsByIdempotencyKeyAndUserId(idempotencyKey, userId);
             verify(goalRepository).findByIdAndUserId(goalId, userId);
@@ -693,8 +728,9 @@ class GoalServiceImplTest {
             ReflectionTestUtils.setField(goal, "id", goalId);
 
             when(goalRepository.findByIdAndUserId(goalId, userId)).thenReturn(Optional.of(goal));
+            when(authHelper.getCurrentUser(principal)).thenReturn(user);
 
-            goalService.deleteGoal(goalId, user);
+            goalService.deleteGoal(goalId, principal);
 
             verify(goalRepository).findByIdAndUserId(goalId, userId);
 

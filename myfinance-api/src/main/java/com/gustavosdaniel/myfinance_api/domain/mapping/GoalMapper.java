@@ -1,6 +1,11 @@
-package com.gustavosdaniel.myfinance_api.goals;
+package com.gustavosdaniel.myfinance_api.domain.mapping;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.GoalResponse;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
+import com.gustavosdaniel.myfinance_api.domain.po.Goal;
+import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequestUpdate;
+import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
 import com.gustavosdaniel.myfinance_api.user.User;
 import org.springframework.stereotype.Component;
 

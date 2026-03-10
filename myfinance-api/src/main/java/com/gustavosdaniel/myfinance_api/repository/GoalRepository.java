@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.repository;
 
-import com.gustavosdaniel.myfinance_api.goals.Goal;
+import com.gustavosdaniel.myfinance_api.domain.po.Goal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

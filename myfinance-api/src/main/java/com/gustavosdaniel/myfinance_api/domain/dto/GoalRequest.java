@@ -1,5 +1,6 @@
-package com.gustavosdaniel.myfinance_api.goals;
+package com.gustavosdaniel.myfinance_api.domain.dto;
 
+import com.gustavosdaniel.myfinance_api.domain.enuns.PriorityStatus;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

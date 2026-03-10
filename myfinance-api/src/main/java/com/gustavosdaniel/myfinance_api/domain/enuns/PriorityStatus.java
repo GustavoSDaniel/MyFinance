@@ -1,4 +1,4 @@
-package com.gustavosdaniel.myfinance_api.goals;
+package com.gustavosdaniel.myfinance_api.domain.enuns;
 
 public enum PriorityStatus {
 
