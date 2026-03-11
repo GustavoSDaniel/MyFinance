@@ -1,8 +1,6 @@
-package com.gustavosdaniel.myfinance_api.transactions;
+package com.gustavosdaniel.myfinance_api.exception;
 
-import com.gustavosdaniel.myfinance_api.exception.BaseExceptionRunTime;
-
-public class TransactionEqualsAccountException extends BaseExceptionRunTime {
+public class TransactionEqualsAccountException extends RuntimeException {
 
     public TransactionEqualsAccountException() {
     }

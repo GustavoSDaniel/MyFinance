@@ -2,6 +2,7 @@ package com.gustavosdaniel.myfinance_api.goals;
 
 import com.gustavosdaniel.myfinance_api.categories.Category;
 import com.gustavosdaniel.myfinance_api.user.User;
+import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;

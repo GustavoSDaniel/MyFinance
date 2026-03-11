@@ -3,14 +3,14 @@ package com.gustavosdaniel.myfinance_api.transactions;
 import com.gustavosdaniel.myfinance_api.accounts.Account;
 import com.gustavosdaniel.myfinance_api.accounts.AccountRepository;
 import com.gustavosdaniel.myfinance_api.accounts.AccountType;
-import com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException;
+import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
 import com.gustavosdaniel.myfinance_api.categories.Category;
 import com.gustavosdaniel.myfinance_api.categories.CategoryRepository;
 import com.gustavosdaniel.myfinance_api.categories.CategoryResponse;
 import com.gustavosdaniel.myfinance_api.categories.CategoryType;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ class TransactionServiceImplTest {
     private  AccountRepository accountRepository;
 
     @InjectMocks
-    private TransactionServiceImpl transactionService;
+    private TransactionService transactionService;
 
     @Nested
     class createTransaction{

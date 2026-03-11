@@ -1,8 +1,6 @@
-package com.gustavosdaniel.myfinance_api.accounts;
+package com.gustavosdaniel.myfinance_api.exception;
 
-import com.gustavosdaniel.myfinance_api.exception.BaseExceptionRunTime;
-
-public class AccountNotFoundException extends BaseExceptionRunTime {
+public class AccountNotFoundException extends RuntimeException {
 
     public AccountNotFoundException() {
     }

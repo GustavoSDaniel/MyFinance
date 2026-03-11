@@ -1,8 +1,6 @@
-package com.gustavosdaniel.myfinance_api.accounts;
+package com.gustavosdaniel.myfinance_api.exception;
 
-import com.gustavosdaniel.myfinance_api.exception.BusinesException;
-
-public class AccountNameDuplicate extends BusinesException {
+public class AccountNameDuplicate extends RuntimeException {
 
     public AccountNameDuplicate() {
     }

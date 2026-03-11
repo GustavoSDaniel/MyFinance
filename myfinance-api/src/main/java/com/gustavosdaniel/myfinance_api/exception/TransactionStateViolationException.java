@@ -1,8 +1,6 @@
-package com.gustavosdaniel.myfinance_api.transactions;
+package com.gustavosdaniel.myfinance_api.exception;
 
-import com.gustavosdaniel.myfinance_api.exception.BaseExceptionRunTime;
-
-public class TransactionStateViolationException extends BaseExceptionRunTime {
+public class TransactionStateViolationException extends RuntimeException {
 
     public TransactionStateViolationException() {
     }

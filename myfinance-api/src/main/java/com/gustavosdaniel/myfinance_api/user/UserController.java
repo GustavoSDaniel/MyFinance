@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.user;
 
-import io.swagger.v3.oas.annotations.Operation;
+import com.gustavosdaniel.myfinance_api.openApi.UserOpenApi;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
-public class UserController {
+public class UserController implements UserOpenApi {
 
     private final UserService userService;
 
@@ -26,7 +26,6 @@ public class UserController {
     }
 
     @GetMapping("/allUsers")
-    @Operation(summary = "Mostra todos os usuários")
     public ResponseEntity<Page<UserResponse>> getAllUsers(
             @ParameterObject
             @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC)
@@ -38,7 +37,6 @@ public class UserController {
     }
 
     @GetMapping("/email")
-    @Operation(summary = "Busca usuário pelo email")
     public ResponseEntity<UserResponse> getEmailByUser(@RequestParam String email){
 
         Optional<UserResponse> user = userService.getUserByEmail(email);
@@ -47,7 +45,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Busca o usuário pelo id")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id){
 
         UserResponse user = userService.getUserById(id);
@@ -55,8 +52,8 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+
     @DeleteMapping("/{id}")
-    @Operation(summary = "Deleta usuário pelo ID")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id, Authentication authentication){
 
         boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"));

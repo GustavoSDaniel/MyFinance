@@ -1,26 +1,208 @@
 package com.gustavosdaniel.myfinance_api.categories;
 
+import com.gustavosdaniel.myfinance_api.exception.CategoryNameDuplicateException;
+import com.gustavosdaniel.myfinance_api.exception.CategoryNotFoundException;
 import com.gustavosdaniel.myfinance_api.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
-public interface CategoryService {
+@Service
+@CacheConfig(cacheNames = "categories")
+public class CategoryService {
 
-    CategoryResponse createCategory(User user, CategoryRequest request) throws CategoryNameDuplicateException;
+    private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
+    private final Logger log = LoggerFactory.getLogger(CategoryService.class);
 
-    List<CategoryResponse> getAllCategories(UUID userId, String status);
+    public CategoryService(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
+        this.categoryRepository = categoryRepository;
+        this.categoryMapper = categoryMapper;
+    }
 
-    List<CategoryResponse> searchByName(UUID userId,String name);
+    @Transactional
+    @CacheEvict(allEntries = true)
+    public CategoryResponse createCategory(User user, CategoryRequest request) throws CategoryNameDuplicateException {
 
-   CategoryResponse getById(UUID id, UUID userId);
+        log.info("Criando categoria para usuário {}", user.getName());
 
-    CategoryResponseUpdate updateCategory(UUID id, UUID userId, CategoryRequestUpdate request) throws CategoryNameDuplicateException;
+        if (categoryRepository.existsByNameIgnoreCaseAndUserIdAndType(
+                request.name().trim(),
+                user.getId(),
+                request.type())
+        ){
 
-   void deactivateCategory(UUID id, UUID userId);
+            throw new CategoryNameDuplicateException();
+        }
 
-   void  activateCategory(UUID id, UUID userId);
+        Category newCategory = categoryMapper.toCategory(user, request);
+        user.addCategory(newCategory);
 
-   void deleteCategory(UUID id , User user);
+        Category saveCategory = categoryRepository.save(newCategory);
 
+        log.info("Categoria: {} criada com sucesso", saveCategory.getName());
+
+        return categoryMapper.toCategoryResponse(saveCategory);
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(key = "#userId + '_' + #status")
+    public List<CategoryResponse> getAllCategories(UUID userId, String status) {
+
+        List<Category> categories;
+
+        if ("active".equalsIgnoreCase(status)){
+
+            log.info("Buscando categorias ativas do usuário: {}", userId);
+
+            categories = categoryRepository.findByUserIdAndIsActiveTrue(userId);
+
+        } else if ("disabled".equalsIgnoreCase(status)) {
+
+            log.info("Buscando categorias desativadas do usuário: {}", userId);
+
+            categories = categoryRepository.findByUserIdAndIsActiveFalse(userId);
+
+        } else {
+
+            log.info("Buscando todas as categorias do usuário: {}", userId);
+
+            categories = categoryRepository.findByUserId(userId);
+        }
+
+        log.info("Total de categorias encontrados: {}", categories.size());
+
+        return categories.stream()
+                .map(categoryMapper::toCategoryResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> searchByName(UUID userId, String name) {
+
+        log.info("Buscando categoria pelo nome");
+
+        List<Category> categories = categoryRepository.searchByName(name, userId);
+
+        log.info("Categorias {} encontradas com sucesso", categories.size());
+
+        return categories.stream().map(categoryMapper::toCategoryResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(key = "{#id, #userId}")
+    public CategoryResponse getById(UUID id, UUID userId) {
+
+        log.info("Buscando categoria através do id: {}", id);
+
+        Category category = categoryRepository
+                .findByIdAndUserId(id, userId).orElseThrow(CategoryNotFoundException::new);
+
+        log.info("Categoria: {}, encontrado com sucesso", category.getName());
+
+        return categoryMapper.toCategoryResponse(category);
+    }
+
+    @Transactional
+    @CacheEvict(allEntries = true)
+    public CategoryResponseUpdate updateCategory(UUID id, UUID userId, CategoryRequestUpdate request)
+            throws CategoryNameDuplicateException {
+
+        log.info("Atualizando categoria {} ", id);
+
+        Category category = categoryRepository
+                .findByIdAndUserId(id, userId)
+                .orElseThrow(CategoryNotFoundException::new);
+
+        CategoryType typeToCheck = request.type() != null ? request.type() : category.getType();
+
+        if (request.name() != null && !request.name().equalsIgnoreCase(category.getName())){
+
+            if (categoryRepository
+                    .existsByNameIgnoreCaseAndUserIdAndType(request.name(), userId, typeToCheck)){
+
+                throw new CategoryNameDuplicateException();
+            }
+        }
+
+        categoryMapper.toCategoryUpdate(category, request);
+
+        Category savedCategory = categoryRepository.save(category);
+
+        log.info("Categoria {} atualizada com sucesso", savedCategory.getId());
+
+        return categoryMapper.toCategoryResponseUpdate(savedCategory);
+    }
+
+    @Transactional
+    @CacheEvict(allEntries = true)
+    public void deactivateCategory(UUID id, UUID userId) {
+
+        log.info("Desativando categoria {} do usuário: {}",id, userId);
+
+        Category category = categoryRepository
+                .findByIdAndUserId(id, userId)
+                .orElseThrow(CategoryNotFoundException::new);
+
+        if (Boolean.FALSE.equals(category.getIsActive())){
+
+            log.warn("Categoria {} já está desativada", category.getName());
+
+            return;
+        }
+
+        category.deactivate();
+
+        categoryRepository.save(category);
+
+        log.info("Categoria: {} desativada com sucesso", category.getName());
+    }
+
+    @Transactional
+    @CacheEvict(allEntries = true)
+    public void activateCategory(UUID id, UUID userId) {
+
+        log.info("Ativando categoria {} do usuário: {} ", id, userId);
+
+        Category category = categoryRepository
+                .findByIdAndUserId(id, userId)
+                .orElseThrow(CategoryNotFoundException::new);
+
+        if (Boolean.TRUE.equals(category.getIsActive())){
+
+            log.warn("Categoria {} já está ativada", category.getName());
+
+            return;
+        }
+
+        category.activate();
+
+        categoryRepository.save(category);
+
+        log.info("Categoria: {}, ativada com sucesso", category.getName());
+
+    }
+
+    @Transactional
+    @CacheEvict(allEntries = true)
+    public void deleteCategory(UUID id, User user) {
+
+        log.info("Solicitação para deletar categoria {}", id);
+
+        Category category = categoryRepository
+                .findByIdAndUserId(id, user.getId())
+                .orElseThrow(CategoryNotFoundException::new);
+
+        user.removeCategory(category);
+        categoryRepository.delete(category);
+
+        log.info("Categoria {} deletada com sucesso", category.getName());
+    }
 }

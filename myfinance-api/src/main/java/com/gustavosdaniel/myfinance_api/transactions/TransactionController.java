@@ -1,9 +1,10 @@
 package com.gustavosdaniel.myfinance_api.transactions;
 
-import com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException;
+import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
+import com.gustavosdaniel.myfinance_api.openApi.TransactionOpenApi;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
@@ -22,19 +23,18 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/transactions")
-public class TransactionController {
+public class TransactionController implements TransactionOpenApi {
 
-    private final TransactionServiceImpl transactionService;
+    private final TransactionService transactionService;
     private final AuthHelper authHelper;
 
-    public TransactionController(TransactionServiceImpl transactionService, AuthHelper authHelper) {
+    public TransactionController(TransactionService transactionService, AuthHelper authHelper) {
         this.transactionService = transactionService;
         this.authHelper = authHelper;
     }
 
 
     @PostMapping
-    @Operation(summary = "Cria uma transação")
     public ResponseEntity<TransactionResponse> createTransaction(
             @RequestBody @Valid TransactionRequest request,
             @AuthenticationPrincipal OAuth2User principal
@@ -53,7 +53,6 @@ public class TransactionController {
     }
 
     @PatchMapping("/{id}/confirm")
-    @Operation(summary = "Confirma uma transação pendente")
     public ResponseEntity<Void> confirmTransaction(
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal
@@ -67,7 +66,6 @@ public class TransactionController {
     }
 
     @PatchMapping("/{id}/cancel")
-    @Operation(summary = "Cancela uma transação confirmada")
     public ResponseEntity<Void> cancelTransaction(
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal
@@ -81,7 +79,6 @@ public class TransactionController {
     }
 
     @PostMapping("/transfer")
-    @Operation(summary = "Realiza transferência entre contas")
     public ResponseEntity<Void> transfer(
             @RequestBody @Valid TransferRequest request,
             @AuthenticationPrincipal OAuth2User principal
@@ -95,7 +92,6 @@ public class TransactionController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Busca transação por ID")
     public ResponseEntity<TransactionResponse> findById(
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal
@@ -110,7 +106,6 @@ public class TransactionController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "Busca transações com filtros")
     public ResponseEntity<Page<TransactionResponse>> allTransactionsWithFilter(
 
             @ParameterObject TransactionSearchFilter filter,
@@ -126,7 +121,6 @@ public class TransactionController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Deleta transações (que estão canceladas)")
     public ResponseEntity<Void> deleteTransaction(
 
             @PathVariable UUID id,

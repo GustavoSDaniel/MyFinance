@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.categories;
 
+import com.gustavosdaniel.myfinance_api.exception.CategoryNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
 import org.junit.jupiter.api.DisplayName;
@@ -8,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -30,7 +30,7 @@ class CategoryServiceImplTest {
     private CategoryMapper categoryMapper;
 
     @InjectMocks
-    private CategoryServiceImpl categoryService;
+    private CategoryService categoryService;
 
     @Nested
     class createCategory{

@@ -1,13 +1,11 @@
 package com.gustavosdaniel.myfinance_api.util;
 
-import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserMapper;
 import com.gustavosdaniel.myfinance_api.user.UserRequest;
 import com.gustavosdaniel.myfinance_api.user.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;

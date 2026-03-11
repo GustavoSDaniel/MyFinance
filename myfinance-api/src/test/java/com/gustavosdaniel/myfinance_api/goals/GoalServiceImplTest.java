@@ -11,7 +11,8 @@ import com.gustavosdaniel.myfinance_api.transactions.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -57,7 +58,7 @@ class GoalServiceImplTest {
     private TransactionRepository transactionRepository;
 
     @InjectMocks
-    private GoalServiceImpl goalService;
+    private GoalService goalService;
 
 
     @Nested
@@ -471,7 +472,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should deposit Goal with sucesso")
-        void shouldDepositGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException {
+        void shouldDepositGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException {
 
             UUID userId = UUID.randomUUID();
             UUID goalId = UUID.randomUUID();
@@ -567,7 +568,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should draw from Goal with sucesso")
-        void shouldDrawGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException {
+        void shouldDrawGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException {
 
             UUID userId = UUID.randomUUID();
             UUID goalId = UUID.randomUUID();

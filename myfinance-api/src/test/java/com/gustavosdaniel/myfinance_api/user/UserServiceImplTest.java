@@ -32,7 +32,7 @@ class UserServiceImplTest {
     private UserMapper userMapper;
 
     @InjectMocks
-    UserServiceImpl userService;
+    UserService userService;
 
 
     @Nested

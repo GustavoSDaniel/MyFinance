@@ -1,18 +1,15 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
-import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
+import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicate;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRepository;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
-import org.hibernate.mapping.Any;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -36,7 +33,7 @@ class AccountServiceImplTest {
     private AccountMapper accountMapper;
 
     @InjectMocks
-    private AccountServiceImpl accountService;
+    private AccountService accountService;
 
     @Nested
     class createAccount{

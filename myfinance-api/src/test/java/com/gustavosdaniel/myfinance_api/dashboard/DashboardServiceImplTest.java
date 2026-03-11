@@ -33,7 +33,7 @@ class DashboardServiceImplTest {
     private TransactionRepository transactionRepository;
 
     @InjectMocks
-    private DashboardServiceImpl dashboardService;
+    private DashboardService dashboardService;
 
     @Nested
     class getDashboard{

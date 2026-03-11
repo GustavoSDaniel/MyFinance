@@ -1,8 +1,9 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
+import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
 import com.gustavosdaniel.myfinance_api.transactions.Transaction;
 import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;

@@ -1,8 +1,6 @@
-package com.gustavosdaniel.myfinance_api.transactions;
+package com.gustavosdaniel.myfinance_api.exception;
 
-import com.gustavosdaniel.myfinance_api.exception.BaseExceptionRunTime;
-
-public class TransactionNotFoundException extends BaseExceptionRunTime {
+public class TransactionNotFoundException extends RuntimeException {
 
     public TransactionNotFoundException() {
     }

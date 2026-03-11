@@ -1,8 +1,6 @@
-package com.gustavosdaniel.myfinance_api.categories;
+package com.gustavosdaniel.myfinance_api.exception;
 
-import com.gustavosdaniel.myfinance_api.exception.BusinesException;
-
-public class CategoryNotParentException extends BusinesException {
+public class CategoryNotParentException extends RuntimeException {
 
     public CategoryNotParentException() {
     }

@@ -1,10 +1,11 @@
 package com.gustavosdaniel.myfinance_api.categories;
 
+import com.gustavosdaniel.myfinance_api.exception.CategoryNameDuplicateException;
+import com.gustavosdaniel.myfinance_api.openApi.CategoryOpenApi;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -17,11 +18,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/categories")
-public class CategoryController {
+public class CategoryController implements CategoryOpenApi {
 
     private final CategoryService categoryService;
     private final AuthHelper authHelper;
-
 
     public CategoryController(CategoryService categoryService, AuthHelper authHelper) {
         this.categoryService = categoryService;
@@ -29,7 +29,6 @@ public class CategoryController {
     }
 
     @PostMapping
-    @Operation(summary = "Cria categoria para usuário")
     public ResponseEntity<CategoryResponse> createCategory(
             @RequestBody @Valid CategoryRequest request,
             @AuthenticationPrincipal OAuth2User principal) throws CategoryNameDuplicateException {
@@ -48,7 +47,6 @@ public class CategoryController {
     }
 
     @GetMapping
-    @Operation(summary = "Mostras a categorias do usuário")
     public ResponseEntity<List<CategoryResponse>> getAllCategories(
             @AuthenticationPrincipal OAuth2User principal,
             @RequestParam(required = false) String status)
@@ -63,7 +61,6 @@ public class CategoryController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "Busca categoria do usuário pelo nome")
     public ResponseEntity<List<CategoryResponse>> searchName(
 
             @AuthenticationPrincipal OAuth2User principal,
@@ -78,7 +75,6 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Busca categoria do usuário pelo ID")
     public ResponseEntity<CategoryResponse> getById(
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal
@@ -92,7 +88,6 @@ public class CategoryController {
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Atualiza a categoria do usuário")
     public ResponseEntity<CategoryResponseUpdate> updateCategory(
             @PathVariable UUID id,
             @RequestBody @Valid CategoryRequestUpdate request,
@@ -106,7 +101,6 @@ public class CategoryController {
     }
 
     @PatchMapping("/{id}/activate")
-    @Operation(summary = "Ativa categoria do usuário")
     public ResponseEntity<Void> activateCategory(
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal
@@ -122,7 +116,6 @@ public class CategoryController {
     }
 
     @PatchMapping("/{id}/deactivate")
-    @Operation(summary = "Desativa categoria do usuário")
     public ResponseEntity<Void> deactivateCategory(
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal
@@ -139,7 +132,6 @@ public class CategoryController {
 
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Deleta categoria do usuário")
     public ResponseEntity<Void> deleteCategory(
 
             @AuthenticationPrincipal OAuth2User principal,

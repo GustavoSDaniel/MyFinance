@@ -1,8 +1,10 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
+import com.gustavosdaniel.myfinance_api.openApi.GoalOpenApi;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
-import com.gustavosdaniel.myfinance_api.util.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
@@ -22,7 +24,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/goals")
-public class GoalController {
+public class GoalController implements GoalOpenApi {
 
     private final GoalService goalService;
     private final AuthHelper authHelper;
@@ -33,7 +35,6 @@ public class GoalController {
     }
 
     @PostMapping
-    @Operation(summary = "Cria uma nova meta")
     public ResponseEntity<GoalResponse> create(
             @AuthenticationPrincipal OAuth2User principal,
             @RequestBody @Valid GoalRequest request
@@ -53,7 +54,6 @@ public class GoalController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Busca Meta pelo ID")
     public ResponseEntity<GoalResponse> getById(
             @AuthenticationPrincipal OAuth2User principal,
             @PathVariable UUID id
@@ -67,7 +67,6 @@ public class GoalController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "Busca Meta pelo nome da meta")
     public ResponseEntity<List<GoalResponse>> searchName(
             @AuthenticationPrincipal OAuth2User principal,
             @RequestParam String name
@@ -81,7 +80,6 @@ public class GoalController {
     }
 
     @GetMapping
-    @Operation(summary = "Busca uma lista de Metas")
     public ResponseEntity<Page<GoalResponse>> getAll(
             @AuthenticationPrincipal OAuth2User principal,
             @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
@@ -97,7 +95,6 @@ public class GoalController {
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Atualiza a Meta (Categoria, Nome, Descrição, data da meta e prioridade)")
     public ResponseEntity<GoalResponse> update(
             @AuthenticationPrincipal OAuth2User principal,
             @RequestBody @Valid GoalRequestUpdate requestUpdate,
@@ -111,12 +108,11 @@ public class GoalController {
     }
 
     @PostMapping("/{id}/deposit")
-    @Operation(summary = "Transfere valor para a Meta")
     public ResponseEntity<GoalResponse> deposit(
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal,
             @RequestBody @Valid GoalTransfer transfer
-    ) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+    ) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
         User user = authHelper.getCurrentUser(principal);
 
@@ -126,12 +122,11 @@ public class GoalController {
     }
 
     @PostMapping("/{id}/withdraw")
-    @Operation(summary = "Transfere o valor da Meta para a Conta")
     public ResponseEntity<GoalResponse> withdraw(
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal,
             @RequestBody @Valid GoalTransfer transfer
-    ) throws com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+    ) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
         User user = authHelper.getCurrentUser(principal);
 
@@ -141,7 +136,6 @@ public class GoalController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Deleta Meta do usuário")
     public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal OAuth2User principal
     ){
 

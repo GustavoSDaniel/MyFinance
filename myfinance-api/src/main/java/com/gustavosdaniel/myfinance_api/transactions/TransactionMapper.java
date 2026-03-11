@@ -1,7 +1,7 @@
 package com.gustavosdaniel.myfinance_api.transactions;
 
 import com.gustavosdaniel.myfinance_api.accounts.Account;
-import com.gustavosdaniel.myfinance_api.accounts.InvalidAmountException;
+import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
 import com.gustavosdaniel.myfinance_api.categories.Category;
 import com.gustavosdaniel.myfinance_api.categories.CategoryMapper;
 import com.gustavosdaniel.myfinance_api.user.User;

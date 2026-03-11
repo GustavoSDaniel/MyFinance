@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.dashboard;
 
+import com.gustavosdaniel.myfinance_api.openApi.DashboardOpenApi;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/dashboards")
-public class DashboardController {
+public class DashboardController implements DashboardOpenApi {
 
     private final DashboardService dashboardService;
     private final AuthHelper authHelper;

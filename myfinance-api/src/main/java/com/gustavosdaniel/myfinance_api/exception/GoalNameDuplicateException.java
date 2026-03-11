@@ -1,8 +1,6 @@
-package com.gustavosdaniel.myfinance_api.goals;
+package com.gustavosdaniel.myfinance_api.exception;
 
-import com.gustavosdaniel.myfinance_api.exception.BaseExceptionRunTime;
-
-public class GoalNameDuplicateException extends BaseExceptionRunTime {
+public class GoalNameDuplicateException extends RuntimeException {
     public GoalNameDuplicateException() {
     }
 

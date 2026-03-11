@@ -1,23 +1,137 @@
 package com.gustavosdaniel.myfinance_api.user;
 
-
+import com.gustavosdaniel.myfinance_api.exception.UserNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserService {
+@Service
+@CacheConfig(cacheNames = "users")
+public class UserService {
 
-    UserInfoResponse createOrUpdateUserFromOAuth(UserRequest request);
+    private final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    Page<UserResponse> getAllUsers(Pageable pageable);
+    @Value("${app.security.admin-emails}")
+    private  List<String> adminEmails;
 
-    Optional<UserResponse>  getUserByEmail(String email);
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+    }
 
-    User findByEmail(String email);
+    @Transactional
+    @CacheEvict(allEntries = true)
+    public UserInfoResponse createOrUpdateUserFromOAuth(UserRequest request) {
 
-    UserResponse getUserById(UUID id);
+        Optional<User> existingUser = userRepository.findByEmail(request.email());
 
-    void deleteUser(UUID id);
+        if (existingUser.isPresent()) {
+
+            User user = existingUser.get();
+            user.setName(request.name());
+            user.setPicture(request.picture());
+
+            User userUpdate = userRepository.save(user);
+
+            log.info("Usuário: {} atualizado com sucesso", userUpdate.getName());
+
+            return userMapper.toUserInfoResponse(userUpdate);
+        }
+        UserRole role = UserRole.USER;
+
+        if (adminEmails.contains(request.email())){
+
+            role = UserRole.ADMIN;
+        }
+
+        User newUser = userMapper.toUser(request);
+        newUser.setRole(role);
+        User savedUser = userRepository.save(newUser);
+
+        log.info("Novo usuário: {} salvo com sucesso", savedUser.getName());
+
+        return userMapper.toUserInfoResponse(savedUser);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+
+        Page<User> users = userRepository.findAll(pageable);
+
+        if (users.isEmpty()){
+
+            log.info("Nenhum usuário encontrado na busca");
+
+            return Page.empty();
+        }
+
+        log.info("Todos os usuário encontrados {}", users.getNumberOfElements());
+
+        return users.map(userMapper::toUserResponse);
+
+    }
+
+
+    @Transactional(readOnly = true)
+    @Cacheable(key = "#email", unless = "#result == null")
+    public Optional<UserResponse> getUserByEmail(String email) {
+
+        Optional<User> user = userRepository.findByEmail(email);
+
+        log.info("Buscando usuário pelo email {}", email);
+
+        if (user.isEmpty()){
+
+            log.warn("Nenhum usuário foi encontrado com esse mail {}", email);
+
+            return Optional.empty();
+        }
+
+        log.info("Usuário com o email {}, encontrado com sucesso", user.get().getEmail());
+
+        return user.map(userMapper::toUserResponse);
+
+    }
+
+    @Transactional(readOnly = true)
+    public User findByEmail(String email) {
+
+        return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+    }
+
+    @Transactional(readOnly = true)
+    @Cacheable(key = "#id")
+    public UserResponse getUserById(UUID id) {
+
+        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+
+        log.info("Usuário com o id: {} encontrado com sucesso", id);
+
+        return userMapper.toUserResponse(user);
+    }
+
+    @Transactional
+    @CacheEvict(allEntries = true)
+    public void deleteUser(UUID id) {
+
+        User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+
+        userRepository.delete(user);
+
+        log.info("Usuário {} deletado com sucesso", user.getName());
+    }
+
 }

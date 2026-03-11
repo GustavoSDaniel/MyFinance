@@ -1,8 +1,6 @@
-package com.gustavosdaniel.myfinance_api.user;
+package com.gustavosdaniel.myfinance_api.exception;
 
-import com.gustavosdaniel.myfinance_api.exception.BaseExceptionRunTime;
-
-public class UserNotFoundException extends BaseExceptionRunTime {
+public class UserNotFoundException extends RuntimeException {
 
     public UserNotFoundException() {
     }
