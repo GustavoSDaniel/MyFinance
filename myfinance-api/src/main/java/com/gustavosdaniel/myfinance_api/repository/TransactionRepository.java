@@ -44,7 +44,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
     );
 
     @Query("""
-           SELECT new com.gustavosdaniel.myfinance_api.dashboard.CategorySum(
+           SELECT new com.gustavosdaniel.myfinance_api.domain.dto.DashboardCategorySum(
                       c.name, 
                       c.color, 
                       SUM(t.amount)
