@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.user;
 
+import org.springframework.security.core.Authentication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -10,12 +11,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -194,22 +193,30 @@ class UserServiceImplTest {
     }
 
     @Nested
-    class deleteUser{
+    class DeleteUser {
 
         @Test
-        @DisplayName("Should delete user with sucesso")
-        void shouldDeleteUser(){
+        @DisplayName("Should delete user successfully when admin")
+        void shouldDeleteUserWhenAdmin() {
 
             UUID userId = UUID.randomUUID();
-            User user = new User("gustavosdaniel@gmail.com","Gustavo",UserRole.USER);
+
+            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
-            when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+            Authentication authentication = mock(Authentication.class);
 
-            userService.deleteUser(userId);
+            when(authentication.getAuthorities())
+                    .thenReturn((Collection) List.of(new SimpleGrantedAuthority("ADMIN")));
+
+
+            when(userRepository.findById(userId))
+                    .thenReturn(Optional.of(user));
+
+            userService.deleteUser(userId, authentication);
 
             verify(userRepository).findById(userId);
-            verify(userRepository).delete(user);
+            verify(userRepository).deleteById(userId);
 
         }
     }

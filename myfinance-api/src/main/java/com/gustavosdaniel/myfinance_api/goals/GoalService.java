@@ -30,6 +30,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Serviço responsável pelo gerenciamento de metas (Goals).
+ * Lida com a criação, listagem, atualização, exclusão e movimentações financeiras
+ * (depósitos e resgates) vinculadas a uma meta específica.
+ */
 @Service
 @CacheConfig(cacheNames = "goals")
 public class GoalService {
@@ -49,9 +54,20 @@ public class GoalService {
         this.transactionRepository = transactionRepository;
     }
 
+    /**
+     * Cria uma nova meta para o usuário informado e a vincula a uma categoria existente.
+     * Limpa o cache de metas após a criação.
+     *
+     * @param user    Entidade do usuário proprietário da meta.
+     * @param request DTO com os dados de criação da meta.
+     * @return DTO contendo as informações da meta criada.
+     * @throws InvalidAmountException        Caso o valor inicial ou alvo seja inválido.
+     * @throws GoalNameDuplicateException    Caso o usuário já possua uma meta com o mesmo nome.
+     * @throws CategoryNotFoundException     Caso a categoria informada não exista.
+     */
     @Transactional
     @CacheEvict(allEntries = true)
-    public GoalResponse createGoal(User user, GoalRequest request) throws InvalidAmountException {
+    public GoalResponse createGoal(User user, GoalRequest request){
 
         log.info("Criando Meta para o usuário: {}", user.getName());
 
@@ -61,7 +77,8 @@ public class GoalService {
         }
 
         Category category = categoryRepository
-                .findByIdAndUserId(request.categoryId(), user.getId()).orElseThrow(CategoryNotFoundException::new);
+                .findByIdAndUserId(request.categoryId(), user.getId())
+                .orElseThrow(CategoryNotFoundException::new);
 
         Goal newGoal = goalMapper.toGoal(request, user, category);
         category.addGoal(newGoal);
@@ -73,19 +90,36 @@ public class GoalService {
         return goalMapper.toGoalResponse(saveGoal);
     }
 
+    /**
+     * Busca uma meta específica pelo seu ID e a valida com o ID do usuário dono.
+     * O resultado desta operação é armazenado em cache.
+     *
+     * @param id   ID da meta a ser buscada.
+     * @param user Entidade do usuário dono da meta.
+     * @return DTO com os detalhes da meta.
+     * @throws GoalNotFoundException Caso a meta não exista ou não pertença ao usuário.
+     */
     @Transactional(readOnly = true)
     @Cacheable(key = "{#id, #user.id}")
     public GoalResponse getGoalById(UUID id, User user) {
 
         log.info("Buscando Meta pelo id {}", id);
 
-        Goal goal = goalRepository.findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
+        Goal goal = goalRepository.findByIdAndUserId(id, user.getId())
+                .orElseThrow(GoalNotFoundException::new);
 
         log.info("Meta {} encontrada com sucesso", goal.getName());
 
         return goalMapper.toGoalResponse(goal);
     }
 
+    /**
+     * Realiza uma busca de metas pelo nome para um usuário específico.
+     *
+     * @param user Entidade do usuário dono das metas.
+     * @param name Nome parcial ou total a ser pesquisado.
+     * @return Lista de DTOs contendo as metas que correspondem à busca.
+     */
     @Transactional(readOnly = true)
     public List<GoalResponse> searchGoal(User user, String name) {
 
@@ -95,7 +129,8 @@ public class GoalService {
 
         if (goals.isEmpty()){
 
-            log.warn("Nenhuma Meta desse usuário {}  encontrado com esse nome {}", user.getName(), name);
+            log.warn("Nenhuma Meta desse usuário {}  encontrado com esse nome {}",
+                    user.getName(), name);
 
             return List.of();
         }
@@ -105,6 +140,14 @@ public class GoalService {
         return goals.stream().map(goalMapper::toGoalResponse).toList();
     }
 
+    /**
+     * Retorna uma lista paginada de metas de um usuário com base no status solicitado.
+     *
+     * @param user     Entidade do usuário dono das metas.
+     * @param status   Filtro de status ("achieved" para alcançadas, "progress" para em andamento).
+     * @param pageable Configurações de paginação.
+     * @return Página contendo os DTOs das metas encontradas.
+     */
     @Transactional(readOnly = true)
     public Page<GoalResponse> getAllGoals(User user, String status,  Pageable pageable) {
 
@@ -139,13 +182,26 @@ public class GoalService {
         return goals.map(goalMapper::toGoalResponse);
     }
 
+    /**
+     * Atualiza as informações de uma meta existente.
+     * Limpa o cache de metas após a atualização.
+     *
+     * @param id            ID da meta a ser atualizada.
+     * @param requestUpdate DTO contendo os novos dados para a meta.
+     * @param user          Entidade do usuário dono da meta.
+     * @return DTO com os dados da meta atualizada.
+     * @throws GoalNotFoundException      Caso a meta não seja encontrada.
+     * @throws CategoryNotFoundException  Caso uma nova categoria informada não seja encontrada.
+     * @throws GoalNameDuplicateException Caso o novo nome já esteja em uso por outra meta do usuário.
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public GoalResponse updateGoal(UUID id, GoalRequestUpdate requestUpdate, User user) {
 
         log.info("Atualizando Meta {}, do usuário {}", id, user.getName());
 
-        Goal goal = goalRepository.findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
+        Goal goal = goalRepository.findByIdAndUserId(id, user.getId())
+                .orElseThrow(GoalNotFoundException::new);
 
         Category category = null;
 
@@ -159,7 +215,8 @@ public class GoalService {
 
         if (requestUpdate.name() != null && !requestUpdate.name().equalsIgnoreCase(goal.getName())) {
 
-            if (goalRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(requestUpdate.name(), user.getId(), id)) {
+            if (goalRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(requestUpdate.name()
+                    , user.getId(), id)) {
 
                 throw new GoalNameDuplicateException();
 
@@ -176,15 +233,32 @@ public class GoalService {
         return goalMapper.toGoalResponse(saveGoal);
     }
 
+    /**
+     * Realiza um depósito na meta, transferindo fundos de uma conta do usuário para ela.
+     * Esta operação gera uma transação de "DESPESA" na conta (dinheiro saindo) para ser adicionado à meta.
+     * Limpa o cache de metas.
+     *
+     * @param id       ID da meta que receberá o depósito.
+     * @param transfer DTO contendo o valor, a conta de origem e a chave de idempotência.
+     * @param user     Entidade do usuário logado.
+     * @return DTO da meta atualizada com o novo saldo.
+     * @throws IdempotencyKeyException       Caso uma transação com a mesma chave de idempotência já tenha sido processada.
+     * @throws GoalNotFoundException         Caso a meta não seja encontrada.
+     * @throws AccountNotFoundException      Caso a conta de origem não seja encontrada.
+     * @throws InsufficientBalanceException  Caso a conta não tenha saldo suficiente.
+     * @throws InvalidAmountException        Caso o valor da transferência seja inválido.
+     */
     @Transactional
     @CacheEvict(allEntries = true)
-    public GoalResponse depositToGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+    public GoalResponse depositToGoal(UUID id, GoalTransfer transfer, User user){
 
         log.info("Realizando transação da conta {}, para a Meta {}", transfer.accountId(), id);
 
-        if (transactionRepository.existsByIdempotencyKeyAndUserId(transfer.idempotencyKey(), user.getId())){
+        if (transactionRepository.existsByIdempotencyKeyAndUserId(transfer.idempotencyKey(),
+                user.getId())){
 
-            log.warn("Transação já processada anteriormente. idempotencyKey = {}", transfer.idempotencyKey());
+            log.warn("Transação já processada anteriormente. idempotencyKey = {}",
+                    transfer.idempotencyKey());
 
             throw new IdempotencyKeyException();
         }
@@ -193,7 +267,8 @@ public class GoalService {
                 .findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
 
         Account account = accountRepository
-                .findByIdAndUserId(transfer.accountId(), user.getId()).orElseThrow(AccountNotFoundException::new);
+                .findByIdAndUserId(transfer.accountId(), user.getId())
+                .orElseThrow(AccountNotFoundException::new);
 
         Transaction transaction = new Transaction(
                 transfer.idempotencyKey(),
@@ -220,15 +295,32 @@ public class GoalService {
         return goalMapper.toGoalResponse(saveGoal);
     }
 
+    /**
+     * Realiza um resgate da meta, transferindo os fundos de volta para uma conta do usuário.
+     * Esta operação gera uma transação de "RECEITA" na conta (dinheiro entrando) descontando do saldo da meta.
+     * Limpa o cache de metas.
+     *
+     * @param id       ID da meta de onde o valor será resgatado.
+     * @param transfer DTO contendo o valor, a conta de destino e a chave de idempotência.
+     * @param user     Entidade do usuário logado.
+     * @return DTO da meta atualizada com o novo saldo reduzido.
+     * @throws IdempotencyKeyException       Caso uma transação com a mesma chave de idempotência já tenha sido processada.
+     * @throws GoalNotFoundException         Caso a meta não seja encontrada.
+     * @throws AccountNotFoundException      Caso a conta de destino não seja encontrada.
+     * @throws InsufficientBalanceException  Caso a meta não tenha saldo suficiente para o resgate.
+     * @throws InvalidAmountException        Caso o valor do resgate seja inválido.
+     */
     @Transactional
     @CacheEvict(allEntries = true)
-    public GoalResponse withdrawFromGoal(UUID id, GoalTransfer transfer, User user) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
+    public GoalResponse withdrawFromGoal(UUID id, GoalTransfer transfer, User user){
 
         log.info("Resgatando valor do Goal {} para a conta {}", id, transfer.accountId());
 
-        if (transactionRepository.existsByIdempotencyKeyAndUserId(transfer.idempotencyKey(), user.getId())){
+        if (transactionRepository.existsByIdempotencyKeyAndUserId(transfer.idempotencyKey(),
+                user.getId())){
 
-            log.warn("Transação já processada anteriormente. idempotencyKey = {}", transfer.idempotencyKey());
+            log.warn("Transação já processada anteriormente. idempotencyKey = {}",
+                    transfer.idempotencyKey());
 
             throw new IdempotencyKeyException();
         }
@@ -237,7 +329,8 @@ public class GoalService {
                 .findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
 
         Account account = accountRepository
-                .findByIdAndUserId(transfer.accountId(), user.getId()).orElseThrow(AccountNotFoundException::new);
+                .findByIdAndUserId(transfer.accountId(), user.getId())
+                .orElseThrow(AccountNotFoundException::new);
 
         Transaction transaction = new Transaction(
                 transfer.idempotencyKey(),
@@ -259,22 +352,35 @@ public class GoalService {
         accountRepository.save(account);
         transactionRepository.save(transaction);
 
-        log.info("Resgate no valor de {} realizado com sucesso para a conta {}", transfer.amount(), account.getName());
+        log.info("Resgate no valor de {} realizado com sucesso para a conta {}",
+                transfer.amount(), account.getName());
         return goalMapper.toGoalResponse(saveGoal);
     }
 
+    /**
+     * Remove permanentemente uma meta da base de dados.
+     * A exclusão é bloqueada caso a meta ainda possua saldo acumulado.
+     * Limpa o cache de metas.
+     *
+     * @param id   ID da meta a ser deletada.
+     * @param user Entidade do usuário dono da meta.
+     * @throws GoalNotFoundException    Caso a meta não seja encontrada.
+     * @throws IllegalArgumentException Caso a meta ainda contenha saldo maior que zero.
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public void deleteGoal(UUID id, User user) {
 
         log.info("Deletando Meta {}", id);
 
-        Goal goal = goalRepository.findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
+        Goal goal = goalRepository.findByIdAndUserId(id, user.getId())
+                .orElseThrow(GoalNotFoundException::new);
 
         if (goal.getCurrentAmount().compareTo(BigDecimal.ZERO) > 0){
 
             throw new IllegalArgumentException(
-                    "Não é possível deletar a Meta pois ela contém saldo. Resgate o dinheiro antes.");
+                    "Não é possível deletar a Meta pois ela contém saldo. " +
+                            "Resgate o dinheiro antes.");
         }
 
         user.removeGoals(goal);

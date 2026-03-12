@@ -56,22 +56,8 @@ public class UserController implements UserOpenApi {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id, Authentication authentication){
 
-        boolean isAdmin = authentication.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"));
+        userService.deleteUser(id, authentication);
 
-        if (isAdmin){
-            userService.deleteUser(id);
-            return ResponseEntity.noContent().build();
-        }
-
-        String emailLogado = authentication.getName();
-        UserResponse user = userService.getUserById(id);
-
-        if (!user.email().equals(emailLogado)){
-
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
-        userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -11,7 +11,11 @@ import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
 
-
+/**
+ * Serviço responsável por gerar os dados consolidados do painel de controle (Dashboard).
+ * Realiza as agregações financeiras do usuário, como total de receitas, despesas,
+ * saldo do período e agrupamento de gastos por categoria.
+ */
 @Service
 public class DashboardService {
 
@@ -22,6 +26,15 @@ public class DashboardService {
         this.transactionRepository = transactionRepository;
     }
 
+    /**
+     * Gera o resumo financeiro (Dashboard) para um usuário dentro de um período específico.
+     * Calcula o total de receitas, despesas, saldo e despesas agrupadas por categoria.
+     *
+     * @param user        Entidade do usuário para o qual o dashboard será gerado.
+     * @param betweenDate Objeto (Record/DTO) contendo as datas inicial e final do período a ser analisado.
+     * @return DTO contendo os totais consolidados e a lista de despesas por categoria.
+     * @throws IllegalArgumentException Caso a data final informada seja anterior à data inicial.
+     */
     @Transactional(readOnly = true)
     public DashboardResponse getDashboard(User user, BetweenDate betweenDate) {
 
@@ -43,7 +56,10 @@ public class DashboardService {
                         betweenDate.startDate().atStartOfDay(),
                         betweenDate.endDate().atTime(LocalTime.MAX));
 
-        BigDecimal balance = incomes.subtract(expenses);
+        BigDecimal incomesSafe = incomes != null ? incomes : BigDecimal.ZERO;
+        BigDecimal expensesSafe = expenses != null ? expenses : BigDecimal.ZERO;
+
+        BigDecimal balance = incomesSafe.subtract(expensesSafe);
 
         List<CategorySum> expensesByCategory = transactionRepository
                 .sumExpensesByCategoryAndPeriod(user.getId(),
