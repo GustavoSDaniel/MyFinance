@@ -40,6 +40,25 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Serviço responsável pelas regras de negócio relacionadas às metas financeiras.
+ *
+ * <p>Uma meta representa um objetivo financeiro definido pelo usuário,
+ * como por exemplo: viajar, comprar um carro....
+ *
+ * <p>Este serviço gerencia operações como:
+ * <ul>
+ *     <li>Criação de metas</li>
+ *     <li>Busca e listagem</li>
+ *     <li>Atualização de metas</li>
+ *     <li>Depósitos em metas</li>
+ *     <li>Resgate de valores de metas</li>
+ *     <li>Remoção de metas</li>
+ * </ul>
+ *
+ * <p>Todos os dados são vinculados ao usuário autenticado.
+ * Algumas consultas utilizam cache para melhorar a performance.
+ */
 @Service
 @CacheConfig(cacheNames = "goals")
 public class GoalService {
@@ -61,6 +80,18 @@ public class GoalService {
         this.authHelper = authHelper;
     }
 
+    /**
+     * Cria uma nova meta financeira para o usuário autenticado.
+     *
+     * <p>Antes da criação é verificado se já existe uma meta com o mesmo nome
+     * para o usuário. Caso exista, uma exceção será lançada.
+     *
+     * @param principal usuário autenticado
+     * @param request dados da meta a ser criada
+     * @return resposta contendo a meta criada e a URI do recurso
+     * @throws GoalNameDuplicateException caso já exista uma meta com o mesmo nome
+     * @throws CategoryNotFoundException caso a categoria não exista
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<GoalResponse> createGoal(OAuth2User principal, GoalRequest request){
@@ -92,8 +123,18 @@ public class GoalService {
         return ResponseEntity.created(uri).body(goalMapper.toGoalResponse(saveGoal));
     }
 
+    /**
+     * Busca uma meta específica pelo ID.
+     *
+     * <p>A meta deve pertencer ao usuário autenticado.
+     *
+     * @param id identificador da meta
+     * @param principal usuário autenticado
+     * @return dados da meta encontrada
+     * @throws GoalNotFoundException caso a meta não exista
+     */
     @Transactional(readOnly = true)
-    @Cacheable(key = "{#id, #user.id}")
+    @Cacheable(key = "{#id, #principal.name}")
     public ResponseEntity<GoalResponse> getGoalById(UUID id, OAuth2User principal) {
 
         log.info("Buscando Meta pelo id {}", id);
@@ -108,6 +149,15 @@ public class GoalService {
         return ResponseEntity.ok(goalMapper.toGoalResponse(goal));
     }
 
+    /**
+     * Busca metas pelo nome.
+     *
+     * <p>A busca é limitada às metas pertencentes ao usuário autenticado.
+     *
+     * @param principal usuário autenticado
+     * @param name nome ou parte do nome da meta
+     * @return lista de metas encontradas
+     */
     @Transactional(readOnly = true)
     public ResponseEntity<List<GoalResponse>> searchGoal(OAuth2User principal, String name) {
 
@@ -132,6 +182,21 @@ public class GoalService {
                         .toList());
     }
 
+    /**
+     * Retorna uma lista paginada de metas do usuário.
+     *
+     * <p>É possível filtrar as metas pelo status:
+     * <ul>
+     *     <li>achieved - metas já alcançadas</li>
+     *     <li>progress - metas ainda em progresso</li>
+     *     <li>null ou vazio - todas as metas</li>
+     * </ul>
+     *
+     * @param principal usuário autenticado
+     * @param status filtro de status das metas
+     * @param pageable informações de paginação
+     * @return página contendo as metas encontradas
+     */
     @Transactional(readOnly = true)
     public ResponseEntity<Page<GoalResponse>> getAllGoals(
             OAuth2User principal, String status,  Pageable pageable) {
@@ -171,6 +236,20 @@ public class GoalService {
         return ResponseEntity.ok(goals.map(goalMapper::toGoalResponse));
     }
 
+    /**
+     * Atualiza os dados de uma meta existente.
+     *
+     * <p>Se o nome da meta for alterado, é verificado se já existe
+     * outra meta com o mesmo nome para o usuário.
+     *
+     * @param id identificador da meta
+     * @param requestUpdate novos dados da meta
+     * @param principal usuário autenticado
+     * @return meta atualizada
+     * @throws GoalNotFoundException caso a meta não exista
+     * @throws GoalNameDuplicateException caso já exista uma meta com o mesmo nome
+     * @throws CategoryNotFoundException caso a nova categoria não exista
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<GoalResponse> updateGoal(
@@ -211,6 +290,23 @@ public class GoalService {
         return ResponseEntity.ok(goalMapper.toGoalResponse(saveGoal));
     }
 
+    /**
+     * Realiza um depósito de dinheiro em uma meta financeira.
+     *
+     * <p>O valor é transferido de uma conta do usuário para a meta.
+     * Uma transação financeira é criada para registrar a movimentação.
+     *
+     * <p>Também é utilizada uma {@code idempotencyKey} para evitar
+     * duplicação da operação.
+     *
+     * @param id identificador da meta
+     * @param transfer dados da transferência
+     * @param principal usuário autenticado
+     * @return meta atualizada após o depósito
+     * @throws GoalNotFoundException caso a meta não exista
+     * @throws AccountNotFoundException caso a conta não exista
+     * @throws IdempotencyKeyException caso a transação já tenha sido processada
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<GoalResponse> depositToGoal(
@@ -261,6 +357,22 @@ public class GoalService {
         return ResponseEntity.ok(goalMapper.toGoalResponse(saveGoal));
     }
 
+    /**
+     * Realiza o resgate de dinheiro de uma meta financeira para uma conta do usuário.
+     *
+     * <p>O valor é removido da meta e depositado na conta selecionada,
+     * sendo registrada uma transação financeira.
+     *
+     * <p>Também utiliza {@code idempotencyKey} para evitar duplicação.
+     *
+     * @param id identificador da meta
+     * @param transfer dados do resgate
+     * @param principal usuário autenticado
+     * @return meta atualizada após o resgate
+     * @throws GoalNotFoundException caso a meta não exista
+     * @throws AccountNotFoundException caso a conta não exista
+     * @throws IdempotencyKeyException caso a transação já tenha sido processada
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<GoalResponse> withdrawFromGoal(
@@ -311,6 +423,19 @@ public class GoalService {
         return ResponseEntity.ok(goalMapper.toGoalResponse(saveGoal));
     }
 
+    /**
+     * Remove uma meta do sistema.
+     *
+     * <p>Uma meta só pode ser removida caso não possua saldo.
+     * Caso exista valor armazenado na meta, o usuário deverá
+     * resgatar o valor antes de removê-la.
+     *
+     * @param id identificador da meta
+     * @param principal usuário autenticado
+     * @return resposta indicando sucesso na operação
+     * @throws GoalNotFoundException caso a meta não exista
+     * @throws IllegalArgumentException caso a meta possua saldo
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<Void> deleteGoal(UUID id, OAuth2User principal) {

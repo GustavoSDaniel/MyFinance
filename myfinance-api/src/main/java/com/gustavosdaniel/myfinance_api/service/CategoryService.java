@@ -27,6 +27,23 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Serviço responsável pelas regras de negócio relacionadas às categorias.
+ *
+ * <p>As categorias pertencem exclusivamente ao usuário autenticado e podem ser
+ * utilizadas para classificar receitas e despesas.
+ *
+ * <p>Esta classe gerencia operações como:
+ * <ul>
+ *     <li>Criação de categorias</li>
+ *     <li>Busca e listagem</li>
+ *     <li>Atualização de dados</li>
+ *     <li>Ativação e desativação</li>
+ *     <li>Remoção de categorias</li>
+ * </ul>
+ *
+ * <p>Algumas consultas utilizam cache para melhorar a performance da aplicação.
+ */
 @Service
 @CacheConfig(cacheNames = "categories")
 public class CategoryService {
@@ -42,6 +59,17 @@ public class CategoryService {
         this.authHelper = authHelper;
     }
 
+    /**
+     * Cria uma nova categoria para o usuário autenticado.
+     *
+     * <p>Antes da criação é verificado se já existe uma categoria com o mesmo nome
+     * e tipo para o usuário. Caso exista, uma exceção será lançada.
+     *
+     * @param principal usuário autenticado via OAuth2
+     * @param request dados da categoria a ser criada
+     * @return resposta contendo a categoria criada e a URI do recurso
+     * @throws CategoryNameDuplicateException caso já exista uma categoria com o mesmo nome
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<CategoryResponse> createCategory(OAuth2User principal,
@@ -75,8 +103,22 @@ public class CategoryService {
         return ResponseEntity.created(uri).body(categoryMapper.toCategoryResponse(saveCategory));
     }
 
+    /**
+     * Retorna todas as categorias do usuário autenticado.
+     *
+     * <p>É possível filtrar as categorias pelo status:
+     * <ul>
+     *     <li>active - categorias ativas</li>
+     *     <li>disabled - categorias desativadas</li>
+     *     <li>null ou vazio - todas as categorias</li>
+     * </ul>
+     *
+     * @param principal usuário autenticado
+     * @param status filtro de status das categorias
+     * @return lista de categorias encontradas
+     */
     @Transactional(readOnly = true)
-    @Cacheable(key = "#userId + '_' + #status")
+    @Cacheable(key = "#principal.name + '_' + #status")
     public ResponseEntity<List<CategoryResponse>> getAllCategories(
             OAuth2User principal, String status) {
 
@@ -112,6 +154,15 @@ public class CategoryService {
                 .toList());
     }
 
+    /**
+     * Realiza busca de categorias pelo nome.
+     *
+     * <p>A busca é limitada apenas às categorias pertencentes ao usuário autenticado.
+     *
+     * @param principal usuário autenticado
+     * @param name nome ou parte do nome da categoria
+     * @return lista de categorias que correspondem ao critério de busca
+     */
     @Transactional(readOnly = true)
     public ResponseEntity<List<CategoryResponse>> searchByName(OAuth2User principal, String name) {
 
@@ -129,8 +180,18 @@ public class CategoryService {
                         .toList());
     }
 
+    /**
+     * Busca uma categoria específica pelo ID.
+     *
+     * <p>A categoria deve pertencer ao usuário autenticado.
+     *
+     * @param id identificador da categoria
+     * @param principal usuário autenticado
+     * @return dados da categoria encontrada
+     * @throws CategoryNotFoundException caso a categoria não exista
+     */
     @Transactional(readOnly = true)
-    @Cacheable(key = "{#id, #userId}")
+    @Cacheable(key = "{#id, #principal.name}")
     public ResponseEntity<CategoryResponse> getById(UUID id, OAuth2User principal) {
 
         log.info("Buscando categoria através do id: {}", id);
@@ -145,6 +206,19 @@ public class CategoryService {
         return ResponseEntity.ok(categoryMapper.toCategoryResponse(category));
     }
 
+    /**
+     * Atualiza os dados de uma categoria existente.
+     *
+     * <p>Se o nome ou tipo da categoria for alterado, é verificado se já existe
+     * outra categoria com o mesmo nome e tipo para o usuário.
+     *
+     * @param id identificador da categoria
+     * @param principal usuário autenticado
+     * @param request novos dados da categoria
+     * @return categoria atualizada
+     * @throws CategoryNotFoundException caso a categoria não exista
+     * @throws CategoryNameDuplicateException caso já exista uma categoria com o mesmo nome
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<CategoryResponseUpdate> updateCategory(
@@ -179,6 +253,14 @@ public class CategoryService {
         return ResponseEntity.ok(categoryMapper.toCategoryResponseUpdate(savedCategory));
     }
 
+    /**
+     * Desativa uma categoria ativa.
+     *
+     * @param id identificador da categoria
+     * @param principal usuário autenticado
+     * @return resposta indicando sucesso na operação
+     * @throws CategoryNotFoundException caso a categoria não exista
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<Void> deactivateCategory(UUID id, OAuth2User principal) {
@@ -207,6 +289,14 @@ public class CategoryService {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Ativa uma categoria que estava desativada.
+     *
+     * @param id identificador da categoria
+     * @param principal usuário autenticado
+     * @return resposta indicando sucesso na operação
+     * @throws CategoryNotFoundException caso a categoria não exista
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<Void> activateCategory(UUID id, OAuth2User principal) {
@@ -236,6 +326,17 @@ public class CategoryService {
 
     }
 
+
+    /**
+     * Deleta a categoria do sistema.
+     *
+     * <p>A categoria deve pertencer ao usuário autenticado.
+     *
+     * @param id identificador da categoria
+     * @param principal usuário autenticado
+     * @return resposta indicando sucesso na remoção
+     * @throws CategoryNotFoundException caso a categoria não exista
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<Void> deleteCategory(UUID id, OAuth2User principal) {

@@ -29,6 +29,21 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Serviço responsável pelas regras de negócio relacionadas às contas do usuário.
+ *
+ * <p>Esta classe gerencia operações como:
+ * <ul>
+ *     <li>Criação de contas</li>
+ *     <li>Consulta e busca de contas</li>
+ *     <li>Atualização de dados</li>
+ *     <li>Ativação e desativação</li>
+ *     <li>Remoção de contas</li>
+ * </ul>
+ *
+ * <p>Todas as operações são vinculadas ao usuário autenticado.
+ * Também utiliza cache para melhorar a performance das consultas.
+ */
 @Service
 @CacheConfig(cacheNames = "accounts")
 public class AccountService {
@@ -46,6 +61,17 @@ public class AccountService {
     }
 
 
+    /**
+     * Cria uma nova conta para o usuário autenticado.
+     *
+     * <p>Antes de criar a conta é verificado se já existe uma conta com o
+     * mesmo nome para o usuário. Caso exista, uma exceção é lançada.
+     *
+     * @param accountRequest dados da conta a ser criada
+     * @param principal usuário autenticado via OAuth2
+     * @return resposta contendo a conta criada e a URI do recurso
+     * @throws AccountNameDuplicateException caso já exista uma conta com o mesmo nome
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<AccountResponse> createAccount(AccountRequest accountRequest,
@@ -78,8 +104,22 @@ public class AccountService {
         return ResponseEntity.created(uri).body(accountMapper.toAccountResponse(savedAccount));
     }
 
+    /**
+     * Retorna todas as contas do usuário autenticado.
+     *
+     * <p>É possível filtrar as contas pelo status:
+     * <ul>
+     *     <li>active - contas ativas</li>
+     *     <li>disabled - contas desativadas</li>
+     *     <li>null ou vazio - todas as contas</li>
+     * </ul>
+     *
+     * @param principal usuário autenticado
+     * @param status filtro de status das contas
+     * @return lista de contas encontradas
+     */
     @Transactional(readOnly = true)
-    @Cacheable(key = "#userId + '_' + #status")
+    @Cacheable(key = "#principal.name + '_' + #status")
     public ResponseEntity<List<AccountResponseInfo>> getAllAccounts(OAuth2User principal, String status) {
 
         User user = authHelper.getCurrentUser(principal);
@@ -108,9 +148,16 @@ public class AccountService {
                         .toList());
     }
 
-
+    /**
+     * Busca uma conta específica do usuário autenticado pelo ID.
+     *
+     * @param id identificador da conta
+     * @param principal usuário autenticado
+     * @return dados da conta encontrada
+     * @throws AccountNotFoundException caso a conta não exista para o usuário
+     */
     @Transactional(readOnly = true)
-    @Cacheable(key = "#id + '_' + #userId")
+    @Cacheable(key = "#id + '_' + #principal.name")
     public ResponseEntity<AccountResponseInfo> getById(UUID id, OAuth2User principal){
 
         User user = authHelper.getCurrentUser(principal);
@@ -125,6 +172,15 @@ public class AccountService {
         return ResponseEntity.ok(accountMapper.toAccountResponseInfo(account));
     }
 
+    /**
+     * Realiza busca de contas pelo nome.
+     *
+     * <p>A busca é limitada apenas às contas do usuário autenticado.
+     *
+     * @param name nome ou parte do nome da conta
+     * @param principal usuário autenticado
+     * @return lista de contas que correspondem ao critério de busca
+     */
     @Transactional(readOnly = true)
     public ResponseEntity<List<AccountResponseInfo>> searchAccount(
             String name, OAuth2User principal) {
@@ -143,6 +199,19 @@ public class AccountService {
                         .toList());
     }
 
+    /**
+     * Atualiza os dados de uma conta existente.
+     *
+     * <p>Se o nome da conta for alterado, é verificado se já existe outra conta
+     * com o mesmo nome para o usuário.
+     *
+     * @param id identificador da conta
+     * @param principal usuário autenticado
+     * @param request novos dados da conta
+     * @return conta atualizada
+     * @throws AccountNotFoundException caso a conta não exista
+     * @throws AccountNameDuplicateException caso já exista outra conta com o mesmo nome
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<AccountResponseInfo> updateAccount(
@@ -173,6 +242,15 @@ public class AccountService {
         return ResponseEntity.ok(accountMapper.toAccountResponseInfo(accountUpdated));
     }
 
+    /**
+     * Ativa uma conta que está desativada.
+     *
+     * @param id identificador da conta
+     * @param principal usuário autenticado
+     * @return resposta indicando sucesso na operação
+     * @throws AccountNotFoundException caso a conta não exista
+     * @throws AccountAlreadyActiveException caso a conta já esteja ativa
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<Void> activateAccount(UUID id, OAuth2User principal) {
@@ -201,6 +279,15 @@ public class AccountService {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Desativa uma conta ativa.
+     *
+     * @param id identificador da conta
+     * @param principal usuário autenticado
+     * @return resposta indicando sucesso na operação
+     * @throws AccountNotFoundException caso a conta não exista
+     * @throws AccountAlreadyDeactivateException caso a conta já esteja desativada
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<Void> deactivateAccount(UUID id, OAuth2User principal) {
@@ -229,6 +316,16 @@ public class AccountService {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Remove permanentemente uma conta do usuário.
+     *
+     * <p>A conta só pode ser removida pelo próprio usuário dono da conta.
+     *
+     * @param id identificador da conta
+     * @param principal usuário autenticado
+     * @return resposta indicando sucesso na remoção
+     * @throws AccountNotFoundException caso a conta não exista
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<Void> deleteAccount(UUID id, OAuth2User principal) {

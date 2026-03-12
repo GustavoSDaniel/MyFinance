@@ -36,6 +36,28 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Serviço responsável pelas regras de negócio relacionadas às transações financeiras.
+ *
+ * <p>Uma transação representa uma movimentação financeira do usuário, podendo ser:
+ * <ul>
+ *     <li>Receita</li>
+ *     <li>Despesa</li>
+ *     <li>Transferência entre contas</li>
+ * </ul>
+ *
+ * <p>Este serviço gerencia operações como:
+ * <ul>
+ *     <li>Criação de transações</li>
+ *     <li>Confirmação e cancelamento</li>
+ *     <li>Transferências entre contas</li>
+ *     <li>Busca e filtragem de transações</li>
+ *     <li>Remoção de transações</li>
+ * </ul>
+ *
+ * <p>Todas as operações são vinculadas ao usuário autenticado.
+ * Algumas consultas utilizam cache para melhorar a performance.
+ */
 @Service
 @CacheConfig(cacheNames = "transactions")
 public class TransactionService {
@@ -56,6 +78,21 @@ public class TransactionService {
         this.authHelper = authHelper;
     }
 
+    /**
+     * Cria uma nova transação financeira.
+     *
+     * <p>Antes de criar a transação é verificado se a {@code idempotencyKey}
+     * já foi utilizada anteriormente para evitar duplicação de transações.
+     *
+     * <p>Após a criação, a transação é processada e o saldo da conta é atualizado.
+     *
+     * @param principal usuário autenticado
+     * @param request dados da transação a ser criada
+     * @return resposta contendo a transação criada e a URI do recurso
+     * @throws IdempotencyKeyException caso a transação já tenha sido processada
+     * @throws AccountNotFoundException caso a conta não exista
+     * @throws CategoryNotFoundException caso a categoria não exista
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<TransactionResponse> createTransaction(
@@ -102,6 +139,17 @@ public class TransactionService {
                 .body(transactionMapper.toTransactionResponse(transactionSave));
     }
 
+    /**
+     * Confirma uma transação pendente.
+     *
+     * <p>Ao confirmar a transação, o saldo da conta é atualizado de acordo
+     * com o tipo da transação (receita ou despesa).
+     *
+     * @param id identificador da transação
+     * @param principal usuário autenticado
+     * @return resposta indicando sucesso na operação
+     * @throws TransactionNotFoundException caso a transação não exista
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<Void> transactionConfirmed(UUID id, OAuth2User principal) {
@@ -130,6 +178,17 @@ public class TransactionService {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Cancela uma transação existente.
+     *
+     * <p>Ao cancelar a transação, os efeitos da movimentação financeira
+     * são revertidos no saldo da conta.
+     *
+     * @param id identificador da transação
+     * @param principal usuário autenticado
+     * @return resposta indicando sucesso na operação
+     * @throws TransactionNotFoundException caso a transação não exista
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<Void> transactionCancel(UUID id, OAuth2User principal){
@@ -153,6 +212,26 @@ public class TransactionService {
 
     }
 
+    /**
+     * Realiza uma transferência entre duas contas do usuário.
+     *
+     * <p>A transferência é composta por duas transações:
+     * <ul>
+     *     <li>Uma despesa na conta de origem</li>
+     *     <li>Uma receita na conta de destino</li>
+     * </ul>
+     *
+     * <p>Também é utilizada uma {@code idempotencyKey} para evitar
+     * que a transferência seja processada mais de uma vez.
+     *
+     * @param principal usuário autenticado
+     * @param transferRequest dados da transferência
+     * @return resposta indicando sucesso na operação
+     * @throws IdempotencyKeyException caso a transferência já tenha sido processada
+     * @throws AccountNotFoundException caso alguma conta não exista
+     * @throws CategoryNotFoundException caso a categoria não exista
+     * @throws TransactionEqualsAccountException caso as contas sejam iguais
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<Void> transfer(OAuth2User principal, TransferRequest transferRequest){
@@ -231,8 +310,18 @@ public class TransactionService {
     }
 
 
+    /**
+     * Busca uma transação específica pelo ID.
+     *
+     * <p>A transação deve pertencer ao usuário autenticado.
+     *
+     * @param id identificador da transação
+     * @param principal usuário autenticado
+     * @return dados da transação encontrada
+     * @throws TransactionNotFoundException caso a transação não exista
+     */
     @Transactional(readOnly = true)
-    @Cacheable(key = "{#id, #userId}")
+    @Cacheable(key = "{#id, #principal.name}")
     public ResponseEntity<TransactionResponse> getTransactionById(UUID id, OAuth2User principal) {
 
         log.info("Buscando transação pelo id: {}", id);
@@ -248,6 +337,22 @@ public class TransactionService {
         return ResponseEntity.ok(transactionMapper.toTransactionResponse(transaction));
     }
 
+    /**
+     * Retorna uma lista paginada de transações com filtros dinâmicos.
+     *
+     * <p>Os filtros podem incluir:
+     * <ul>
+     *     <li>Período de datas</li>
+     *     <li>Conta</li>
+     *     <li>Categoria</li>
+     *     <li>Tipo de transação</li>
+     * </ul>
+     *
+     * @param principal usuário autenticado
+     * @param filter critérios de busca
+     * @param pageable informações de paginação
+     * @return página contendo as transações encontradas
+     */
     @Transactional(readOnly = true)
     public ResponseEntity<Page<TransactionResponse>> getAllWithFilter(
             OAuth2User principal, TransactionSearchFilter filter, Pageable pageable)
@@ -273,6 +378,18 @@ public class TransactionService {
         return ResponseEntity.ok(transactions.map(transactionMapper::toTransactionResponse));
     }
 
+    /**
+     * Remove uma transação do sistema.
+     *
+     * <p>Transações já confirmadas não podem ser removidas
+     * para preservar a consistência financeira do sistema.
+     *
+     * @param id identificador da transação
+     * @param principal usuário autenticado
+     * @return resposta indicando sucesso na remoção
+     * @throws TransactionNotFoundException caso a transação não exista
+     * @throws BusinessRuleException caso a transação já esteja confirmada
+     */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<Void> deleteTransaction(UUID id, OAuth2User principal) {
