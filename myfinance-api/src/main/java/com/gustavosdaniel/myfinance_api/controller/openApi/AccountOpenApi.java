@@ -29,6 +29,7 @@ public interface AccountOpenApi {
 
     @Operation(
             summary = "Listar contas",
+            tags = {"Categories"},
             description = "Retorna todas as contas financeiras do usuário autenticado. Pode ser filtrado pelo status."
     )
     @ApiResponses(value = {

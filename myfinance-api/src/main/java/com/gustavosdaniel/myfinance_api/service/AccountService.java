@@ -28,6 +28,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 /**
  * Serviço responsável pelas regras de negócio relacionadas às contas do usuário.
@@ -52,6 +54,13 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final AuthHelper authHelper;
+
+    BiPredicate<Account, AccountUpdateRequest> nameChanged =
+            (account, request) ->
+                    request.name() != null &&
+                            !account.getName().equalsIgnoreCase(request.name());
+
+
 
 
     public AccountService(AccountRepository accountRepository, AccountMapper accountMapper, AuthHelper authHelper) {
@@ -128,17 +137,12 @@ public class AccountService {
 
         List<Account> accounts;
 
-        if ("active".equalsIgnoreCase(status)){
-
+        if ("active".equalsIgnoreCase(status))
             accounts = accountRepository.findByUserIdAndIsActiveTrue(user.getId());
-
-        }  else if ("disabled".equalsIgnoreCase(status)) {
-
+         else if ("disabled".equalsIgnoreCase(status))
             accounts = accountRepository.findByUserIdAndIsActiveFalse(user.getId());
-        } else {
-
+         else
             accounts = accountRepository.findByUserId(user.getId());
-        }
 
         log.info("Total de contas encontradas: {}", accounts.size());
 
@@ -224,7 +228,7 @@ public class AccountService {
 
         log.info("Atualizando informações da conta: {}", account.getName());
 
-        if (request.name() != null && !account.getName().equalsIgnoreCase(request.name())){
+        if (nameChanged.test(account, request)){
 
             if (accountRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(request.name(),
                     user.getId(), id)){

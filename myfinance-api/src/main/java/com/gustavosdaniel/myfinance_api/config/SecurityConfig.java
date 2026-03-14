@@ -21,15 +21,12 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
 
     public static final String[] PUBLIC_URLS = {
-
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/swagger-ui.html",
             "/swagger-resources/**",
             "/webjars/**",
             "/actuator/**"
-
-
     };
 
     public SecurityConfig(OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler, CustomOAuth2UserService customOAuth2UserService) {

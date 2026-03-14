@@ -6,6 +6,9 @@ import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountUpdateRequest;
 import com.gustavosdaniel.myfinance_api.service.AccountService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +25,25 @@ public class AccountController implements AccountOpenApi {
 
     private final AccountService accountService;
 
-    public AccountController(AccountService accountService) {
+    private final Counter createAccountCounter;
+    private final Counter deleteAccountCounter;
+    private final Timer getAccountTimer;
+
+    public AccountController(AccountService accountService, MeterRegistry registry) {
         this.accountService = accountService;
+
+        this.createAccountCounter = registry.counter("accounts.created");
+        this.deleteAccountCounter = registry.counter("accounts.deleted");
+        this.getAccountTimer = registry.timer("accounts.get.by.id.latency");
     }
+
 
     @PostMapping()
     public ResponseEntity<AccountResponse> createdAccount(
             @Valid @RequestBody AccountRequest request,
             @AuthenticationPrincipal OAuth2User principal){
+
+        createAccountCounter.increment();
 
         return accountService.createAccount(request, principal);
     }
@@ -56,7 +70,7 @@ public class AccountController implements AccountOpenApi {
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal){
 
-        return accountService.getById(id, principal);
+        return getAccountTimer.record(() ->accountService.getById(id, principal));
     }
 
     @PatchMapping("/{id}")
