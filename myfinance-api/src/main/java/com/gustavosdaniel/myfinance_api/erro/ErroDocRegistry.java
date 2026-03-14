@@ -2,6 +2,7 @@ package com.gustavosdaniel.myfinance_api.erro;
 
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -131,6 +132,10 @@ public class ErroDocRegistry {
                 "Escolha um título diferente para a sua nova meta (ex: 'Viagem 2027').",
                 409
         ));
+    }
+
+    public static  Map<String, ErrorDoc> findAll() {
+        return Collections.unmodifiableMap(docs);
     }
 
     public static Optional<ErrorDoc> find(String errorKey){
