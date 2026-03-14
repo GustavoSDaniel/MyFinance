@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -26,11 +27,11 @@ public class DashboardController implements DashboardOpenApi {
     @GetMapping
     @Operation(summary = "Mostra o Dashboard de gastos por categoria do usuário")
     public ResponseEntity<DashboardResponse> dashboard(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @Valid @ModelAttribute BetweenDate date
             ){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         DashboardResponse dashboard = dashboardService.getDashboard(user, date);
 

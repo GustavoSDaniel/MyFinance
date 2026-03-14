@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @Tag(
@@ -45,7 +46,7 @@ public interface DashboardOpenApi {
     ResponseEntity<DashboardResponse> dashboard(
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @Parameter(
                     description = "Filtro de período para o dashboard (data inicial e final)",

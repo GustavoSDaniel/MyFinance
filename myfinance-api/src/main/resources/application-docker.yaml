@@ -23,7 +23,7 @@ spring:
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
-    hakari:
+    hikari:
       pool-name: MyFinanceHikariPool
 
   jpa:
@@ -49,14 +49,9 @@ spring:
 
   security:
     oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${CLIENT_ID}
-            client-secret: ${CLIENT_SECRET}
-            scope:
-              - email
-              - profile
+      resource server:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:5053/realms/myfinance-realm}
 
 springdoc:
   swagger-ui:

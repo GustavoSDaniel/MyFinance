@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -39,7 +40,7 @@ public interface AccountOpenApi {
     ResponseEntity<List<AccountResponseInfo>> getAllAccounts(
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @Parameter(description = "Status da conta para filtro", example = "ACTIVE")
             @RequestParam(required = false) String status
@@ -63,7 +64,7 @@ public interface AccountOpenApi {
             @NotBlank String name,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -83,7 +84,7 @@ public interface AccountOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -104,7 +105,7 @@ public interface AccountOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Dados para atualização da conta",
@@ -130,7 +131,7 @@ public interface AccountOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -149,7 +150,7 @@ public interface AccountOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -168,6 +169,6 @@ public interface AccountOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 }

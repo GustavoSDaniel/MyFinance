@@ -20,6 +20,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -51,7 +52,7 @@ public interface TransactionOpenApi {
             @RequestBody @Valid TransactionRequest request,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -70,7 +71,7 @@ public interface TransactionOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -89,7 +90,7 @@ public interface TransactionOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -112,7 +113,7 @@ public interface TransactionOpenApi {
             @RequestBody @Valid TransferRequest request,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -132,7 +133,7 @@ public interface TransactionOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -151,7 +152,7 @@ public interface TransactionOpenApi {
             TransactionSearchFilter filter,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @ParameterObject
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
@@ -174,6 +175,6 @@ public interface TransactionOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 }

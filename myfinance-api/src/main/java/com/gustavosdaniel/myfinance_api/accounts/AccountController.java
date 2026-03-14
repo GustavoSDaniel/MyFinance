@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -31,9 +32,9 @@ public class AccountController implements AccountOpenApi {
     @PostMapping()
     public ResponseEntity<AccountResponse> createdAccount(
             @Valid @RequestBody AccountRequest request,
-            @AuthenticationPrincipal OAuth2User principal) throws AccountNameDuplicateException {
+            @AuthenticationPrincipal Jwt jwt) {
 
-        User currentUser = authHelper.getCurrentUser(principal);
+        User currentUser = authHelper.getCurrentUser(jwt);
 
         AccountResponse account = accountService.createAccount(request, currentUser);
 
@@ -47,10 +48,10 @@ public class AccountController implements AccountOpenApi {
 
     @GetMapping()
     public ResponseEntity<List<AccountResponseInfo>> getAllAccounts(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) String status){
 
-        User curentUser = authHelper.getCurrentUser(principal);
+        User curentUser = authHelper.getCurrentUser(jwt);
 
         List<AccountResponseInfo> accounts = accountService.getAllAccounts(curentUser.getId(), status);
 
@@ -60,10 +61,10 @@ public class AccountController implements AccountOpenApi {
     @GetMapping("/search")
     public ResponseEntity<List<AccountResponseInfo>> searchByName(
             @RequestParam @NotBlank String name,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         List<AccountResponseInfo> account = accountService.searchAccount(name, user.getId());
 
@@ -73,9 +74,9 @@ public class AccountController implements AccountOpenApi {
     @GetMapping("/{id}")
     public ResponseEntity<AccountResponseInfo> getAccountById(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal){
+            @AuthenticationPrincipal Jwt jwt){
 
-        User curentUser = authHelper.getCurrentUser(principal);
+        User curentUser = authHelper.getCurrentUser(jwt);
 
         AccountResponseInfo account = accountService.getById(id, curentUser.getId());
 
@@ -85,11 +86,11 @@ public class AccountController implements AccountOpenApi {
     @PatchMapping("/{id}")
     public ResponseEntity<AccountResponseInfo> updateAccount(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody AccountUpdateRequest request
     ) throws AccountNameDuplicateException {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         AccountResponseInfo account = accountService.updateAccount(id, user.getId(), request);
 
@@ -99,9 +100,9 @@ public class AccountController implements AccountOpenApi {
     @PatchMapping("/activate/{id}")
     public ResponseEntity<Void> activateAccount(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         accountService.activateAccount(id, user.getId());
 
@@ -111,9 +112,9 @@ public class AccountController implements AccountOpenApi {
     @PatchMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivateAccount(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         accountService.deactivateAccount(id, user.getId());
 
@@ -123,9 +124,9 @@ public class AccountController implements AccountOpenApi {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAccount(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         accountService.deleteAccount(id, user);
 

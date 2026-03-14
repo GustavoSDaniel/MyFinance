@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,7 +49,7 @@ public interface CategoryOpenApi {
             @RequestBody @Valid CategoryRequest request,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -64,7 +65,7 @@ public interface CategoryOpenApi {
     ResponseEntity<List<CategoryResponse>> getAllCategories(
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @Parameter(description = "Status da categoria", example = "ACTIVE")
             @RequestParam(required = false) String status
@@ -84,7 +85,7 @@ public interface CategoryOpenApi {
     ResponseEntity<List<CategoryResponse>> searchName(
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @Parameter(description = "Nome da categoria", example = "Alimentação", required = true)
             @RequestParam String name
@@ -107,7 +108,7 @@ public interface CategoryOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -135,7 +136,7 @@ public interface CategoryOpenApi {
             @RequestBody @Valid CategoryRequestUpdate request,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -154,7 +155,7 @@ public interface CategoryOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -173,7 +174,7 @@ public interface CategoryOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 
 
@@ -189,7 +190,7 @@ public interface CategoryOpenApi {
     ResponseEntity<Void> deleteCategory(
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @Parameter(description = "ID da categoria", required = true)
             @PathVariable UUID id

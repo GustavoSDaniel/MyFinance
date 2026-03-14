@@ -15,6 +15,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -36,11 +37,11 @@ public class GoalController implements GoalOpenApi {
 
     @PostMapping
     public ResponseEntity<GoalResponse> create(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestBody @Valid GoalRequest request
     ) throws InvalidAmountException {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         GoalResponse goal = goalService.createGoal(user, request);
 
@@ -55,11 +56,11 @@ public class GoalController implements GoalOpenApi {
 
     @GetMapping("/{id}")
     public ResponseEntity<GoalResponse> getById(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID id
             ){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         GoalResponse goal = goalService.getGoalById(id, user);
 
@@ -68,11 +69,11 @@ public class GoalController implements GoalOpenApi {
 
     @GetMapping("/search")
     public ResponseEntity<List<GoalResponse>> searchName(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam String name
     ){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         List<GoalResponse> goals = goalService.searchGoal(user, name);
 
@@ -81,13 +82,13 @@ public class GoalController implements GoalOpenApi {
 
     @GetMapping
     public ResponseEntity<Page<GoalResponse>> getAll(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable,
             @RequestParam(required = false) String status
             ){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Page<GoalResponse> goals = goalService.getAllGoals(user, status, pageable);
 
@@ -96,11 +97,11 @@ public class GoalController implements GoalOpenApi {
 
     @PatchMapping("/{id}")
     public ResponseEntity<GoalResponse> update(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestBody @Valid GoalRequestUpdate requestUpdate,
             @PathVariable UUID id
     ){
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         GoalResponse goal = goalService.updateGoal(id, requestUpdate, user);
 
@@ -110,11 +111,11 @@ public class GoalController implements GoalOpenApi {
     @PostMapping("/{id}/deposit")
     public ResponseEntity<GoalResponse> deposit(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestBody @Valid GoalTransfer transfer
     ) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         GoalResponse goal = goalService.depositToGoal(id, transfer, user);
 
@@ -124,11 +125,11 @@ public class GoalController implements GoalOpenApi {
     @PostMapping("/{id}/withdraw")
     public ResponseEntity<GoalResponse> withdraw(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestBody @Valid GoalTransfer transfer
     ) throws com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException, InvalidAmountException {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         GoalResponse goal = goalService.withdrawFromGoal(id, transfer, user);
 
@@ -136,10 +137,9 @@ public class GoalController implements GoalOpenApi {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal OAuth2User principal
-    ){
+    public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         goalService.deleteGoal(id, user);
 

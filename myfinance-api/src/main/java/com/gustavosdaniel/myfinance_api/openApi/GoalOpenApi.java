@@ -20,6 +20,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,7 +47,7 @@ public interface GoalOpenApi {
     ResponseEntity<GoalResponse> create(
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Dados para criação da meta",
@@ -70,7 +71,7 @@ public interface GoalOpenApi {
     ResponseEntity<GoalResponse> getById(
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @Parameter(description = "ID da meta", required = true)
             @PathVariable UUID id
@@ -89,7 +90,7 @@ public interface GoalOpenApi {
     ResponseEntity<List<GoalResponse>> searchName(
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @Parameter(description = "Nome da meta", example = "Viagem", required = true)
             @RequestParam String name
@@ -108,7 +109,7 @@ public interface GoalOpenApi {
     ResponseEntity<Page<GoalResponse>> getAll(
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @ParameterObject
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
@@ -133,7 +134,7 @@ public interface GoalOpenApi {
     ResponseEntity<GoalResponse> update(
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Dados para atualização da meta",
@@ -164,7 +165,7 @@ public interface GoalOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Valor para depósito na meta",
@@ -192,7 +193,7 @@ public interface GoalOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
 
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Valor para saque da meta",
@@ -218,6 +219,6 @@ public interface GoalOpenApi {
             @PathVariable UUID id,
 
             @Parameter(hidden = true)
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     );
 }

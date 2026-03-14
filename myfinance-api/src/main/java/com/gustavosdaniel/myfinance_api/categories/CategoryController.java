@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -31,9 +32,9 @@ public class CategoryController implements CategoryOpenApi {
     @PostMapping
     public ResponseEntity<CategoryResponse> createCategory(
             @RequestBody @Valid CategoryRequest request,
-            @AuthenticationPrincipal OAuth2User principal) throws CategoryNameDuplicateException {
+            @AuthenticationPrincipal Jwt jwt){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         CategoryResponse category = categoryService.createCategory(user,request);
 
@@ -48,11 +49,11 @@ public class CategoryController implements CategoryOpenApi {
 
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> getAllCategories(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) String status)
     {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         List<CategoryResponse> categories = categoryService.getAllCategories(user.getId(), status);
 
@@ -63,10 +64,10 @@ public class CategoryController implements CategoryOpenApi {
     @GetMapping("/search")
     public ResponseEntity<List<CategoryResponse>> searchName(
 
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam String name
     ){
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         List<CategoryResponse> categories = categoryService.searchByName(user.getId(), name);
 
@@ -77,10 +78,10 @@ public class CategoryController implements CategoryOpenApi {
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> getById(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
             )
     {
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         CategoryResponse category = categoryService.getById(id, user.getId());
 
@@ -91,9 +92,9 @@ public class CategoryController implements CategoryOpenApi {
     public ResponseEntity<CategoryResponseUpdate> updateCategory(
             @PathVariable UUID id,
             @RequestBody @Valid CategoryRequestUpdate request,
-            @AuthenticationPrincipal OAuth2User principal) throws CategoryNameDuplicateException {
+            @AuthenticationPrincipal Jwt jwt){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         CategoryResponseUpdate category = categoryService.updateCategory(id, user.getId(), request);
 
@@ -103,10 +104,10 @@ public class CategoryController implements CategoryOpenApi {
     @PatchMapping("/{id}/activate")
     public ResponseEntity<Void> activateCategory(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
 
         categoryService.activateCategory(id, user.getId());
@@ -118,10 +119,10 @@ public class CategoryController implements CategoryOpenApi {
     @PatchMapping("/{id}/deactivate")
     public ResponseEntity<Void> deactivateCategory(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
 
         categoryService.deactivateCategory(id, user.getId());
@@ -134,11 +135,11 @@ public class CategoryController implements CategoryOpenApi {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(
 
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID id
     )
     {
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         categoryService.deleteCategory(id, user);
 

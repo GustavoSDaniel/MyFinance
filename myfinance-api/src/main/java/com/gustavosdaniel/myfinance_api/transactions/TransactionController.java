@@ -15,6 +15,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -37,10 +38,10 @@ public class TransactionController implements TransactionOpenApi {
     @PostMapping
     public ResponseEntity<TransactionResponse> createTransaction(
             @RequestBody @Valid TransactionRequest request,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ) throws InvalidAmountException, InsufficientBalanceException {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         TransactionResponse transaction = transactionService.createTransaction(user, request);
 
@@ -55,10 +56,10 @@ public class TransactionController implements TransactionOpenApi {
     @PatchMapping("/{id}/confirm")
     public ResponseEntity<Void> confirmTransaction(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ) throws InvalidAmountException, InsufficientBalanceException {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         transactionService.transactionConfirmed(id, user.getId());
 
@@ -68,10 +69,10 @@ public class TransactionController implements TransactionOpenApi {
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelTransaction(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ) throws InvalidAmountException, InsufficientBalanceException {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         transactionService.transactionCancel(id, user.getId());
 
@@ -81,10 +82,10 @@ public class TransactionController implements TransactionOpenApi {
     @PostMapping("/transfer")
     public ResponseEntity<Void> transfer(
             @RequestBody @Valid TransferRequest request,
-            @AuthenticationPrincipal OAuth2User principal
-    ) throws InvalidAmountException, InsufficientBalanceException {
+            @AuthenticationPrincipal Jwt jwt
+    ){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         transactionService.transfer(user, request);
 
@@ -94,10 +95,10 @@ public class TransactionController implements TransactionOpenApi {
     @GetMapping("/{id}")
     public ResponseEntity<TransactionResponse> findById(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         TransactionResponse transaction = transactionService.getTransactionById(id, user.getId());
 
@@ -109,11 +110,11 @@ public class TransactionController implements TransactionOpenApi {
     public ResponseEntity<Page<TransactionResponse>> allTransactionsWithFilter(
 
             @ParameterObject TransactionSearchFilter filter,
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable
     ){
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Page<TransactionResponse> transaction = transactionService.getAllWithFilter(user, filter, pageable);
 
@@ -124,10 +125,10 @@ public class TransactionController implements TransactionOpenApi {
     public ResponseEntity<Void> deleteTransaction(
 
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         transactionService.deleteTransaction(id, user.getId());
 
