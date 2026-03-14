@@ -1,0 +1,146 @@
+package com.gustavosdaniel.myfinance_api.documentation;
+
+import com.gustavosdaniel.myfinance_api.domain.dto.ErroDocResponse;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+@Component
+public class ErroDocRegistry {
+
+    private static final Map<String, ErroDocResponse> documentation = new HashMap<>();
+
+    static {
+
+        // --- GENÉRICOS E VALIDAÇÃO ---
+        documentation.put("validacao", new ErroDocResponse(
+                "Validação falhou",
+                "Erro de validação nos campos da requisição.",
+                "Algum dado enviado no corpo da requisição está ausente, vazio ou em um formato inválido.",
+                "Verifique a propriedade 'fieldsErrors' na resposta para identificar quais campos precisam ser corrigidos e tente novamente.",
+                400
+        ));
+
+        // --- AUTENTICAÇÃO E AUTORIZAÇÃO ---
+        documentation.put("nao-autorizado", new ErroDocResponse(
+                "Usuário não autorizado",
+                "O usuário não foi autorizado a realizar essa ação.",
+                "A requisição foi feita sem um token de autenticação válido ou o token expirou.",
+                "Faça login novamente para obter um novo token e inclua-o no cabeçalho 'Authorization' da requisição.",
+                403
+        ));
+
+        documentation.put("usuario-sem-autoriacao-para-apagar-conta", new ErroDocResponse(
+                "Acesso negado",
+                "Não é permitido apagar a conta de outro usuário.",
+                "O usuário autenticado tentou realizar uma ação destrutiva em um recurso que pertence a um ID diferente.",
+                "Verifique se você está logado com o usuário correto ou se o ID do recurso passado na URL está correto.",
+                403
+        ));
+
+        // --- USER ---
+        documentation.put("usuario-nao-encontrado", new ErroDocResponse(
+                "Usuário não encontrado",
+                "Não foi possível encontrar o usuário pesquisado.",
+                "O ID do usuário fornecido não existe no banco de dados.",
+                "Verifique se o ID do usuário está correto.",
+                404
+        ));
+
+        // --- ACCOUNT ---
+        documentation.put("conta-nao-encontrado", new ErroDocResponse(
+                "Conta não encontrada",
+                "A conta pesquisada não existe ou não pertence ao usuário autenticado.",
+                "O ID informado não corresponde a nenhuma conta ativa no cadastro do usuário.",
+                "Verifique se o ID está correto e se a conta não foi deletada.",
+                404
+        ));
+
+        documentation.put("conta-com-nome-duplicado", new ErroDocResponse(
+                "Nome de conta duplicado",
+                "Já existe uma conta com esse nome em uso.",
+                "O usuário tentou criar ou atualizar uma conta com um nome que já está registrado em sua carteira.",
+                "Escolha um nome diferente (ex: 'Nubank 2' ou 'Itaú Corrente') para a conta.",
+                409
+        ));
+
+        // --- CATEGORY ---
+        documentation.put("categoria-nao-encontrado", new ErroDocResponse(
+                "Categoria não encontrada",
+                "A categoria pesquisada não foi encontrada.",
+                "O ID informado não corresponde a nenhuma categoria criada pelo usuário ou no sistema.",
+                "Verifique se o ID da categoria está correto ou crie uma nova categoria.",
+                404
+        ));
+
+        documentation.put("category-com-nome-duplicado", new ErroDocResponse(
+                "Categoria com nome duplicado",
+                "Categoria com nome já em uso.",
+                "O usuário tentou registrar uma categoria que já existe no seu controle financeiro.",
+                "Utilize a categoria já existente ou escolha um nome diferente.",
+                409
+        ));
+
+        // --- TRANSACTION ---
+        documentation.put("transacao-nao-encontrado", new ErroDocResponse(
+                "Transação não encontrada",
+                "A transação pesquisada não foi encontrada.",
+                "O ID fornecido não bate com nenhuma transação atrelada às contas do usuário.",
+                "Confirme se o ID da transação está correto. Ela pode já ter sido excluída.",
+                404
+        ));
+
+        documentation.put("nao-e-possivel-deletar-transacao", new ErroDocResponse(
+                "Regra de negócio violada",
+                "Erro ao tentar deletar transação.",
+                "A transação que você está tentando excluir já foi confirmada/efetivada no saldo.",
+                "Por questões de auditoria, transações confirmadas não podem ser deletadas. Se necessário, crie uma transação de estorno.",
+                400
+        ));
+
+        documentation.put("nao-e-possivel-realizar-transaco-para-amesma-conta", new ErroDocResponse(
+                "Transferência inválida",
+                "Não é possível fazer transferência para a mesma conta.",
+                "O ID da conta de origem enviado na requisição é exatamente igual ao ID da conta de destino.",
+                "Selecione uma conta de destino que seja diferente da conta de onde o dinheiro está saindo.",
+                400
+        ));
+
+        documentation.put("transacao-ja-realizada", new ErroDocResponse(
+                "Transação duplicada",
+                "A transação já foi realizada.",
+                "Uma requisição com a mesma chave de idempotência foi processada recentemente.",
+                "Nenhuma ação é necessária. A transação original já foi efetuada com sucesso. Verifique o seu extrato.",
+                400
+        ));
+
+        // --- GOAL ---
+        documentation.put("meta-nao-encontrado", new ErroDocResponse(
+                "Meta não encontrada",
+                "A meta buscada não foi encontrada.",
+                "O ID informado não corresponde a nenhuma meta financeira cadastrada para o usuário.",
+                "Verifique se a URL contém o ID correto da meta.",
+                404
+        ));
+
+        documentation.put("meta-com-nome-duplicado", new ErroDocResponse(
+                "Meta com nome duplicado",
+                "O nome já está em uso em outra meta.",
+                "Você já possui uma meta financeira ativa com este exato nome.",
+                "Escolha um título diferente para a sua nova meta (ex: 'Viagem 2027').",
+                409
+        ));
+    }
+
+    public static Optional<ErroDocResponse> find(String errorKey){
+
+        return Optional.ofNullable(documentation.get(errorKey));
+    }
+
+    public static  Map<String, ErroDocResponse> findAll() {
+        return Collections.unmodifiableMap(documentation);
+    }
+}

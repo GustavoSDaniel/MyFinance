@@ -29,7 +29,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 /**
  * Serviço responsável pelas regras de negócio relacionadas às contas do usuário.
