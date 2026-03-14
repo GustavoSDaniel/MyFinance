@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
-import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicate;
+import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.exception.AccountNotFoundException;
 import com.gustavosdaniel.myfinance_api.user.User;
 
@@ -40,7 +40,7 @@ public class AccountService {
      * @param accountRequest DTO contendo os dados para criação da nova conta.
      * @param user           Entidade do usuário logado que será o dono da conta.
      * @return DTO contendo as informações da conta recém-criada.
-     * @throws AccountNameDuplicate Caso o usuário já possua uma conta com o mesmo nome.
+     * @throws AccountNameDuplicateException Caso o usuário já possua uma conta com o mesmo nome.
      */
     @Transactional
     @CacheEvict(allEntries = true)
@@ -49,7 +49,7 @@ public class AccountService {
 
         if (accountRepository.existsByNameIgnoreCaseAndUserId(accountRequest.name().trim(), user.getId())){
 
-            throw new AccountNameDuplicate();
+            throw new AccountNameDuplicateException();
         }
 
         log.info("Criando uma nova conta para o usuário: {}", user.getName());
@@ -148,7 +148,7 @@ public class AccountService {
      * @param request DTO contendo os novos dados da conta.
      * @return DTO com as informações atualizadas da conta.
      * @throws AccountNotFoundException Caso a conta não exista.
-     * @throws AccountNameDuplicate     Caso o novo nome solicitado já pertença a outra conta do usuário.
+     * @throws AccountNameDuplicateException     Caso o novo nome solicitado já pertença a outra conta do usuário.
      */
     @Transactional
     @CacheEvict(allEntries = true)
@@ -163,7 +163,7 @@ public class AccountService {
 
             if (accountRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(request.name(), userId, id)){
 
-                    throw new AccountNameDuplicate();
+                    throw new AccountNameDuplicateException();
             }
         }
 

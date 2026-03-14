@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
-import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicate;
+import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.user.UserRepository;
 import com.gustavosdaniel.myfinance_api.user.UserRole;
@@ -40,7 +40,7 @@ class AccountServiceImplTest {
 
         @Test
         @DisplayName("Should create account with sucesso")
-        void shouldCreateAccount() throws AccountNameDuplicate {
+        void shouldCreateAccount() throws AccountNameDuplicateException {
 
             UUID userId = UUID.randomUUID();
 
@@ -226,7 +226,7 @@ class AccountServiceImplTest {
 
         @Test
         @DisplayName("Should updated a information account with sucesso")
-        void updateAccount() throws AccountNameDuplicate {
+        void updateAccount() throws AccountNameDuplicateException {
 
             UUID userId = UUID.randomUUID();
             UUID accountId = UUID.randomUUID();

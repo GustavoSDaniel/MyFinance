@@ -1,10 +1,9 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
-import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicate;
+import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.openApi.AccountOpenApi;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
-import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +31,7 @@ public class AccountController implements AccountOpenApi {
     @PostMapping()
     public ResponseEntity<AccountResponse> createdAccount(
             @Valid @RequestBody AccountRequest request,
-            @AuthenticationPrincipal OAuth2User principal) throws AccountNameDuplicate {
+            @AuthenticationPrincipal OAuth2User principal) throws AccountNameDuplicateException {
 
         User currentUser = authHelper.getCurrentUser(principal);
 
@@ -88,7 +87,7 @@ public class AccountController implements AccountOpenApi {
             @PathVariable UUID id,
             @AuthenticationPrincipal OAuth2User principal,
             @Valid @RequestBody AccountUpdateRequest request
-    ) throws AccountNameDuplicate {
+    ) throws AccountNameDuplicateException {
 
         User user = authHelper.getCurrentUser(principal);
 
