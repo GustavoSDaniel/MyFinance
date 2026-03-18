@@ -11,7 +11,12 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-
+/**
+ * Controlador REST responsável por fornecer os dados para o dashboard financeiro.
+ *
+ * <p>Disponibiliza endpoints para a visualização consolidada de gastos, receitas
+ * e saldos do usuário autenticado, baseados em um determinado período de tempo.
+ */
 @RestController
 @RequestMapping("/api/v1/dashboards")
 public class DashboardController implements DashboardOpenApi {
@@ -24,6 +29,13 @@ public class DashboardController implements DashboardOpenApi {
         this.authHelper = authHelper;
     }
 
+    /**
+     * Retorna os dados consolidados do dashboard financeiro do usuário autenticado.
+     *
+     * @param jwt  o token JWT contendo as credenciais do usuário
+     * @param date objeto contendo o intervalo de datas (início e fim) para filtro dos dados do dashboard
+     * @return um {@link ResponseEntity} contendo o {@link DashboardResponse} com os dados consolidados
+     */
     @GetMapping
     @Operation(summary = "Mostra o Dashboard de gastos por categoria do usuário")
     public ResponseEntity<DashboardResponse> dashboard(

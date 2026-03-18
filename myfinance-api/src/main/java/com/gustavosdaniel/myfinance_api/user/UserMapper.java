@@ -1,39 +1,48 @@
 package com.gustavosdaniel.myfinance_api.user;
 
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+import java.util.function.Predicate;
+
+/**
+ * Componente responsável pela conversão e mapeamento de objetos relacionados à entidade User.
+ */
 @Component
 public class UserMapper {
 
+    private final Predicate<Object> isNull = Objects::isNull;
+
+    /**
+     * Converte um {@link UserRequest} em uma entidade {@link User}.
+     *
+     * @param request O objeto de transferência de dados com as informações do usuário.
+     * @return Uma nova instância de {@link User}, ou {@code null} se o request for nulo.
+     */
     public User toUser(UserRequest request) {
 
-        if (request == null) {
+        if (isNull.test(request)) {
             return null;
         }
 
         return new User(
+                request.keycloakId(),
                 request.email(),
                 request.name(),
                 UserRole.USER
         );
     }
 
-    public UserRequest toUserRequest(OAuth2User oAuth2User) {
-        if (oAuth2User == null) {
-            return null;
-        }
 
-        return new UserRequest(
-                oAuth2User.getAttribute("email"),
-                oAuth2User.getAttribute("name"),
-                oAuth2User.getAttribute("picture")
-        );
-    }
-
+    /**
+     * Converte uma entidade {@link User} em um {@link UserInfoResponse}.
+     *
+     * @param user A entidade contendo os dados do usuário.
+     * @return Uma nova instância de {@link UserInfoResponse}, ou {@code null} se o usuário for nulo.
+     */
     public UserInfoResponse toUserInfoResponse(User user) {
 
-        if (user == null) {
+        if (isNull.test(user)) {
             return null;
         }
 
@@ -44,8 +53,14 @@ public class UserMapper {
         );
     }
 
+    /**
+     * Converte uma entidade {@link User} em um {@link UserResponse}.
+     *
+     * @param user A entidade contendo os dados do usuário.
+     * @return Uma nova instância de {@link UserResponse}, ou {@code null} se o usuário for nulo.
+     */
     public UserResponse toUserResponse(User user){
-        if (user == null){
+        if (isNull.test(user)){
             return null;
         }
 

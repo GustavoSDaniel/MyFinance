@@ -8,10 +8,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers(PUBLIC_URLS).permitAll()
 
                         //user
+                                .requestMatchers(HttpMethod.GET, "/api/v1/users/me").hasAnyRole("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/users/allUsers/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/users/email/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/users/*").hasRole("ADMIN")
@@ -86,18 +89,43 @@ public class SecurityConfig {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+
+            List<GrantedAuthority> authorities = new ArrayList<>();
+
             Map<String, Object> realmAccess = jwt.getClaim("realm_access");
 
-            if (realmAccess == null || !realmAccess.containsKey("roles")){
-                return Collections.emptyList();
+            if (realmAccess != null && realmAccess.containsKey("roles")) {
+
+                List<String> roles = (List<String>) realmAccess.get("roles");
+
+                authorities.addAll(
+                        roles.stream()
+                                .map(role -> new SimpleGrantedAuthority(
+                                        "ROLE_" + role.toUpperCase()))
+                                .toList()
+                );
             }
 
-            @SuppressWarnings("unchecked")
-            List<String> roles = (List<String>) realmAccess.get("roles");
+            Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
 
-            return roles.stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
-                    .collect(Collectors.toList());
+            if (resourceAccess != null) {
+
+                Map<String, Object> client = (Map<String, Object>) resourceAccess
+                        .get("my-finance-app");
+
+                if (client != null && client.containsKey("roles")) {
+
+                    List<String> roles = (List<String>) client.get("roles");
+
+                    authorities.addAll(
+                            roles.stream()
+                                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
+                                    .toList()
+                    );
+                }
+            }
+
+            return authorities;
         });
 
         return converter;

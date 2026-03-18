@@ -51,10 +51,28 @@ spring:
 
   security:
     oauth2:
-      resourceserver: # CORRIGIDO: Sem espaço agora!
+      resourceserver:
         jwt:
-          # O issuer-uri é a identidade do seu Keycloak
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:5053/realms/myfinance-realm}
+          issuer-uri: ${ISSUER_URI}
+
+      client:
+        registration:
+          keycloak:
+            client-id: ${CLIENT_ID}
+            client-secret: ${CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"
+
+
+        provider:
+          keycloak:
+            issuer-uri: ${ISSUER_URI}
+            user-name-attribute: preferred_username
+
 
 springdoc:
   swagger-ui:

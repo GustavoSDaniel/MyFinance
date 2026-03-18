@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.openApi;
 
+import com.gustavosdaniel.myfinance_api.user.UserInfoResponse;
 import com.gustavosdaniel.myfinance_api.user.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,13 +26,29 @@ import java.util.UUID;
 public interface UserOpenApi {
 
     @Operation(
+            summary = "Obter dados do usuário logado",
+            description = "Retorna as informações resumidas (nome, email, foto) do usuário atualmente autenticado no sistema."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dados do usuário retornados com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserInfoResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Usuário não autenticado ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Erro interno no servidor", content = @Content)
+    })
+    UserInfoResponse getCurrentUser();
+
+
+    @Operation(
             summary = "Listar todos os usuários",
             description = "Retorna uma lista paginada de todos os usuários cadastrados no sistema."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuários retornados com sucesso",
-                    content = @Content(schema = @Schema(implementation = UserResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Parâmetros de paginação inválidos", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Usuário não autenticado ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Acesso negado (permissão insuficiente)", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Erro interno no servidor", content = @Content)
     })
     ResponseEntity<Page<UserResponse>> getAllUsers(
             @ParameterObject
@@ -45,46 +62,53 @@ public interface UserOpenApi {
             description = "Retorna os dados de um usuário com base no email informado."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuário encontrado",
-                    content = @Content(schema = @Schema(implementation = UserResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+            @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Formato de email inválido ou parâmetro ausente", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Usuário não autenticado ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Acesso negado (permissão insuficiente)", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Nenhum usuário encontrado com o email informado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Erro interno no servidor", content = @Content)
     })
     ResponseEntity<UserResponse> getEmailByUser(
-
-            @Parameter(description = "Email do usuário", example = "usuario@email.com")
+            @Parameter(description = "Email do usuário a ser buscado", example = "usuario@email.com", required = true)
             @RequestParam String email
     );
 
 
     @Operation(
             summary = "Buscar usuário por ID",
-            description = "Retorna os dados de um usuário a partir do seu identificador único."
+            description = "Retorna os dados de um usuário a partir do seu identificador único (UUID)."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuário encontrado",
-                    content = @Content(schema = @Schema(implementation = UserResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+            @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Formato de ID (UUID) inválido", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Usuário não autenticado ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Acesso negado (permissão insuficiente)", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Nenhum usuário encontrado com o ID informado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Erro interno no servidor", content = @Content)
     })
     ResponseEntity<UserResponse> getUserById(
-
-            @Parameter(description = "ID do usuário", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+            @Parameter(description = "ID único (UUID) do usuário", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable UUID id
     );
 
 
     @Operation(
             summary = "Deletar usuário",
-            description = "Remove um usuário do sistema. Administradores podem remover qualquer usuário, enquanto usuários comuns só podem remover a própria conta."
+            description = "Remove um usuário do sistema. Administradores (ROLE_ADMIN) podem remover qualquer usuário. Usuários comuns só podem remover a própria conta."
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Usuário deletado com sucesso"),
-            @ApiResponse(responseCode = "403", description = "Usuário não possui permissão para deletar esta conta"),
-            @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+            @ApiResponse(responseCode = "204", description = "Usuário deletado com sucesso", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Formato de ID (UUID) inválido", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Usuário não autenticado ou token inválido", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Acesso negado (usuário não possui permissão para deletar esta conta)", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Nenhum usuário encontrado com o ID informado", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Erro interno no servidor", content = @Content)
     })
     ResponseEntity<Void> deleteUser(
-
-            @Parameter(description = "ID do usuário que será removido",
-                    example = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+            @Parameter(description = "ID único (UUID) do usuário que será removido", example = "3fa85f64-5717-4562-b3fc-2c963f66afa6", required = true)
             @PathVariable UUID id,
 
             @Parameter(hidden = true)

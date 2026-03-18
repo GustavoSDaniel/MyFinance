@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,8 +42,17 @@ public interface GoalOpenApi {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Meta criada com sucesso",
                     content = @Content(schema = @Schema(implementation = GoalResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos"),
-            @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
+
+            @ApiResponse(responseCode = "400", description = "Dados inválidos",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+
+            @ApiResponse(responseCode = "401", description = "Usuário não autenticado"),
+
+            @ApiResponse(responseCode = "403", description = "Acesso negado",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<GoalResponse> create(
 
@@ -58,15 +68,20 @@ public interface GoalOpenApi {
     );
 
 
-    @Operation(
-            summary = "Buscar meta por ID",
-            description = "Retorna uma meta específica do usuário autenticado."
-    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Meta encontrada",
                     content = @Content(schema = @Schema(implementation = GoalResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Meta não encontrada"),
-            @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
+
+            @ApiResponse(responseCode = "401", description = "Usuário não autenticado"),
+
+            @ApiResponse(responseCode = "403", description = "Acesso negado",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+
+            @ApiResponse(responseCode = "404", description = "Meta não encontrada",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<GoalResponse> getById(
 
@@ -204,14 +219,19 @@ public interface GoalOpenApi {
     );
 
 
-    @Operation(
-            summary = "Excluir meta",
-            description = "Remove permanentemente uma meta financeira do usuário."
-    )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Meta excluída com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Meta não encontrada"),
-            @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
+
+            @ApiResponse(responseCode = "401", description = "Usuário não autenticado"),
+
+            @ApiResponse(responseCode = "403", description = "Acesso negado",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+
+            @ApiResponse(responseCode = "404", description = "Meta não encontrada",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     ResponseEntity<Void> delete(
 

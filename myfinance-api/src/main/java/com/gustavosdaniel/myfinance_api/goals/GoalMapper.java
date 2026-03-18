@@ -5,9 +5,21 @@ import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
 import org.springframework.stereotype.Component;
 
+/**
+ * Componente responsável pelo mapeamento e conversão de objetos relacionados à entidade {@link Goal} (Meta).
+ */
 @Component
 public class GoalMapper {
 
+    /**
+     * Converte um objeto de requisição, um usuário e uma categoria em uma nova entidade {@link Goal}.
+     *
+     * @param request  os dados de criação da meta
+     * @param user     o usuário proprietário da meta
+     * @param category a categoria associada à meta
+     * @return uma nova instância de {@link Goal}, ou {@code null} se a requisição for nula
+     * @throws InvalidAmountException se o valor alvo (targetAmount) fornecido na requisição for inválido
+     */
     public Goal toGoal(GoalRequest request, User user, Category category) throws InvalidAmountException {
 
         if (request == null){
@@ -26,6 +38,12 @@ public class GoalMapper {
         );
     }
 
+    /**
+     * Converte uma entidade {@link Goal} em um DTO {@link GoalResponse}.
+     *
+     * @param goal a entidade de meta a ser convertida
+     * @return uma nova instância de {@link GoalResponse}, ou {@code null} se a meta for nula
+     */
     public GoalResponse toGoalResponse(Goal goal){
 
         if (goal == null){
@@ -45,6 +63,17 @@ public class GoalMapper {
         );
     }
 
+    /**
+     * Atualiza os dados de uma entidade {@link Goal} existente com base nas informações
+     * fornecidas em um {@link GoalRequestUpdate} e uma {@link Category} opcional.
+     *
+     * <p>Apenas os campos que não são nulos (e não estão em branco, aplicável a textos)
+     * no objeto de requisição serão atualizados na entidade.
+     *
+     * @param requestUpdate o objeto contendo os novos dados da meta
+     * @param goal          a entidade de meta que será atualizada
+     * @param category      a nova categoria a ser associada à meta (caso seja fornecida)
+     */
     public void toGoalUpdate(GoalRequestUpdate requestUpdate, Goal goal, Category category){
 
         if (category != null){

@@ -2,6 +2,7 @@ package com.gustavosdaniel.myfinance_api.user;
 
 import com.gustavosdaniel.myfinance_api.exception.AccessDeniedException;
 import com.gustavosdaniel.myfinance_api.exception.UserNotFoundException;
+import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,9 +27,8 @@ import java.util.UUID;
  *
  * <p>Esta classe gerencia operações como:
  * <ul>
- *     <li>Criação ou atualização de usuários via OAuth</li>
- *     <li>Consulta de usuários</li>
- *     <li>Remoção de usuários</li>
+ * <li>Consulta de usuários</li>
+ * <li>Remoção de usuários</li>
  * </ul>
  *
  * <p>Também utiliza cache para melhorar a performance nas consultas.
@@ -39,57 +41,12 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    @Value("${app.security.admin-emails}")
-    private  List<String> adminEmails;
+
 
     public UserService(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-    }
 
-    /**
-     * Cria ou atualiza um usuário autenticado via OAuth.
-     *
-     * <p>Se o usuário já existir (baseado no email), seus dados são atualizados.
-     * Caso contrário, um novo usuário é criado. Caso o email esteja listado
-     * como administrador na configuração da aplicação, o usuário receberá
-     * a role {@link UserRole#ADMIN}.
-     *
-     * @param request dados do usuário retornados pelo provedor OAuth
-     * @return informações do usuário criado ou atualizado
-     */
-    @Transactional
-    @CacheEvict(allEntries = true)
-    public UserInfoResponse createOrUpdateUserFromOAuth(UserRequest request) {
-
-        Optional<User> existingUser = userRepository.findByEmail(request.email());
-
-        if (existingUser.isPresent()) {
-
-            User user = existingUser.get();
-            user.setName(request.name());
-            user.setPicture(request.picture());
-
-            User userUpdate = userRepository.save(user);
-
-            log.info("Usuário: {} atualizado com sucesso", userUpdate.getName());
-
-            return userMapper.toUserInfoResponse(userUpdate);
-        }
-        UserRole role = UserRole.USER;
-
-        if (adminEmails.contains(request.email())){
-
-            role = UserRole.ADMIN;
-        }
-
-        User newUser = userMapper.toUser(request);
-        newUser.setRole(role);
-        User savedUser = userRepository.save(newUser);
-
-        log.info("Novo usuário: {} salvo com sucesso", savedUser.getName());
-
-        return userMapper.toUserInfoResponse(savedUser);
     }
 
     /**
@@ -146,21 +103,6 @@ public class UserService {
     }
 
     /**
-     * Busca um usuário pelo email.
-     *
-     * <p>Este método lança uma exceção caso o usuário não seja encontrado.
-     *
-     * @param email email do usuário
-     * @return entidade {@link User}
-     * @throws UserNotFoundException caso o usuário não exista
-     */
-    @Transactional(readOnly = true)
-    public User findByEmail(String email) {
-
-        return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
-    }
-
-    /**
      * Busca um usuário pelo identificador único.
      *
      * <p>O resultado da consulta é armazenado em cache para melhorar
@@ -185,11 +127,13 @@ public class UserService {
      * Remove um usuário do sistema.
      *
      * <p>Um usuário pode remover apenas sua própria conta, a menos que possua
-     * a role de administrador. Administradores podem remover qualquer usuário.
+     * a role de administrador (ROLE_ADMIN). Administradores podem remover qualquer usuário.
+     * Ao remover um usuário, o cache de usuários é totalmente invalidado.
      *
      * @param id identificador do usuário a ser removido
-     * @param authentication informações do usuário autenticado
-     * @return resposta HTTP indicando o resultado da operação
+     * @param authentication informações de autenticação e contexto de segurança do usuário logado que realiza a requisição
+     * @throws UserNotFoundException caso o usuário a ser deletado não exista
+     * @throws AccessDeniedException caso o usuário logado tente deletar outra conta sem possuir privilégios de administrador
      */
     @Transactional
     @CacheEvict(allEntries = true)
@@ -198,19 +142,14 @@ public class UserService {
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
 
         boolean isAdmin = authentication.getAuthorities()
-                .contains(new SimpleGrantedAuthority("ADMIN"));
+                .contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
 
-        if (isAdmin){
+        String loggedInKeycloakId = authentication.getName();
 
-            userRepository.deleteById(id);
-        }
+        if (!isAdmin && !user.getKeycloakId().equals(loggedInKeycloakId)){
 
-        String emailLogado = authentication.getName();
-
-
-        if (!isAdmin && !user.getEmail().equals(emailLogado)){
-
-            log.warn("Usuário {} tentou deletar a conta de {}", emailLogado, user.getEmail());
+            log.warn("Usuário {} tentou deletar a conta do usuário de ID {}",
+                    loggedInKeycloakId, id);
 
             throw new AccessDeniedException();
         }

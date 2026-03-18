@@ -22,6 +22,18 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.UUID;
 
+/**
+ * Controlador REST responsável por expor os endpoints da API para gerenciamento de transações.
+ * <p>
+ * Esta classe implementa a interface {@link TransactionOpenApi} (para documentação OpenAPI) e
+ * fornece operações de criação, consulta, atualização de status (confirmação/cancelamento),
+ * transferência entre contas, busca com filtros e exclusão de transações.
+ * </p>
+ * <p>
+ * Todos os endpoints exigem autenticação via JWT, e o usuário autenticado é obtido através
+ * de {@link AuthHelper} a partir do token JWT fornecido no cabeçalho de autorização.
+ * </p>
+ */
 @RestController
 @RequestMapping("/api/v1/transactions")
 public class TransactionController implements TransactionOpenApi {
@@ -35,6 +47,20 @@ public class TransactionController implements TransactionOpenApi {
     }
 
 
+    /**
+     * Cria uma nova transação (receita ou despesa) para o usuário autenticado.
+     * <p>
+     * O corpo da requisição deve conter os dados da transação no formato {@link TransactionRequest}.
+     * Após a criação, retorna o status {@code 201 Created} com a localização do novo recurso
+     * no cabeçalho {@code Location} e o corpo contendo os detalhes da transação criada.
+     * </p>
+     *
+     * @param request Objeto contendo os dados da transação a ser criada (validado via {@link Valid}).
+     * @param jwt     Token JWT do usuário autenticado (extraído pelo Spring Security).
+     * @return {@link ResponseEntity} com status 201, cabeçalho Location e corpo {@link TransactionResponse}.
+     * @throws InvalidAmountException          Se o valor da transação for inválido (ex.: negativo ou zero).
+     * @throws InsufficientBalanceException    Se for uma despesa e o saldo da conta for insuficiente.
+     */
     @PostMapping
     public ResponseEntity<TransactionResponse> createTransaction(
             @RequestBody @Valid TransactionRequest request,
@@ -53,6 +79,19 @@ public class TransactionController implements TransactionOpenApi {
         return ResponseEntity.created(uri).body(transaction);
     }
 
+    /**
+     * Confirma uma transação pendente, alterando seu status para CONFIRMADA.
+     * <p>
+     * A confirmação de uma transação pode impactar o saldo da conta associada
+     * (dependendo da regra de negócio, por exemplo, em despesas futuras).
+     * </p>
+     *
+     * @param id  Identificador único da transação a ser confirmada.
+     * @param jwt Token JWT do usuário autenticado.
+     * @return {@link ResponseEntity} com status 204 No Content em caso de sucesso.
+     * @throws InvalidAmountException       Se houver problema com o valor da transação durante a confirmação.
+     * @throws InsufficientBalanceException Se a confirmação de uma despesa resultar em saldo insuficiente.
+     */
     @PatchMapping("/{id}/confirm")
     public ResponseEntity<Void> confirmTransaction(
             @PathVariable UUID id,
@@ -66,6 +105,18 @@ public class TransactionController implements TransactionOpenApi {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Cancela uma transação pendente, alterando seu status para CANCELADA.
+     * <p>
+     * O cancelamento impede que a transação afete o saldo da conta (se ainda não processada).
+     * </p>
+     *
+     * @param id  Identificador único da transação a ser cancelada.
+     * @param jwt Token JWT do usuário autenticado.
+     * @return {@link ResponseEntity} com status 204 No Content em caso de sucesso.
+     * @throws InvalidAmountException       Se houver problema com o valor da transação durante o cancelamento.
+     * @throws InsufficientBalanceException Se o cancelamento impactar o saldo de forma inconsistente.
+     */
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelTransaction(
             @PathVariable UUID id,
@@ -79,6 +130,17 @@ public class TransactionController implements TransactionOpenApi {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Realiza uma transferência de valor entre duas contas do mesmo usuário.
+     * <p>
+     * O corpo da requisição deve conter os dados da transferência no formato {@link TransferRequest}.
+     * A operação cria duas transações: uma despesa na conta de origem e uma receita na conta de destino.
+     * </p>
+     *
+     * @param request Objeto contendo os dados da transferência (conta origem, conta destino, valor, etc.).
+     * @param jwt     Token JWT do usuário autenticado.
+     * @return {@link ResponseEntity} com status 204 No Content em caso de sucesso.
+     */
     @PostMapping("/transfer")
     public ResponseEntity<Void> transfer(
             @RequestBody @Valid TransferRequest request,
@@ -92,6 +154,14 @@ public class TransactionController implements TransactionOpenApi {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Busca uma transação pelo seu ID, desde que pertença ao usuário autenticado.
+     *
+     * @param id  Identificador único da transação.
+     * @param jwt Token JWT do usuário autenticado.
+     * @return {@link ResponseEntity} com status 200 e o corpo contendo os dados da transação
+     *         em {@link TransactionResponse}.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<TransactionResponse> findById(
             @PathVariable UUID id,
@@ -100,18 +170,33 @@ public class TransactionController implements TransactionOpenApi {
 
         User user = authHelper.getCurrentUser(jwt);
 
-        TransactionResponse transaction = transactionService.getTransactionById(id, user.getId());
+        TransactionResponse transaction = transactionService
+                .getTransactionById(id, user.getId());
 
         return ResponseEntity.ok(transaction);
 
     }
 
+    /**
+     * Retorna uma página de transações do usuário autenticado, com suporte a filtros e ordenação.
+     * <p>
+     * Os filtros são fornecidos através do objeto {@link TransactionSearchFilter} como parâmetros de consulta.
+     * A paginação e ordenação são controladas pelos parâmetros {@code page}, {@code size}, {@code sort}
+     * (padrão: ordenação decrescente por {@code createdAt}).
+     * </p>
+     *
+     * @param filter   Objeto contendo os critérios de filtragem (conta, categoria, descrição, tipo, status, datas).
+     * @param jwt      Token JWT do usuário autenticado.
+     * @param pageable Configurações de paginação e ordenação.
+     * @return {@link ResponseEntity} com status 200 e uma página de {@link TransactionResponse}.
+     */
     @GetMapping("/search")
     public ResponseEntity<Page<TransactionResponse>> allTransactionsWithFilter(
 
             @ParameterObject TransactionSearchFilter filter,
             @AuthenticationPrincipal Jwt jwt,
-            @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
+            @ParameterObject
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable
     ){
         User user = authHelper.getCurrentUser(jwt);
@@ -121,6 +206,16 @@ public class TransactionController implements TransactionOpenApi {
         return ResponseEntity.ok(transaction);
     }
 
+    /**
+     * Exclui uma transação do usuário autenticado.
+     * <p>
+     * A exclusão pode estar sujeita a regras como não permitir exclusão de transações já confirmadas.
+     * </p>
+     *
+     * @param id  Identificador único da transação a ser excluída.
+     * @param jwt Token JWT do usuário autenticado.
+     * @return {@link ResponseEntity} com status 204 No Content em caso de sucesso.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTransaction(
 
