@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.transactions;
 
 import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
+import com.gustavosdaniel.myfinance_api.metrics.TransactionMetrics;
 import com.gustavosdaniel.myfinance_api.openApi.TransactionOpenApi;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
@@ -40,10 +41,12 @@ public class TransactionController implements TransactionOpenApi {
 
     private final TransactionService transactionService;
     private final AuthHelper authHelper;
+    private final TransactionMetrics transactionMetrics;
 
-    public TransactionController(TransactionService transactionService, AuthHelper authHelper) {
+    public TransactionController(TransactionService transactionService, AuthHelper authHelper, TransactionMetrics transactionMetrics) {
         this.transactionService = transactionService;
         this.authHelper = authHelper;
+        this.transactionMetrics = transactionMetrics;
     }
 
 
@@ -173,7 +176,7 @@ public class TransactionController implements TransactionOpenApi {
         TransactionResponse transaction = transactionService
                 .getTransactionById(id, user.getId());
 
-        return ResponseEntity.ok(transaction);
+        return transactionMetrics.recordGetById(() -> ResponseEntity.ok(transaction));
 
     }
 
@@ -201,9 +204,10 @@ public class TransactionController implements TransactionOpenApi {
     ){
         User user = authHelper.getCurrentUser(jwt);
 
-        Page<TransactionResponse> transaction = transactionService.getAllWithFilter(user, filter, pageable);
+        Page<TransactionResponse> transaction = transactionService
+                .getAllWithFilter(user, filter, pageable);
 
-        return ResponseEntity.ok(transaction);
+        return transactionMetrics.recordGetAll(() -> ResponseEntity.ok(transaction));
     }
 
     /**

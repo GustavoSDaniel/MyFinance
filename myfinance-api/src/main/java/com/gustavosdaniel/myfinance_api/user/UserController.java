@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.user;
 
+import com.gustavosdaniel.myfinance_api.metrics.UserMetrics;
 import com.gustavosdaniel.myfinance_api.openApi.UserOpenApi;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.springdoc.core.annotations.ParameterObject;
@@ -29,11 +30,13 @@ public class UserController implements UserOpenApi {
     private final UserService userService;
     private final AuthHelper authHelper;
     private final UserMapper userMapper;
+    private final UserMetrics userMetrics;
 
-    public UserController(UserService userService, AuthHelper authHelper, UserMapper userMapper) {
+    public UserController(UserService userService, AuthHelper authHelper, UserMapper userMapper, UserMetrics userMetrics) {
         this.userService = userService;
         this.authHelper = authHelper;
         this.userMapper = userMapper;
+        this.userMetrics = userMetrics;
     }
 
     /**
@@ -51,7 +54,7 @@ public class UserController implements UserOpenApi {
 
         User user = authHelper.getCurrentUser(jwt);
 
-        return userMapper.toUserInfoResponse(user);
+        return userMetrics.recordCurrent(() -> userMapper.toUserInfoResponse(user));
     }
 
     /**
@@ -68,7 +71,7 @@ public class UserController implements UserOpenApi {
 
         Page<UserResponse> users = userService.getAllUsers(pageable);
 
-        return ResponseEntity.ok(users);
+        return userMetrics.recordGetAll(() -> ResponseEntity.ok(users));
     }
 
     /**
@@ -82,7 +85,8 @@ public class UserController implements UserOpenApi {
 
         Optional<UserResponse> user = userService.getUserByEmail(email);
 
-        return user.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return userMetrics.recordGetByEmail(() -> user.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build()));
     }
 
     /**
@@ -96,7 +100,7 @@ public class UserController implements UserOpenApi {
 
         UserResponse user = userService.getUserById(id);
 
-        return ResponseEntity.ok(user);
+        return userMetrics.recordGetById(() -> ResponseEntity.ok(user));
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.dashboard;
 
+import com.gustavosdaniel.myfinance_api.metrics.DashboardMetrics;
 import com.gustavosdaniel.myfinance_api.openApi.DashboardOpenApi;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
@@ -23,10 +24,12 @@ public class DashboardController implements DashboardOpenApi {
 
     private final DashboardService dashboardService;
     private final AuthHelper authHelper;
+    private final DashboardMetrics dashboardMetrics;
 
-    public DashboardController(DashboardService dashboardService, AuthHelper authHelper) {
+    public DashboardController(DashboardService dashboardService, AuthHelper authHelper, DashboardMetrics dashboardMetrics) {
         this.dashboardService = dashboardService;
         this.authHelper = authHelper;
+        this.dashboardMetrics = dashboardMetrics;
     }
 
     /**
@@ -47,6 +50,6 @@ public class DashboardController implements DashboardOpenApi {
 
         DashboardResponse dashboard = dashboardService.getDashboard(user, date);
 
-        return ResponseEntity.ok(dashboard);
+        return dashboardMetrics.dashboard(() -> ResponseEntity.ok(dashboard));
     }
 }

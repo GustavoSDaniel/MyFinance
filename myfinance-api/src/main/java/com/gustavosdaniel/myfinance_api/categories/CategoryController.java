@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.categories;
 
 import com.gustavosdaniel.myfinance_api.exception.CategoryNameDuplicateException;
+import com.gustavosdaniel.myfinance_api.metrics.CategoryMetrics;
 import com.gustavosdaniel.myfinance_api.openApi.CategoryOpenApi;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
@@ -29,10 +30,12 @@ public class CategoryController implements CategoryOpenApi {
 
     private final CategoryService categoryService;
     private final AuthHelper authHelper;
+    private final CategoryMetrics categoryMetrics;
 
-    public CategoryController(CategoryService categoryService, AuthHelper authHelper) {
+    public CategoryController(CategoryService categoryService, AuthHelper authHelper, CategoryMetrics categoryMetrics) {
         this.categoryService = categoryService;
         this.authHelper = authHelper;
+        this.categoryMetrics = categoryMetrics;
     }
 
     /**
@@ -77,7 +80,7 @@ public class CategoryController implements CategoryOpenApi {
 
         List<CategoryResponse> categories = categoryService.getAllCategories(user.getId(), status);
 
-        return ResponseEntity.ok(categories);
+        return categoryMetrics.recordGetAll(() -> ResponseEntity.ok(categories));
 
     }
 
@@ -98,7 +101,7 @@ public class CategoryController implements CategoryOpenApi {
 
         List<CategoryResponse> categories = categoryService.searchByName(user.getId(), name);
 
-        return ResponseEntity.ok(categories);
+        return categoryMetrics.recordSearchName(() -> ResponseEntity.ok(categories));
 
     }
 
@@ -119,7 +122,7 @@ public class CategoryController implements CategoryOpenApi {
 
         CategoryResponse category = categoryService.getById(id, user.getId());
 
-        return ResponseEntity.ok(category);
+        return categoryMetrics.recordGetById(() -> ResponseEntity.ok(category));
     }
 
     /**

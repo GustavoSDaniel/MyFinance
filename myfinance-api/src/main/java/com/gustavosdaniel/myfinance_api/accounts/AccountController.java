@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
 import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicateException;
+import com.gustavosdaniel.myfinance_api.metrics.AccountMetrics;
 import com.gustavosdaniel.myfinance_api.openApi.AccountOpenApi;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
@@ -29,10 +30,12 @@ public class AccountController implements AccountOpenApi {
 
     private final AccountService accountService ;
     private final AuthHelper authHelper;
+    private final AccountMetrics accountMetrics;
 
-    public AccountController(AccountService accountService, AuthHelper authHelper) {
+    public AccountController(AccountService accountService, AuthHelper authHelper, AccountMetrics accountMetrics) {
         this.accountService = accountService;
         this.authHelper = authHelper;
+        this.accountMetrics = accountMetrics;
     }
 
     /**
@@ -75,7 +78,7 @@ public class AccountController implements AccountOpenApi {
 
         List<AccountResponseInfo> accounts = accountService.getAllAccounts(curentUser.getId(), status);
 
-        return ResponseEntity.ok(accounts);
+        return accountMetrics.recordGetAll(() -> ResponseEntity.ok(accounts));
     }
 
     /**
@@ -95,7 +98,7 @@ public class AccountController implements AccountOpenApi {
 
         List<AccountResponseInfo> account = accountService.searchAccount(name, user.getId());
 
-        return ResponseEntity.ok(account);
+        return accountMetrics.recordGetSearch(() -> ResponseEntity.ok(account));
     }
 
     /**
@@ -114,7 +117,7 @@ public class AccountController implements AccountOpenApi {
 
         AccountResponseInfo account = accountService.getById(id, curentUser.getId());
 
-        return ResponseEntity.ok(account);
+        return accountMetrics.recordGetById(() -> ResponseEntity.ok(account));
     }
 
     /**

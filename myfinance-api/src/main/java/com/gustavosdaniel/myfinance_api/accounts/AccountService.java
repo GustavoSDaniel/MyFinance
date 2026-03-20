@@ -2,6 +2,7 @@ package com.gustavosdaniel.myfinance_api.accounts;
 
 import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.exception.AccountNotFoundException;
+import com.gustavosdaniel.myfinance_api.metrics.AccountMetrics;
 import com.gustavosdaniel.myfinance_api.user.User;
 
 import org.slf4j.Logger;
@@ -27,10 +28,12 @@ public class AccountService {
     private final Logger log = LoggerFactory.getLogger(AccountService.class);
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
+    private final AccountMetrics accountMetrics;
 
-    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper ) {
+    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper, AccountMetrics accountMetrics) {
         this.accountRepository = accountRepository;
         this.accountMapper = accountMapper;
+        this.accountMetrics = accountMetrics;
     }
 
     /**
@@ -57,6 +60,8 @@ public class AccountService {
         Account newAccount = accountMapper.toAccount(user, accountRequest);
 
         Account savedAccount = accountRepository.save(newAccount);
+
+        accountMetrics.incrementCreate();
 
         user.addAccount(newAccount);
 
@@ -171,6 +176,8 @@ public class AccountService {
 
         Account accountUpdated = accountRepository.save(account);
 
+        accountMetrics.incrementUpdate();
+
         log.info("Conta: {} atualizada com sucesso", accountUpdated.getName());
 
         return accountMapper.toAccountResponseInfo(accountUpdated);
@@ -254,6 +261,8 @@ public class AccountService {
         log.warn("Deletando conta permanentemente: {} do usuário {}", account.getName(), account.getUser().getName());
 
         accountRepository.delete(account);
+
+        accountMetrics.incrementDelete();
 
     }
 }

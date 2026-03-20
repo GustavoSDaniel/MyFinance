@@ -4,6 +4,7 @@ import com.gustavosdaniel.myfinance_api.accounts.*;
 import com.gustavosdaniel.myfinance_api.categories.Category;
 import com.gustavosdaniel.myfinance_api.exception.*;
 import com.gustavosdaniel.myfinance_api.categories.CategoryRepository;
+import com.gustavosdaniel.myfinance_api.metrics.TransactionMetrics;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
 import org.slf4j.Logger;
@@ -35,12 +36,14 @@ public class TransactionService {
     private final TransactionMapper transactionMapper;
     private final AccountRepository accountRepository;
     private final Logger log = LoggerFactory.getLogger(TransactionService.class);
+    private final TransactionMetrics transactionMetrics;
 
-    public TransactionService(CategoryRepository categoryRepository, TransactionRepository transactionRepository, TransactionMapper transactionMapper, AccountRepository accountRepository) {
+    public TransactionService(CategoryRepository categoryRepository, TransactionRepository transactionRepository, TransactionMapper transactionMapper, AccountRepository accountRepository, TransactionMetrics transactionMetrics) {
         this.categoryRepository = categoryRepository;
         this.transactionRepository = transactionRepository;
         this.transactionMapper = transactionMapper;
         this.accountRepository = accountRepository;
+        this.transactionMetrics = transactionMetrics;
     }
 
     /**
@@ -90,6 +93,8 @@ public class TransactionService {
         Transaction transactionSave = transactionRepository.save(transaction);
         accountRepository.save(transaction.getAccount());
 
+        transactionMetrics.incrementCreated();
+
         log.info("Transação criada com sucesso");
 
         return transactionMapper.toTransactionResponse(transactionSave);
@@ -129,6 +134,8 @@ public class TransactionService {
         transactionRepository.save(transaction);
         accountRepository.save(transaction.getAccount());
 
+        transactionMetrics.incrementConfirm();
+
         log.info("Transação: {} confirmada com sucesso", id);
     }
 
@@ -155,6 +162,8 @@ public class TransactionService {
 
         transactionRepository.save(transaction);
         accountRepository.save(transaction.getAccount());
+
+        transactionMetrics.incrementCancel();
 
         log.info("Transaction {} canceled with sucesso", id);
 
@@ -245,6 +254,8 @@ public class TransactionService {
         transactionRepository.saveAll(List.of(from,to));
         accountRepository.saveAll(List.of(fromAccount, toAccount));
 
+        transactionMetrics.incrementTransfer();
+
         log.info("Transferência realizada com sucesso: {} -> {} valor: {}",
                 fromAccount.getName(), toAccount.getName(), transferRequest.amount());
     }
@@ -326,6 +337,8 @@ public class TransactionService {
         }
 
         transactionRepository.delete(transaction);
+
+        transactionMetrics.incrementDeleted();
 
         log.info("Transação: {} deletada com sucesso", id);
     }

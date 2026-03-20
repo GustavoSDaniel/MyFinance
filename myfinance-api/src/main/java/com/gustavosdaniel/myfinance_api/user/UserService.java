@@ -2,10 +2,9 @@ package com.gustavosdaniel.myfinance_api.user;
 
 import com.gustavosdaniel.myfinance_api.exception.AccessDeniedException;
 import com.gustavosdaniel.myfinance_api.exception.UserNotFoundException;
-import com.gustavosdaniel.myfinance_api.util.AuthHelper;
+import com.gustavosdaniel.myfinance_api.metrics.UserMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,12 +12,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,13 +36,13 @@ public class UserService {
     private final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final UserMetrics userMetrics;
 
 
-
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, UserMetrics userMetrics) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
-
+        this.userMetrics = userMetrics;
     }
 
     /**
@@ -154,8 +150,9 @@ public class UserService {
             throw new AccessDeniedException();
         }
 
-
         userRepository.delete(user);
+
+        userMetrics.incrementDeleted();
 
         log.info("Usuário {} deletado com sucesso", user.getName());
     }

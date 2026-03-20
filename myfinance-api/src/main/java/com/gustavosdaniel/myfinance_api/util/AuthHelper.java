@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.util;
 
 import com.gustavosdaniel.myfinance_api.exception.UnauthorizedException;
+import com.gustavosdaniel.myfinance_api.metrics.UserMetrics;
 import com.gustavosdaniel.myfinance_api.user.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -18,6 +19,7 @@ import java.util.Optional;
 @Component
 public class AuthHelper {
 
+    private final UserMetrics userMetrics;
     /**
      * Lista de e-mails configurados nas propriedades da aplicação
      * que devem receber privilégios de administrador (ADMIN).
@@ -28,9 +30,10 @@ public class AuthHelper {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public AuthHelper(UserRepository userRepository, UserMapper userMapper) {
+    public AuthHelper(UserRepository userRepository, UserMapper userMapper, UserMetrics userMetrics) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.userMetrics = userMetrics;
     }
 
 
@@ -85,7 +88,12 @@ public class AuthHelper {
 
         user.setRole(role);
 
-        return userRepository.save(user);
+        User userSalved = userRepository.save(user);
+
+        userMetrics.incrementCreated();
+
+        return userSalved;
+
     }
 
 }

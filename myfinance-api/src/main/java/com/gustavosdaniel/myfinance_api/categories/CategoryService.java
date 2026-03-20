@@ -2,6 +2,7 @@ package com.gustavosdaniel.myfinance_api.categories;
 
 import com.gustavosdaniel.myfinance_api.exception.CategoryNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.exception.CategoryNotFoundException;
+import com.gustavosdaniel.myfinance_api.metrics.CategoryMetrics;
 import com.gustavosdaniel.myfinance_api.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,10 +27,12 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final Logger log = LoggerFactory.getLogger(CategoryService.class);
+    private final CategoryMetrics categoryMetrics;
 
-    public CategoryService(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
+    public CategoryService(CategoryRepository categoryRepository, CategoryMapper categoryMapper, CategoryMetrics categoryMetrics) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
+        this.categoryMetrics = categoryMetrics;
     }
 
     /**
@@ -60,6 +63,8 @@ public class CategoryService {
         user.addCategory(newCategory);
 
         Category saveCategory = categoryRepository.save(newCategory);
+
+        categoryMetrics.incrementCreated();
 
         log.info("Categoria: {} criada com sucesso", saveCategory.getName());
 
@@ -189,6 +194,8 @@ public class CategoryService {
 
         log.info("Categoria {} atualizada com sucesso", savedCategory.getId());
 
+        categoryMetrics.incrementUpdate();
+
         return categoryMapper.toCategoryResponseUpdate(savedCategory);
     }
 
@@ -279,6 +286,8 @@ public class CategoryService {
 
         user.removeCategory(category);
         categoryRepository.delete(category);
+
+        categoryMetrics.incrementDelete();
 
         log.info("Categoria {} deletada com sucesso", category.getName());
     }

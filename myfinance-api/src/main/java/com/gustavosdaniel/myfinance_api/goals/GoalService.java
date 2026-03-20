@@ -9,6 +9,7 @@ import com.gustavosdaniel.myfinance_api.categories.CategoryRepository;
 import com.gustavosdaniel.myfinance_api.exception.GoalNameDuplicateException;
 import com.gustavosdaniel.myfinance_api.exception.GoalNotFoundException;
 import com.gustavosdaniel.myfinance_api.exception.IdempotencyKeyException;
+import com.gustavosdaniel.myfinance_api.metrics.GoalMetrics;
 import com.gustavosdaniel.myfinance_api.transactions.Transaction;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
@@ -45,13 +46,15 @@ public class GoalService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final Logger log = LoggerFactory.getLogger(GoalService.class);
+    private final GoalMetrics goalMetrics;
 
-    public GoalService(GoalRepository goalRepository, GoalMapper goalMapper, CategoryRepository categoryRepository, AccountRepository accountRepository, TransactionRepository transactionRepository) {
+    public GoalService(GoalRepository goalRepository, GoalMapper goalMapper, CategoryRepository categoryRepository, AccountRepository accountRepository, TransactionRepository transactionRepository, GoalMetrics goalMetrics) {
         this.goalRepository = goalRepository;
         this.goalMapper = goalMapper;
         this.categoryRepository = categoryRepository;
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
+        this.goalMetrics = goalMetrics;
     }
 
     /**
@@ -84,6 +87,8 @@ public class GoalService {
         category.addGoal(newGoal);
 
         Goal saveGoal = goalRepository.save(newGoal);
+
+        goalMetrics.incrementCreated();
 
         log.info("Meta criado com sucesso: {}", saveGoal.getName());
 
@@ -227,6 +232,8 @@ public class GoalService {
         goalMapper.toGoalUpdate(requestUpdate, goal, category);
 
         Goal saveGoal = goalRepository.save(goal);
+
+        goalMetrics.incrementUpdate();
 
         log.info("Meta atualizada com sucesso {}", saveGoal.getName());
 
@@ -385,6 +392,8 @@ public class GoalService {
 
         user.removeGoals(goal);
         goalRepository.delete(goal);
+
+        goalMetrics.incrementDelete();
 
         log.info("Meta deletada com sucesso!");
     }

@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
+import com.gustavosdaniel.myfinance_api.metrics.GoalMetrics;
 import com.gustavosdaniel.myfinance_api.openApi.GoalOpenApi;
 import com.gustavosdaniel.myfinance_api.user.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
@@ -35,10 +36,12 @@ public class GoalController implements GoalOpenApi {
 
     private final GoalService goalService;
     private final AuthHelper authHelper;
+    private final GoalMetrics goalMetrics;
 
-    public GoalController(GoalService goalService, AuthHelper authHelper) {
+    public GoalController(GoalService goalService, AuthHelper authHelper, GoalMetrics goalMetrics) {
         this.goalService = goalService;
         this.authHelper = authHelper;
+        this.goalMetrics = goalMetrics;
     }
 
     /**
@@ -85,7 +88,7 @@ public class GoalController implements GoalOpenApi {
 
         GoalResponse goal = goalService.getGoalById(id, user);
 
-        return ResponseEntity.ok(goal);
+        return goalMetrics.recordGetById(() -> ResponseEntity.ok(goal));
     }
 
     /**
@@ -105,7 +108,7 @@ public class GoalController implements GoalOpenApi {
 
         List<GoalResponse> goals = goalService.searchGoal(user, name);
 
-        return ResponseEntity.ok(goals);
+        return goalMetrics.recordSearchName(() -> ResponseEntity.ok(goals));
     }
 
     /**
@@ -128,7 +131,7 @@ public class GoalController implements GoalOpenApi {
 
         Page<GoalResponse> goals = goalService.getAllGoals(user, status, pageable);
 
-        return ResponseEntity.ok(goals);
+        return goalMetrics.recordGetAll(() -> ResponseEntity.ok(goals));
     }
 
     /**
