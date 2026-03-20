@@ -19,6 +19,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -65,17 +66,17 @@ public class CategoryService {
      * <p>Antes da criação é verificado se já existe uma categoria com o mesmo nome
      * e tipo para o usuário. Caso exista, uma exceção será lançada.
      *
-     * @param principal usuário autenticado via OAuth2
+     * @param jwt usuário autenticado via OAuth2
      * @param request dados da categoria a ser criada
      * @return resposta contendo a categoria criada e a URI do recurso
      * @throws CategoryNameDuplicateException caso já exista uma categoria com o mesmo nome
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<CategoryResponse> createCategory(OAuth2User principal,
+    public ResponseEntity<CategoryResponse> createCategory(Jwt jwt,
                                                            CategoryRequest request){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         log.info("Criando categoria para usuário {}", user.getName());
 
@@ -113,16 +114,16 @@ public class CategoryService {
      *     <li>null ou vazio - todas as categorias</li>
      * </ul>
      *
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param status filtro de status das categorias
      * @return lista de categorias encontradas
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "#principal.name + '_' + #status")
+    @Cacheable(key = "#jwt.subject + '_' + #status")
     public ResponseEntity<List<CategoryResponse>> getAllCategories(
-            OAuth2User principal, String status) {
+            Jwt jwt, String status) {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         log.info("Busca todas as categorias criado pelo usuário {}", user.getName());
 
@@ -159,16 +160,16 @@ public class CategoryService {
      *
      * <p>A busca é limitada apenas às categorias pertencentes ao usuário autenticado.
      *
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param name nome ou parte do nome da categoria
      * @return lista de categorias que correspondem ao critério de busca
      */
     @Transactional(readOnly = true)
-    public ResponseEntity<List<CategoryResponse>> searchByName(OAuth2User principal, String name) {
+    public ResponseEntity<List<CategoryResponse>> searchByName(Jwt jwt, String name) {
 
         log.info("Buscando categoria pelo nome {}", name);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         List<Category> categories = categoryRepository.searchByName(name, user.getId());
 
@@ -186,17 +187,17 @@ public class CategoryService {
      * <p>A categoria deve pertencer ao usuário autenticado.
      *
      * @param id identificador da categoria
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return dados da categoria encontrada
      * @throws CategoryNotFoundException caso a categoria não exista
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "{#id, #principal.name}")
-    public ResponseEntity<CategoryResponse> getById(UUID id, OAuth2User principal) {
+    @Cacheable(key = "{#id, #jwt.subject}")
+    public ResponseEntity<CategoryResponse> getById(UUID id, Jwt jwt) {
 
         log.info("Buscando categoria através do id: {}", id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Category category = categoryRepository
                 .findByIdAndUserId(id, user.getId()).orElseThrow(CategoryNotFoundException::new);
@@ -213,7 +214,7 @@ public class CategoryService {
      * outra categoria com o mesmo nome e tipo para o usuário.
      *
      * @param id identificador da categoria
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param request novos dados da categoria
      * @return categoria atualizada
      * @throws CategoryNotFoundException caso a categoria não exista
@@ -222,11 +223,11 @@ public class CategoryService {
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<CategoryResponseUpdate> updateCategory(
-            UUID id, OAuth2User principal, CategoryRequestUpdate request) {
+            UUID id, Jwt jwt, CategoryRequestUpdate request) {
 
         log.info("Atualizando categoria {} ", id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Category category = categoryRepository
                 .findByIdAndUserId(id, user.getId())
@@ -257,15 +258,15 @@ public class CategoryService {
      * Desativa uma categoria ativa.
      *
      * @param id identificador da categoria
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return resposta indicando sucesso na operação
      * @throws CategoryNotFoundException caso a categoria não exista
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Void> deactivateCategory(UUID id, OAuth2User principal) {
+    public ResponseEntity<Void> deactivateCategory(UUID id, Jwt jwt) {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         log.info("Desativando categoria {} do usuário: {}",id, user.getId());
 
@@ -293,15 +294,15 @@ public class CategoryService {
      * Ativa uma categoria que estava desativada.
      *
      * @param id identificador da categoria
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return resposta indicando sucesso na operação
      * @throws CategoryNotFoundException caso a categoria não exista
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Void> activateCategory(UUID id, OAuth2User principal) {
+    public ResponseEntity<Void> activateCategory(UUID id, Jwt jwt) {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         log.info("Ativando categoria {} do usuário: {} ", id, user.getId());
 
@@ -333,17 +334,17 @@ public class CategoryService {
      * <p>A categoria deve pertencer ao usuário autenticado.
      *
      * @param id identificador da categoria
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return resposta indicando sucesso na remoção
      * @throws CategoryNotFoundException caso a categoria não exista
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Void> deleteCategory(UUID id, OAuth2User principal) {
+    public ResponseEntity<Void> deleteCategory(UUID id, Jwt jwt) {
 
         log.info("Solicitação para deletar categoria {}", id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Category category = categoryRepository
                 .findByIdAndUserId(id, user.getId())

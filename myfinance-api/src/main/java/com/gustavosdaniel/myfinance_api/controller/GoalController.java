@@ -1,6 +1,5 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
-import com.gustavosdaniel.myfinance_api.controller.openApi.GoalOpenApi;
 import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequestUpdate;
 import com.gustavosdaniel.myfinance_api.domain.dto.GoalResponse;
@@ -14,7 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/goals")
-public class GoalController implements GoalOpenApi {
+public class GoalController{
 
     private final GoalService goalService;
 
@@ -32,77 +31,77 @@ public class GoalController implements GoalOpenApi {
 
     @PostMapping
     public ResponseEntity<GoalResponse> create(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestBody @Valid GoalRequest request
     ){
 
-        return goalService.createGoal(principal, request);
+        return goalService.createGoal(jwt, request);
 
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<GoalResponse> getById(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID id
             ){
 
-        return goalService.getGoalById(id, principal);
+        return goalService.getGoalById(id, jwt);
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<GoalResponse>> searchName(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam String name
     ){
 
-        return goalService.searchGoal(principal, name);
+        return goalService.searchGoal(jwt, name);
     }
 
     @GetMapping
     public ResponseEntity<Page<GoalResponse>> getAll(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable,
             @RequestParam(required = false) String status
             ){
 
-        return goalService.getAllGoals(principal, status, pageable);
+        return goalService.getAllGoals(jwt, status, pageable);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<GoalResponse> update(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestBody @Valid GoalRequestUpdate requestUpdate,
             @PathVariable UUID id
     ){
 
-        return goalService.updateGoal(id, requestUpdate, principal);
+        return goalService.updateGoal(id, requestUpdate, jwt);
     }
 
     @PostMapping("/{id}/deposit")
     public ResponseEntity<GoalResponse> deposit(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestBody @Valid GoalTransfer transfer
     ){
 
-        return goalService.depositToGoal(id,transfer,principal);
+        return goalService.depositToGoal(id,transfer,jwt);
     }
 
     @PostMapping("/{id}/withdraw")
     public ResponseEntity<GoalResponse> withdraw(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestBody @Valid GoalTransfer transfer
     ) {
 
-        return goalService.withdrawFromGoal(id, transfer, principal);
+        return goalService.withdrawFromGoal(id, transfer, jwt);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id,
-                                       @AuthenticationPrincipal OAuth2User principal
+                                       @AuthenticationPrincipal Jwt jwt
     ){
-        return goalService.deleteGoal(id, principal);
+        return goalService.deleteGoal(id, jwt);
     }
 }

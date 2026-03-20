@@ -1,9 +1,6 @@
 package com.gustavosdaniel.myfinance_api.config;
 
-import com.gustavosdaniel.myfinance_api.util.CustomOAuth2UserService;
-import com.gustavosdaniel.myfinance_api.util.OAuth2LoginSuccessHandler;
 import jakarta.servlet.DispatcherType;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,14 +8,18 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-    private final CustomOAuth2UserService customOAuth2UserService;
 
     public static final String[] PUBLIC_URLS = {
             "/swagger-ui/**",
@@ -29,11 +30,6 @@ public class SecurityConfig {
             "/actuator/**",
             "/erros/**"
     };
-
-    public SecurityConfig(OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler, CustomOAuth2UserService customOAuth2UserService) {
-        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
-        this.customOAuth2UserService = customOAuth2UserService;
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -47,6 +43,8 @@ public class SecurityConfig {
                         .requestMatchers(PUBLIC_URLS).permitAll()
 
                         //user
+                                .requestMatchers(HttpMethod.GET, "/api/v1/users/me")
+                                .hasAnyRole("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/users/allUsers/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/users/email/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/api/v1/users/*").hasRole("ADMIN")
@@ -74,24 +72,60 @@ public class SecurityConfig {
 
                 .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                        .successHandler(oAuth2LoginSuccessHandler)
-                        .failureUrl("/login?error=true")
-                )
-
-                .logout(logout -> logout
-                        .logoutUrl("/api/v1/auth/logout")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(HttpServletResponse.SC_OK);
-                        })
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 );
-
 
         return http.build();
 
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter(){
+
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+
+            List<GrantedAuthority> authorities = new ArrayList<>();
+
+            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+
+            if (realmAccess != null && realmAccess.containsKey("roles")) {
+
+                List<String> roles = (List<String>) realmAccess.get("roles");
+
+                authorities.addAll(
+                        roles.stream()
+                                .map(role -> new SimpleGrantedAuthority(
+                                        "ROLE_" + role.toUpperCase()))
+                                .toList()
+                );
+            }
+
+            Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
+
+            if (resourceAccess != null) {
+
+                Map<String, Object> client = (Map<String, Object>) resourceAccess
+                        .get("my-finance-app");
+
+                if (client != null && client.containsKey("roles")) {
+
+                    List<String> roles = (List<String>) client.get("roles");
+
+                    authorities.addAll(
+                            roles.stream()
+                                    .map(role -> new SimpleGrantedAuthority("ROLE_" +
+                                            role.toUpperCase()))
+                                    .toList()
+                    );
+                }
+            }
+
+            return authorities;
+        });
+
+        return converter;
     }
 }

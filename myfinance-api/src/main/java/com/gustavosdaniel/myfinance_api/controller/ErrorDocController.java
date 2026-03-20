@@ -1,7 +1,7 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
 import com.gustavosdaniel.myfinance_api.controller.openApi.ErrorDocControllerApi;
-import com.gustavosdaniel.myfinance_api.documentation.ErroDocRegistry;
+import com.gustavosdaniel.myfinance_api.util.ErroDocRegistry;
 import com.gustavosdaniel.myfinance_api.domain.dto.ErroDocResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

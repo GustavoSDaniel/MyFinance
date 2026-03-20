@@ -1,16 +1,15 @@
 package com.gustavosdaniel.myfinance_api.service;
 
+
 import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.UserRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
-import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
 import com.gustavosdaniel.myfinance_api.domain.mapping.UserMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.exception.UserNotFoundException;
 import com.gustavosdaniel.myfinance_api.repository.UserRepository;
+import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,10 +19,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,58 +45,23 @@ public class UserService {
     private final Logger log = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final AuthHelper authHelpe;
 
-    @Value("${app.security.admin-emails}")
-    private  List<String> adminEmails;
-
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, AuthHelper authHelpe) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.authHelpe = authHelpe;
     }
 
-    /**
-     * Cria ou atualiza um usuário autenticado via OAuth.
-     *
-     * <p>Se o usuário já existir (baseado no email), seus dados são atualizados.
-     * Caso contrário, um novo usuário é criado. Caso o email esteja listado
-     * como administrador na configuração da aplicação, o usuário receberá
-     * a role {@link UserRole#ADMIN}.
-     *
-     * @param request dados do usuário retornados pelo provedor OAuth
-     * @return informações do usuário criado ou atualizado
-     */
-    @Transactional
-    @CacheEvict(allEntries = true)
-    public UserInfoResponse createOrUpdateUserFromOAuth(UserRequest request) {
+    @Transactional(readOnly = true)
+    @Cacheable(key = "#jwt.subject")
+    public ResponseEntity<UserInfoResponse> getCurrentUser(Jwt jwt){
 
-        Optional<User> existingUser = userRepository.findByEmail(request.email());
+        User user = authHelpe.getCurrentUser(jwt);
 
-        if (existingUser.isPresent()) {
+        UserInfoResponse response = userMapper.toUserInfoResponse(user);
 
-            User user = existingUser.get();
-            user.setName(request.name());
-            user.setPicture(request.picture());
-
-            User userUpdate = userRepository.save(user);
-
-            log.info("Usuário: {} atualizado com sucesso", userUpdate.getName());
-
-            return userMapper.toUserInfoResponse(userUpdate);
-        }
-        UserRole role = UserRole.USER;
-
-        if (adminEmails.contains(request.email())){
-
-            role = UserRole.ADMIN;
-        }
-
-        User newUser = userMapper.toUser(request);
-        newUser.setRole(role);
-        User savedUser = userRepository.save(newUser);
-
-        log.info("Novo usuário: {} salvo com sucesso", savedUser.getName());
-
-        return userMapper.toUserInfoResponse(savedUser);
+        return ResponseEntity.ok(response);
     }
 
 

@@ -5,7 +5,6 @@ import com.gustavosdaniel.myfinance_api.domain.dto.UserRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
 import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
 import com.gustavosdaniel.myfinance_api.domain.po.User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,23 +17,13 @@ public class UserMapper {
         }
 
         return new User(
+                request.keycloakId(),
                 request.email(),
                 request.name(),
                 UserRole.USER
         );
     }
 
-    public UserRequest toUserRequest(OAuth2User oAuth2User) {
-        if (oAuth2User == null) {
-            return null;
-        }
-
-        return new UserRequest(
-                oAuth2User.getAttribute("email"),
-                oAuth2User.getAttribute("name"),
-                oAuth2User.getAttribute("picture")
-        );
-    }
 
     public UserInfoResponse toUserInfoResponse(User user) {
 

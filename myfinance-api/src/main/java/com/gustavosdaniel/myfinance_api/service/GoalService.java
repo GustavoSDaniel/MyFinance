@@ -30,6 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -86,7 +87,7 @@ public class GoalService {
      * <p>Antes da criação é verificado se já existe uma meta com o mesmo nome
      * para o usuário. Caso exista, uma exceção será lançada.
      *
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param request dados da meta a ser criada
      * @return resposta contendo a meta criada e a URI do recurso
      * @throws GoalNameDuplicateException caso já exista uma meta com o mesmo nome
@@ -94,9 +95,9 @@ public class GoalService {
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<GoalResponse> createGoal(OAuth2User principal, GoalRequest request){
+    public ResponseEntity<GoalResponse> createGoal(Jwt jwt, GoalRequest request){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         log.info("Criando Meta para o usuário: {}", user.getName());
 
@@ -129,17 +130,17 @@ public class GoalService {
      * <p>A meta deve pertencer ao usuário autenticado.
      *
      * @param id identificador da meta
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return dados da meta encontrada
      * @throws GoalNotFoundException caso a meta não exista
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "{#id, #principal.name}")
-    public ResponseEntity<GoalResponse> getGoalById(UUID id, OAuth2User principal) {
+    @Cacheable(key = "{#id, #jwt.subject}")
+    public ResponseEntity<GoalResponse> getGoalById(UUID id, Jwt jwt) {
 
         log.info("Buscando Meta pelo id {}", id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Goal goal = goalRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(GoalNotFoundException::new);
@@ -154,16 +155,16 @@ public class GoalService {
      *
      * <p>A busca é limitada às metas pertencentes ao usuário autenticado.
      *
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param name nome ou parte do nome da meta
      * @return lista de metas encontradas
      */
     @Transactional(readOnly = true)
-    public ResponseEntity<List<GoalResponse>> searchGoal(OAuth2User principal, String name) {
+    public ResponseEntity<List<GoalResponse>> searchGoal(Jwt jwt, String name) {
 
         log.info("Buscando Metas pelo nome {}", name);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         List<Goal> goals = goalRepository.searchName(name, user.getId());
 
@@ -192,16 +193,16 @@ public class GoalService {
      *     <li>null ou vazio - todas as metas</li>
      * </ul>
      *
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param status filtro de status das metas
      * @param pageable informações de paginação
      * @return página contendo as metas encontradas
      */
     @Transactional(readOnly = true)
     public ResponseEntity<Page<GoalResponse>> getAllGoals(
-            OAuth2User principal, String status,  Pageable pageable) {
+            Jwt jwt, String status,  Pageable pageable) {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         log.info("Buscando todas as metas do usuário {}", user.getName());
 
@@ -244,7 +245,7 @@ public class GoalService {
      *
      * @param id identificador da meta
      * @param requestUpdate novos dados da meta
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return meta atualizada
      * @throws GoalNotFoundException caso a meta não exista
      * @throws GoalNameDuplicateException caso já exista uma meta com o mesmo nome
@@ -253,9 +254,9 @@ public class GoalService {
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<GoalResponse> updateGoal(
-            UUID id, GoalRequestUpdate requestUpdate, OAuth2User principal) {
+            UUID id, GoalRequestUpdate requestUpdate, Jwt jwt) {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         log.info("Atualizando Meta {}, do usuário {}", id, user.getName());
 
@@ -301,7 +302,7 @@ public class GoalService {
      *
      * @param id identificador da meta
      * @param transfer dados da transferência
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return meta atualizada após o depósito
      * @throws GoalNotFoundException caso a meta não exista
      * @throws AccountNotFoundException caso a conta não exista
@@ -310,11 +311,11 @@ public class GoalService {
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<GoalResponse> depositToGoal(
-            UUID id, GoalTransfer transfer, OAuth2User principal) {
+            UUID id, GoalTransfer transfer, Jwt jwt) {
 
         log.info("Realizando transação da conta {}, para a Meta {}", transfer.accountId(), id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         if (transactionRepository.existsByIdempotencyKeyAndUserId(transfer.idempotencyKey(),
                 user.getId())){
@@ -367,7 +368,7 @@ public class GoalService {
      *
      * @param id identificador da meta
      * @param transfer dados do resgate
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return meta atualizada após o resgate
      * @throws GoalNotFoundException caso a meta não exista
      * @throws AccountNotFoundException caso a conta não exista
@@ -376,11 +377,11 @@ public class GoalService {
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<GoalResponse> withdrawFromGoal(
-            UUID id, GoalTransfer transfer, OAuth2User principal) {
+            UUID id, GoalTransfer transfer, Jwt jwt) {
 
         log.info("Resgatando valor do Goal {} para a conta {}", id, transfer.accountId());
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         if (transactionRepository.existsByIdempotencyKeyAndUserId(transfer.idempotencyKey(),
                 user.getId())){
@@ -431,18 +432,18 @@ public class GoalService {
      * resgatar o valor antes de removê-la.
      *
      * @param id identificador da meta
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return resposta indicando sucesso na operação
      * @throws GoalNotFoundException caso a meta não exista
      * @throws IllegalArgumentException caso a meta possua saldo
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Void> deleteGoal(UUID id, OAuth2User principal) {
+    public ResponseEntity<Void> deleteGoal(UUID id, Jwt jwt) {
 
         log.info("Deletando Meta {}", id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Goal goal = goalRepository.findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
 

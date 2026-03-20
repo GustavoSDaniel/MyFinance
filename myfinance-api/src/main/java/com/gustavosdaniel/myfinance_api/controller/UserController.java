@@ -1,8 +1,11 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
 import com.gustavosdaniel.myfinance_api.controller.openApi.UserOpenApi;
+import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.service.UserService;
+import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -22,6 +27,12 @@ public class UserController implements UserOpenApi {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserInfoResponse> me(@AuthenticationPrincipal Jwt jwt){
+
+        return userService.getCurrentUser(jwt);
     }
 
     @GetMapping("/allUsers")

@@ -17,9 +17,13 @@ import java.util.UUID;
 @Table(name = "users")
 public class User {
 
-    public User() {}
+    public User() {
 
-    public User(String email, String name, UserRole role) {
+    }
+
+    public User(String keycloakId, String email, String name, UserRole role) {
+
+        this.keycloakId = keycloakId;
         this.email = email;
         this.name = name;
         this.role = role;
@@ -28,6 +32,9 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    @Column(name = "keycloak_id", nullable = false, unique = true)
+    private String keycloakId;
 
     @Email(message = "Email deve ser válido")
     @Column(nullable = false, unique = true)
@@ -133,6 +140,8 @@ public class User {
     public UUID getId() {
         return id;
     }
+
+    public String getKeycloakId() {return keycloakId;}
 
     public String getEmail() {
         return email;

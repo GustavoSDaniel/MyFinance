@@ -1,4 +1,4 @@
-package com.gustavosdaniel.myfinance_api.documentation;
+package com.gustavosdaniel.myfinance_api.util;
 
 import com.gustavosdaniel.myfinance_api.domain.dto.ErroDocResponse;
 import org.springframework.stereotype.Component;

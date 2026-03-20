@@ -21,6 +21,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -76,16 +77,16 @@ public class AccountService {
      * mesmo nome para o usuário. Caso exista, uma exceção é lançada.
      *
      * @param accountRequest dados da conta a ser criada
-     * @param principal usuário autenticado via OAuth2
+     * @param jwt usuário autenticado via OAuth2
      * @return resposta contendo a conta criada e a URI do recurso
      * @throws AccountNameDuplicateException caso já exista uma conta com o mesmo nome
      */
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<AccountResponse> createAccount(AccountRequest accountRequest,
-                                                         OAuth2User principal) {
+                                                             Jwt jwt) {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         if (accountRepository.existsByNameIgnoreCaseAndUserId(accountRequest.name().trim(),
                 user.getId())){
@@ -122,15 +123,15 @@ public class AccountService {
      *     <li>null ou vazio - todas as contas</li>
      * </ul>
      *
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param status filtro de status das contas
      * @return lista de contas encontradas
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "#principal.name + '_' + #status")
-    public ResponseEntity<List<AccountResponseInfo>> getAllAccounts(OAuth2User principal, String status) {
+    @Cacheable(key = "#jwt.subject + '_' + #status")
+    public ResponseEntity<List<AccountResponseInfo>> getAllAccounts(Jwt jwt, String status) {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         log.info("Buscando todas as contas do usuário: {} com status: {}", user.getName(), status);
 
@@ -155,15 +156,15 @@ public class AccountService {
      * Busca uma conta específica do usuário autenticado pelo ID.
      *
      * @param id identificador da conta
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return dados da conta encontrada
      * @throws AccountNotFoundException caso a conta não exista para o usuário
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "#id + '_' + #principal.name")
-    public ResponseEntity<AccountResponseInfo> getById(UUID id, OAuth2User principal){
+    @Cacheable(key = "#id + '_' + #jwt.subject")
+    public ResponseEntity<AccountResponseInfo> getById(UUID id, Jwt jwt){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         log.info("Buscando conta {} para o usuário {}", id, user.getId());
 
@@ -181,16 +182,16 @@ public class AccountService {
      * <p>A busca é limitada apenas às contas do usuário autenticado.
      *
      * @param name nome ou parte do nome da conta
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return lista de contas que correspondem ao critério de busca
      */
     @Transactional(readOnly = true)
     public ResponseEntity<List<AccountResponseInfo>> searchAccount(
-            String name, OAuth2User principal) {
+            String name, Jwt jwt) {
 
         log.info("Buscando contas pelo nome");
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         List<Account> accounts = accountRepository.searchByName(name, user.getId());
 
@@ -209,7 +210,7 @@ public class AccountService {
      * com o mesmo nome para o usuário.
      *
      * @param id identificador da conta
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param request novos dados da conta
      * @return conta atualizada
      * @throws AccountNotFoundException caso a conta não exista
@@ -218,9 +219,9 @@ public class AccountService {
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<AccountResponseInfo> updateAccount(
-            UUID id, OAuth2User principal, AccountUpdateRequest request){
+            UUID id, Jwt jwt, AccountUpdateRequest request){
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Account account = accountRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(AccountNotFoundException::new);
@@ -249,18 +250,18 @@ public class AccountService {
      * Ativa uma conta que está desativada.
      *
      * @param id identificador da conta
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return resposta indicando sucesso na operação
      * @throws AccountNotFoundException caso a conta não exista
      * @throws AccountAlreadyActiveException caso a conta já esteja ativa
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Void> activateAccount(UUID id, OAuth2User principal) {
+    public ResponseEntity<Void> activateAccount(UUID id, Jwt jwt) {
 
         log.info("Ativando conta com id: {}", id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Account account = accountRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(AccountNotFoundException::new);
@@ -286,18 +287,18 @@ public class AccountService {
      * Desativa uma conta ativa.
      *
      * @param id identificador da conta
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return resposta indicando sucesso na operação
      * @throws AccountNotFoundException caso a conta não exista
      * @throws AccountAlreadyDeactivateException caso a conta já esteja desativada
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Void> deactivateAccount(UUID id, OAuth2User principal) {
+    public ResponseEntity<Void> deactivateAccount(UUID id, Jwt jwt) {
 
         log.info("Desativando conta com id: {}", id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Account account = accountRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(AccountNotFoundException::new);
@@ -325,15 +326,15 @@ public class AccountService {
      * <p>A conta só pode ser removida pelo próprio usuário dono da conta.
      *
      * @param id identificador da conta
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return resposta indicando sucesso na remoção
      * @throws AccountNotFoundException caso a conta não exista
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Void> deleteAccount(UUID id, OAuth2User principal) {
+    public ResponseEntity<Void> deleteAccount(UUID id, Jwt jwt) {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Account account = accountRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(AccountNotFoundException::new);

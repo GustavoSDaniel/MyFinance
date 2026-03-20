@@ -1,19 +1,15 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
-import com.gustavosdaniel.myfinance_api.controller.openApi.AccountOpenApi;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountUpdateRequest;
 import com.gustavosdaniel.myfinance_api.service.AccountService;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,92 +17,85 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/accounts")
-public class AccountController implements AccountOpenApi {
+public class AccountController{
 
     private final AccountService accountService;
 
-    private final Counter createAccountCounter;
-    private final Counter deleteAccountCounter;
-    private final Timer getAccountTimer;
 
-    public AccountController(AccountService accountService, MeterRegistry registry) {
+
+    public AccountController(AccountService accountService) {
         this.accountService = accountService;
 
-        this.createAccountCounter = registry.counter("accounts.created");
-        this.deleteAccountCounter = registry.counter("accounts.deleted");
-        this.getAccountTimer = registry.timer("accounts.get.by.id.latency");
     }
 
 
     @PostMapping()
     public ResponseEntity<AccountResponse> createdAccount(
             @Valid @RequestBody AccountRequest request,
-            @AuthenticationPrincipal OAuth2User principal){
+            @AuthenticationPrincipal Jwt jwt){
 
-        createAccountCounter.increment();
-
-        return accountService.createAccount(request, principal);
+        return accountService.createAccount(request, jwt);
     }
 
     @GetMapping()
     public ResponseEntity<List<AccountResponseInfo>> getAllAccounts(
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) String status){
 
-        return accountService.getAllAccounts(principal, status);
+        return accountService.getAllAccounts(jwt, status);
     }
 
     @GetMapping("/search")
     public ResponseEntity<List<AccountResponseInfo>> searchByName(
             @RequestParam @NotBlank String name,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
 
-        return accountService.searchAccount(name, principal);
+        return accountService.searchAccount(name, jwt);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<AccountResponseInfo> getAccountById(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal){
+            @AuthenticationPrincipal Jwt jwt){
 
-        return getAccountTimer.record(() ->accountService.getById(id, principal));
+        return accountService.getById(id, jwt);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<AccountResponseInfo> updateAccount(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal,
+            @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody AccountUpdateRequest request
     ) {
 
-        return accountService.updateAccount(id, principal, request);
+        return accountService.updateAccount(id, jwt, request);
     }
 
     @PatchMapping("/activate/{id}")
     public ResponseEntity<Void> activateAccount(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
 
-        return accountService.activateAccount(id, principal);
+        return accountService.activateAccount(id, jwt);
     }
 
     @PatchMapping("/deactivate/{id}")
     public ResponseEntity<Void> deactivateAccount(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
 
-        return accountService.deactivateAccount(id, principal);
+        return accountService.deactivateAccount(id, jwt);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAccount(
             @PathVariable UUID id,
-            @AuthenticationPrincipal OAuth2User principal
+            @AuthenticationPrincipal Jwt jwt
     ){
 
-        return accountService.deleteAccount(id, principal);
+        return accountService.deleteAccount(id, jwt);
     }
 }

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,16 +58,16 @@ public class DashboardService {
      *
      * <p>As consultas são filtradas pelo intervalo de datas informado.
      *
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param betweenDate intervalo de datas utilizado para filtrar as transações
      * @return objeto contendo os dados do dashboard financeiro
      * @throws IllegalArgumentException caso a data final seja anterior à data inicial
      */
     @Transactional(readOnly = true)
-    public ResponseEntity<DashboardResponse> getDashboard(OAuth2User principal,
+    public ResponseEntity<DashboardResponse> getDashboard(Jwt jwt,
                                                           BetweenDateDashboard betweenDate) {
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         log.info("Gerando Dashboard para usuário {} entre {} á {}",
                 user.getName(), betweenDate.startDate(), betweenDate.endDate());

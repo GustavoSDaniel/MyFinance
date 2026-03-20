@@ -27,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -86,7 +87,7 @@ public class TransactionService {
      *
      * <p>Após a criação, a transação é processada e o saldo da conta é atualizado.
      *
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param request dados da transação a ser criada
      * @return resposta contendo a transação criada e a URI do recurso
      * @throws IdempotencyKeyException caso a transação já tenha sido processada
@@ -96,12 +97,12 @@ public class TransactionService {
     @Transactional
     @CacheEvict(allEntries = true)
     public ResponseEntity<TransactionResponse> createTransaction(
-            OAuth2User principal,
+            Jwt jwt,
             TransactionRequest request){
 
         log.info("Criando transação");
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(),
                 user.getId())){
@@ -146,17 +147,17 @@ public class TransactionService {
      * com o tipo da transação (receita ou despesa).
      *
      * @param id identificador da transação
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return resposta indicando sucesso na operação
      * @throws TransactionNotFoundException caso a transação não exista
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Void> transactionConfirmed(UUID id, OAuth2User principal) {
+    public ResponseEntity<Void> transactionConfirmed(UUID id, Jwt jwt) {
 
         log.info("Processo de confirmação da transação: {}", id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Transaction transaction = transactionRepository
                 .findByIdAndUserId(id, user.getId())
@@ -185,17 +186,17 @@ public class TransactionService {
      * são revertidos no saldo da conta.
      *
      * @param id identificador da transação
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return resposta indicando sucesso na operação
      * @throws TransactionNotFoundException caso a transação não exista
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Void> transactionCancel(UUID id, OAuth2User principal){
+    public ResponseEntity<Void> transactionCancel(UUID id, Jwt jwt){
 
         log.info("Processo de cancelamento de transação: {}", id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Transaction transaction = transactionRepository
                 .findByIdAndUserId(id, user.getId())
@@ -224,7 +225,7 @@ public class TransactionService {
      * <p>Também é utilizada uma {@code idempotencyKey} para evitar
      * que a transferência seja processada mais de uma vez.
      *
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param transferRequest dados da transferência
      * @return resposta indicando sucesso na operação
      * @throws IdempotencyKeyException caso a transferência já tenha sido processada
@@ -234,12 +235,12 @@ public class TransactionService {
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Void> transfer(OAuth2User principal, TransferRequest transferRequest){
+    public ResponseEntity<Void> transfer(Jwt jwt, TransferRequest transferRequest){
 
         log.info("Iniciando transferência da conta: {} para a conta: {}",
                 transferRequest.fromAccountId(), transferRequest.toAccountId());
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         if (transactionRepository.existsByIdempotencyKeyAndUserId(
                 transferRequest.idempotencyKey(), user.getId())){
@@ -316,17 +317,17 @@ public class TransactionService {
      * <p>A transação deve pertencer ao usuário autenticado.
      *
      * @param id identificador da transação
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return dados da transação encontrada
      * @throws TransactionNotFoundException caso a transação não exista
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "{#id, #principal.name}")
-    public ResponseEntity<TransactionResponse> getTransactionById(UUID id, OAuth2User principal) {
+    @Cacheable(key = "{#id, #jwt.subject}")
+    public ResponseEntity<TransactionResponse> getTransactionById(UUID id, Jwt jwt) {
 
         log.info("Buscando transação pelo id: {}", id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Transaction transaction = transactionRepository
                 .findByIdAndUserId(id, user.getId())
@@ -348,18 +349,18 @@ public class TransactionService {
      *     <li>Tipo de transação</li>
      * </ul>
      *
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @param filter critérios de busca
      * @param pageable informações de paginação
      * @return página contendo as transações encontradas
      */
     @Transactional(readOnly = true)
     public ResponseEntity<Page<TransactionResponse>> getAllWithFilter(
-            OAuth2User principal, TransactionSearchFilter filter, Pageable pageable)
+            Jwt jwt, TransactionSearchFilter filter, Pageable pageable)
     {
         log.info("Buscando todas as transações ");
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Specification<Transaction> specification = TransactionSpecification
                 .filters(user.getId(), filter);
@@ -385,18 +386,18 @@ public class TransactionService {
      * para preservar a consistência financeira do sistema.
      *
      * @param id identificador da transação
-     * @param principal usuário autenticado
+     * @param jwt usuário autenticado
      * @return resposta indicando sucesso na remoção
      * @throws TransactionNotFoundException caso a transação não exista
      * @throws BusinessRuleException caso a transação já esteja confirmada
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public ResponseEntity<Void> deleteTransaction(UUID id, OAuth2User principal) {
+    public ResponseEntity<Void> deleteTransaction(UUID id, Jwt jwt) {
 
         log.warn("Deletando transação: {}", id);
 
-        User user = authHelper.getCurrentUser(principal);
+        User user = authHelper.getCurrentUser(jwt);
 
         Transaction transaction = transactionRepository
                 .findByIdAndUserId(id, user.getId())
