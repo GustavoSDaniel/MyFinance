@@ -1,8 +1,17 @@
 package com.gustavosdaniel.myfinance_api.categories;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponseUpdate;
+import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
+import com.gustavosdaniel.myfinance_api.domain.mapping.CategoryMapper;
+import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.exception.CategoryNameDuplicateException;
-import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.user.UserRole;
+import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
+import com.gustavosdaniel.myfinance_api.service.CategoryService;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
+import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,9 +49,10 @@ class CategoryServiceImplTest {
         void shouldCreateCategory() throws CategoryNameDuplicateException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             CategoryRequest request = new CategoryRequest("Lazer", CategoryType.DESPESA, "#008000");
@@ -79,9 +89,10 @@ class CategoryServiceImplTest {
         void  shouldAllCategories(){
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Viajem", CategoryType.DESPESA, "#ffffff");
@@ -118,9 +129,10 @@ class CategoryServiceImplTest {
         void shouldName(){
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
 
-            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Viajem", CategoryType.DESPESA, "#ffffff");
@@ -158,9 +170,10 @@ class CategoryServiceImplTest {
         void shouldCategoryById(){
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
 
-            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Lazer", CategoryType.DESPESA, "000000");
@@ -190,9 +203,10 @@ class CategoryServiceImplTest {
         void shouldUpdateCategory() throws CategoryNameDuplicateException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
 
-            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Lazer", CategoryType.DESPESA, "000000");
@@ -237,10 +251,11 @@ class CategoryServiceImplTest {
         void shouldDeactivateCategory(){
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
             Boolean isActive = true;
 
-            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Lazer", CategoryType.DESPESA, "000000");
@@ -266,10 +281,11 @@ class CategoryServiceImplTest {
         void shouldActivateCategory(){
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
             Boolean isActive = false;
 
-            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Lazer", CategoryType.DESPESA, "000000");
@@ -295,9 +311,10 @@ class CategoryServiceImplTest {
         void shouldDeleteCategory(){
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
 
-            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Lazer", CategoryType.DESPESA, "000000");

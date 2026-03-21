@@ -1,8 +1,12 @@
 package com.gustavosdaniel.myfinance_api.dashboard;
 
-import com.gustavosdaniel.myfinance_api.transactions.TransactionRepository;
-import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.user.UserRole;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.BetweenDate;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.CategorySum;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.DashboardResponse;
+import com.gustavosdaniel.myfinance_api.service.DashboardService;
+import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
+import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -43,6 +47,7 @@ class DashboardServiceImplTest {
         void getDashboardWithSucesso(){
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeucloak";
 
             BigDecimal incomers = new BigDecimal("1356.86");
             BigDecimal expenses = new BigDecimal("932.78");
@@ -56,7 +61,7 @@ class DashboardServiceImplTest {
             LocalDateTime expectedEnd = end.atTime(LocalTime.MAX);
 
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             CategorySum categorySum = new CategorySum("Comida", "#FFFFFF", new BigDecimal("600"));

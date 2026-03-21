@@ -1,16 +1,22 @@
 package com.gustavosdaniel.myfinance_api.transactions;
 
-import com.gustavosdaniel.myfinance_api.accounts.Account;
-import com.gustavosdaniel.myfinance_api.accounts.AccountRepository;
-import com.gustavosdaniel.myfinance_api.accounts.AccountType;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransactionRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransferRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionSearchFilter;
+import com.gustavosdaniel.myfinance_api.domain.enuns.*;
+import com.gustavosdaniel.myfinance_api.domain.mapping.TransactionMapper;
+import com.gustavosdaniel.myfinance_api.domain.po.Account;
+import com.gustavosdaniel.myfinance_api.domain.po.Transaction;
+import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
 import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
-import com.gustavosdaniel.myfinance_api.categories.Category;
-import com.gustavosdaniel.myfinance_api.categories.CategoryRepository;
-import com.gustavosdaniel.myfinance_api.categories.CategoryResponse;
-import com.gustavosdaniel.myfinance_api.categories.CategoryType;
-import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.user.UserRole;
+import com.gustavosdaniel.myfinance_api.domain.po.Category;
+import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponse;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
+import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
+import com.gustavosdaniel.myfinance_api.service.TransactionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -45,10 +51,10 @@ class TransactionServiceImplTest {
     private  CategoryRepository categoryRepository;
 
     @Mock
-    private  TransactionRepository transactionRepository;
+    private TransactionRepository transactionRepository;
 
     @Mock
-    private  TransactionMapper transactionMapper;
+    private TransactionMapper transactionMapper;
 
     @Mock
     private  AccountRepository accountRepository;
@@ -63,6 +69,7 @@ class TransactionServiceImplTest {
         @DisplayName("Should created with sucesso transaction")
         void shouldCreateTransaction() throws InvalidAmountException, InsufficientBalanceException {
 
+            String keycloakId = "idDoKeycloak";
             UUID transactionId = UUID.randomUUID();
             UUID accountId = UUID.randomUUID();
             UUID categoryID = UUID.randomUUID();
@@ -72,7 +79,7 @@ class TransactionServiceImplTest {
             LocalDateTime fixedDateTime = fixedDate.atStartOfDay();
 
 
-            User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             ReflectionTestUtils.setField(account, "currentBalance", currentBalance);
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
@@ -148,6 +155,7 @@ class TransactionServiceImplTest {
         void shouldConfirmedWithSucesso() throws InvalidAmountException, InsufficientBalanceException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID transactionId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
             UUID categoryID = UUID.randomUUID();
@@ -155,7 +163,7 @@ class TransactionServiceImplTest {
             BigDecimal transactionAMount = new BigDecimal("236.89");
             LocalDateTime fixedDateTime = LocalDateTime.of(2026, 2, 10, 8, 36);
 
-            User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
             Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             ReflectionTestUtils.setField(account, "currentBalance", currentBalance);
@@ -196,6 +204,7 @@ class TransactionServiceImplTest {
         void shouldCancelWithSucesso() throws InvalidAmountException, InsufficientBalanceException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID transactionId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
             UUID categoryID = UUID.randomUUID();
@@ -205,7 +214,7 @@ class TransactionServiceImplTest {
             TransactionStatus confirmed = TransactionStatus.CONFIRMADA;
 
 
-            User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
             Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             ReflectionTestUtils.setField(account, "currentBalance", currentBalance);
@@ -249,6 +258,7 @@ class TransactionServiceImplTest {
         void shouldTransferWithSucesso() throws InvalidAmountException, InsufficientBalanceException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID fromAccountId = UUID.randomUUID();
             UUID toAccountId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
@@ -261,7 +271,7 @@ class TransactionServiceImplTest {
             BigDecimal amountRequest = new BigDecimal("356.89");
             LocalDate dateRequest = LocalDate.of(2026, 2, 10);
 
-            User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
 
             Account fromAccount = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
@@ -332,6 +342,7 @@ class TransactionServiceImplTest {
         void shouldSucessoTransactionById() throws InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID transactionId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
             UUID accountId = UUID.randomUUID();
@@ -340,7 +351,7 @@ class TransactionServiceImplTest {
             LocalDateTime fixedDateTime = LocalDateTime.of(2026, 2, 10, 8, 36);
 
 
-            User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
             Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
@@ -400,6 +411,7 @@ class TransactionServiceImplTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
 
             UUID accountId = UUID.randomUUID();
             UUID accountId2 = UUID.randomUUID();
@@ -425,7 +437,7 @@ class TransactionServiceImplTest {
             LocalDateTime fixedDateTime2 = LocalDateTime.of(2025, 6, 1, 6, 53);
             LocalDateTime fixedDateTime3 = LocalDateTime.of(2026, 2, 28, 17, 10);
 
-            User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
 
             Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
@@ -556,12 +568,13 @@ class TransactionServiceImplTest {
         void shouldDeleteTransaction() throws InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID idempotencyKey = UUID.randomUUID();
             UUID transactionId = UUID.randomUUID();
             BigDecimal transactionAMount = new BigDecimal("236.89");
             LocalDateTime fixedDateTime = LocalDateTime.of(2026, 2, 10, 8, 36);
 
-            User user = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
             ReflectionTestUtils.setField(user, "id", userId);
             Account account = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");

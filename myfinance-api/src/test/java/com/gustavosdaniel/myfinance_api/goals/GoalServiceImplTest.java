@@ -1,16 +1,25 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
-import com.gustavosdaniel.myfinance_api.accounts.Account;
-import com.gustavosdaniel.myfinance_api.accounts.AccountRepository;
-import com.gustavosdaniel.myfinance_api.accounts.AccountType;
-import com.gustavosdaniel.myfinance_api.categories.Category;
-import com.gustavosdaniel.myfinance_api.categories.CategoryRepository;
-import com.gustavosdaniel.myfinance_api.categories.CategoryType;
-import com.gustavosdaniel.myfinance_api.transactions.Transaction;
-import com.gustavosdaniel.myfinance_api.transactions.TransactionRepository;
-import com.gustavosdaniel.myfinance_api.transactions.TransactionType;
-import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.user.UserRole;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalTransferRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.GoalResponse;
+import com.gustavosdaniel.myfinance_api.domain.enuns.PriorityStatus;
+import com.gustavosdaniel.myfinance_api.domain.mapping.GoalMapper;
+import com.gustavosdaniel.myfinance_api.domain.po.Account;
+import com.gustavosdaniel.myfinance_api.domain.po.Goal;
+import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
+import com.gustavosdaniel.myfinance_api.domain.enuns.AccountType;
+import com.gustavosdaniel.myfinance_api.domain.po.Category;
+import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
+import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
+import com.gustavosdaniel.myfinance_api.repository.GoalRepository;
+import com.gustavosdaniel.myfinance_api.service.GoalService;
+import com.gustavosdaniel.myfinance_api.domain.po.Transaction;
+import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
+import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
 import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
 import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
 import org.junit.jupiter.api.DisplayName;
@@ -69,12 +78,13 @@ class GoalServiceImplTest {
         void createGoalWithSucesso() throws InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
             UUID goalId = UUID.randomUUID();
 
             LocalDate dateMeta = LocalDate.of(2026, 11, 29);
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
@@ -135,12 +145,13 @@ class GoalServiceImplTest {
         void shouldGoalByIdWithSucesso() throws InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
             UUID goalId = UUID.randomUUID();
             LocalDate dateMeta = LocalDate.of(2026, 11, 29);
 
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
@@ -187,6 +198,7 @@ class GoalServiceImplTest {
         void shouldSearchNameGoalWithSucesso() throws InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
 
             UUID goalId = UUID.randomUUID();
@@ -200,7 +212,7 @@ class GoalServiceImplTest {
 
             LocalDate dateMeta = LocalDate.of(2026, 11, 29);
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
@@ -297,6 +309,7 @@ class GoalServiceImplTest {
             Pageable pageable = PageRequest.of(0, 10);
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
 
             UUID goalId = UUID.randomUUID();
@@ -311,7 +324,7 @@ class GoalServiceImplTest {
 
             LocalDate dateMeta = LocalDate.of(2026, 11, 29);
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
@@ -406,6 +419,7 @@ class GoalServiceImplTest {
         void shouldUpdateWithSucesso() throws InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID categoryId = UUID.randomUUID();
             UUID goalId = UUID.randomUUID();
 
@@ -416,7 +430,7 @@ class GoalServiceImplTest {
             LocalDate dateMeta = LocalDate.of(2026, 11, 29);
             LocalDate dateMetaAtualizado = LocalDate.of(2028, 3, 6);
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
@@ -475,6 +489,7 @@ class GoalServiceImplTest {
         void shouldDepositGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID goalId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
             UUID accountId = UUID.randomUUID();
@@ -489,7 +504,7 @@ class GoalServiceImplTest {
             LocalDateTime fixedDateTime = LocalDateTime.of(2026, 2, 3, 13, 46);
             LocalDate dateMeta = LocalDate.of(2026, 11, 29);
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
@@ -513,7 +528,7 @@ class GoalServiceImplTest {
             ReflectionTestUtils.setField(transaction, "id", transactionId);
             ReflectionTestUtils.setField(transaction, "idempotencyKey", idempotencyKey);
 
-            GoalTransfer transfer = new GoalTransfer(
+            GoalTransferRequest transfer = new GoalTransferRequest(
                     transaction.getIdempotencyKey(),
                     account.getId(),
                     transaction.getAmount(),
@@ -571,6 +586,7 @@ class GoalServiceImplTest {
         void shouldDrawGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID goalId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
             UUID accountId = UUID.randomUUID();
@@ -586,7 +602,7 @@ class GoalServiceImplTest {
             LocalDateTime fixedDateTime = LocalDateTime.of(2026, 2, 3, 13, 46);
             LocalDate dateMeta = LocalDate.of(2026, 11, 29);
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Descanso", CategoryType.TRANSFERENCIA, "#008000");
@@ -610,7 +626,7 @@ class GoalServiceImplTest {
             ReflectionTestUtils.setField(transaction, "id", transactionId);
             ReflectionTestUtils.setField(transaction, "idempotencyKey", idempotencyKey);
 
-            GoalTransfer transfer = new GoalTransfer(
+            GoalTransferRequest transfer = new GoalTransferRequest(
                     transaction.getIdempotencyKey(),
                     account.getId(),
                     transaction.getAmount(),
@@ -669,6 +685,7 @@ class GoalServiceImplTest {
         void deleteGoalWithSucesso() throws InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID goalId = UUID.randomUUID();
             UUID categoryId = UUID.randomUUID();
 
@@ -676,7 +693,7 @@ class GoalServiceImplTest {
 
             LocalDate dateMeta = LocalDate.of(2026, 11, 29);
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Category category = new Category(user, "Descanso", CategoryType.TRANSFERENCIA, "#008000");

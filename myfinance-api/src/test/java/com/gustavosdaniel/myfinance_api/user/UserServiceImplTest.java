@@ -1,5 +1,13 @@
 package com.gustavosdaniel.myfinance_api.user;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.request.UserRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.UserInfoResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.UserResponse;
+import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
+import com.gustavosdaniel.myfinance_api.domain.mapping.UserMapper;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
+import com.gustavosdaniel.myfinance_api.repository.UserRepository;
+import com.gustavosdaniel.myfinance_api.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -35,74 +43,6 @@ class UserServiceImplTest {
 
 
     @Nested
-    class createUser{
-
-        @Test
-        @DisplayName("Should create user with sucesso")
-        void shouldCreatedUser(){
-
-            UUID userId = UUID.randomUUID();
-            String email = "gustavosdaniel@gmail.com";
-
-            UserRequest request = new UserRequest(
-                    "gustavosdaniel@gmail.com", "Gustavo", "fotinha.png");
-
-            User newUser = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.USER );
-            ReflectionTestUtils.setField(newUser, "id", userId);
-
-            UserInfoResponse response = new UserInfoResponse(
-                    "Gustavo", "gustavosdaniel@gmail.com", "foto.png");
-
-            when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
-            when(userMapper.toUser(request)).thenReturn(newUser);
-            when(userRepository.save(newUser)).thenReturn(newUser);
-            when(userMapper.toUserInfoResponse(newUser)).thenReturn(response);
-
-            UserInfoResponse output = userService.createOrUpdateUserFromOAuth(request);
-
-            assertNotNull(output);
-
-
-            verify(userMapper).toUser(request);
-            verify(userRepository).save(any(User.class));
-            verify(userMapper).toUserInfoResponse(newUser);
-
-        }
-    }
-
-    @Nested
-    class updateUser{
-
-        @Test
-        @DisplayName("Should update user with sucesso")
-        void shouldUpdateUser(){
-
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
-
-            UserRequest request = new UserRequest(
-                    "gustavosdaniel@gmail.com", "Eduardo", "image.png");
-
-            UserInfoResponse userInfoResponse = new UserInfoResponse(
-                    "Eduardo","gustavosdaniel@gmail.com","imagem2.png");
-
-            when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
-            when(userRepository.save(user)).thenReturn(user);
-            when(userMapper.toUserInfoResponse(user)).thenReturn(userInfoResponse);
-
-            UserInfoResponse output = userService.createOrUpdateUserFromOAuth(request);
-
-            assertNotNull(output);
-
-            assertEquals("Eduardo", user.getName());
-            assertEquals("image.png", user.getPicture());
-
-            verify(userRepository).findByEmail(user.getEmail());
-            verify(userRepository).save(user);
-            verify(userMapper).toUserInfoResponse(user);
-        }
-    }
-
-    @Nested
     class getAllUsers{
 
         @Test
@@ -110,11 +50,14 @@ class UserServiceImplTest {
         void shouldAllUserss(){
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
+            String keycloakId2 = "idDoKeycloak";
+            String keycloakId3 = "idDoKeycloak";
             Pageable pageable = Pageable.unpaged();
 
-            User user1 = new User("gustavosdaniel@gmail.com","Gustavo", UserRole.ADMIN);
-            User user2 = new User("silva@gmail.com","Silva", UserRole.USER);
-            User user3 = new User("daniel@gmail.com","Daniel", UserRole.USER);
+            User user1 = new User(keycloakId,"gustavosdaniel@gmail.com","Gustavo", UserRole.ADMIN);
+            User user2 = new User(keycloakId2,"silva@gmail.com","Silva", UserRole.USER);
+            User user3 = new User(keycloakId3,"daniel@gmail.com","Daniel", UserRole.USER);
 
             List<User> users = Arrays.asList(user1, user2, user3);
 
@@ -149,8 +92,9 @@ class UserServiceImplTest {
 
             UUID userId = UUID.randomUUID();
             String email = "gustavosdaniel@gmail.com";
+            String keycloakId = "idDoKeycloak";
 
-            User user = new User(email,"Gustavo", UserRole.USER);
+            User user = new User(keycloakId,email,"Gustavo", UserRole.USER);
 
             UserResponse userResponse = new UserResponse(userId, "Gustavo", "gustavosdaniel@gmail.com");
 
@@ -174,7 +118,9 @@ class UserServiceImplTest {
         void shouldUserById(){
 
             UUID userId = UUID.randomUUID();
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            String keycloakId = "idDoKeycloak";
+
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             UserResponse userResponse = new UserResponse(userId,"Gustavo", "gustavosdaniel@gmail.com");
@@ -200,8 +146,9 @@ class UserServiceImplTest {
         void shouldDeleteUserWhenAdmin() {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Authentication authentication = mock(Authentication.class);

@@ -1,14 +1,17 @@
 package com.gustavosdaniel.myfinance_api.util;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.request.UserRequest;
+import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
+import com.gustavosdaniel.myfinance_api.domain.mapping.UserMapper;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.exception.UnauthorizedException;
-import com.gustavosdaniel.myfinance_api.metrics.UserMetrics;
-import com.gustavosdaniel.myfinance_api.user.*;
+import com.gustavosdaniel.myfinance_api.controller.metrics.UserMetrics;
+import com.gustavosdaniel.myfinance_api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Componente auxiliar para operações de autenticação e gerenciamento do usuário logado.
@@ -19,7 +22,6 @@ import java.util.Optional;
 @Component
 public class AuthHelper {
 
-    private final UserMetrics userMetrics;
     /**
      * Lista de e-mails configurados nas propriedades da aplicação
      * que devem receber privilégios de administrador (ADMIN).
@@ -27,6 +29,7 @@ public class AuthHelper {
     @Value("${app.security.admin-emails}")
     private List<String> adminEmails;
 
+    private final UserMetrics userMetrics;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 

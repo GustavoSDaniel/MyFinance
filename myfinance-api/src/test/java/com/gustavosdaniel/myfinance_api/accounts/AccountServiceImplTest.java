@@ -1,9 +1,18 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.request.AccountRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.AccountResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.AccountResponseInfo;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.AccountUpdateRequest;
+import com.gustavosdaniel.myfinance_api.domain.enuns.AccountType;
+import com.gustavosdaniel.myfinance_api.domain.mapping.AccountMapper;
+import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicateException;
-import com.gustavosdaniel.myfinance_api.user.User;
-import com.gustavosdaniel.myfinance_api.user.UserRepository;
-import com.gustavosdaniel.myfinance_api.user.UserRole;
+import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
+import com.gustavosdaniel.myfinance_api.service.AccountService;
+import com.gustavosdaniel.myfinance_api.domain.po.User;
+import com.gustavosdaniel.myfinance_api.repository.UserRepository;
+import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -43,8 +52,9 @@ class AccountServiceImplTest {
         void shouldCreateAccount() throws AccountNameDuplicateException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
 
-            User user = new User("gustavosdaniel@hmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"gustavosdaniel@hmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user,"id",userId);
 
             AccountRequest request =
@@ -85,8 +95,9 @@ class AccountServiceImplTest {
         void shouldAllAccounts(){
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId, "gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Account account1 = new Account(user, "Investimento", AccountType.INVESTMENT, "Tesouro direto", null);
@@ -139,8 +150,9 @@ class AccountServiceImplTest {
 
             UUID userId = UUID.randomUUID();
             UUID accountId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User( keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Account account = new Account(user, "Poupança",AccountType.POUPANCA, "Fundo de emergencia", null);
@@ -174,8 +186,9 @@ class AccountServiceImplTest {
         void searchAccount(){
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
 
-            User user = new User("gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
+            User user = new User( keycloakId,"gustavosdaniel@hotmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
             Account account = new Account(user, "Constas fixa", AccountType.WALLET, "Constas do mes", null);
@@ -229,9 +242,10 @@ class AccountServiceImplTest {
         void updateAccount() throws AccountNameDuplicateException {
 
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
             UUID accountId = UUID.randomUUID();
 
-            User user = new User("gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User( keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
             Account account = new Account(user, "Conta de test", AccountType.POUPANCA, "Conta para testar", null);
             ReflectionTestUtils.setField(account, "id", accountId);
@@ -265,8 +279,9 @@ class AccountServiceImplTest {
 
             UUID accountId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
 
-            User user = new User("gustavosdaniel@gmail.com", "gustavo", UserRole.ADMIN);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "gustavo", UserRole.ADMIN);
             ReflectionTestUtils.setField(user, "id", userId);
             Account account = new Account(user, "Conta par ativar", AccountType.POUPANCA, "Ativando conta poupança", null);
             ReflectionTestUtils.setField(account, "id", accountId);
@@ -290,8 +305,9 @@ class AccountServiceImplTest {
 
             UUID accountId = UUID.randomUUID();
             UUID userId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
 
-            User user = new User("gustavosdaniel@gmail.com", "gustavo", UserRole.ADMIN);
+            User user = new User(keycloakId,"gustavosdaniel@gmail.com", "gustavo", UserRole.ADMIN);
             ReflectionTestUtils.setField(user, "id", userId);
             Account account = new Account(user, "Conta para desativar", AccountType.POUPANCA, "Desativando conta poupança", null);
             ReflectionTestUtils.setField(account, "id", accountId);
@@ -315,8 +331,9 @@ class AccountServiceImplTest {
 
             UUID userId = UUID.randomUUID();
             UUID accountId = UUID.randomUUID();
+            String keycloakId = "idDoKeycloak";
 
-            User user = new User("email@gmail.com", "Gustavo", UserRole.USER);
+            User user = new User(keycloakId,"email@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
             Account account = new Account(user, "Cartáo de credito", AccountType.CREDIT_CARD,"Apagando conta", null );
             ReflectionTestUtils.setField(account, "id", accountId);
