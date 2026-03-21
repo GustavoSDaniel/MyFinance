@@ -1,158 +1,158 @@
-services:
-  my-finance-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: my-finance-app
-    restart: unless-stopped
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-    ports:
-      - "5050:5050"
-    networks:
-      - myfinance-network
-    depends_on:
-      postgres:
-        condition: service_healthy
-      dragonfly:
-        condition: service_healthy
+  services:
+    my-finance-app:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      container_name: my-finance-app
+      restart: unless-stopped
+      environment:
+        SPRING_PROFILES_ACTIVE: docker
+      ports:
+        - "5050:5050"
+      networks:
+        - myfinance-network
+      depends_on:
+        postgres:
+          condition: service_healthy
+        dragonfly:
+          condition: service_healthy
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:23.0
-    container_name: keycloak-my-finance
-    restart: unless-stopped
-    command: start-dev
-    environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    keycloak:
+      image: quay.io/keycloak/keycloak:23.0
+      container_name: keycloak-my-finance
+      restart: unless-stopped
+      command: start-dev
+      environment:
+        KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+        KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
 
-      KC_DB: postgres
-      KC_DB_URL_HOST: postgres-keycloak
-      KC_DB_URL_DATABASE: ${KEYCLOAK_DB}
-      KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
-      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+        KC_DB: postgres
+        KC_DB_URL_HOST: postgres-keycloak
+        KC_DB_URL_DATABASE: ${KEYCLOAK_DB}
+        KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
+        KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
 
-      KC_HTTP_ENABLED: "true"
-      KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_STRICT_HTTPS: "false"
-      KC_PROXY: edge
-    ports:
-      - "5053:8080"
-    depends_on:
-      postgres-keycloak:
-        condition: service_healthy
-    networks:
-      - myfinance-network
+        KC_HTTP_ENABLED: "true"
+        KC_HOSTNAME_STRICT: "false"
+        KC_HOSTNAME_STRICT_HTTPS: "false"
+        KC_PROXY: edge
+      ports:
+        - "5053:8080"
+      depends_on:
+        postgres-keycloak:
+          condition: service_healthy
+      networks:
+        - myfinance-network
 
-  postgres-keycloak:
-    image: postgres:16-alpine
-    container_name: db-keycloak-my-finance
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${KEYCLOAK_DB}
-      POSTGRES_USER: ${KEYCLOAK_DB_USER}
-      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
-    volumes:
-      - postgres_keycloak_data:/var/lib/postgresql/data
-    networks:
-      - myfinance-network
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER} -d ${KEYCLOAK_DB}" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    postgres-keycloak:
+      image: postgres:16-alpine
+      container_name: db-keycloak-my-finance
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: ${KEYCLOAK_DB}
+        POSTGRES_USER: ${KEYCLOAK_DB_USER}
+        POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      volumes:
+        - postgres_keycloak_data:/var/lib/postgresql/data
+      networks:
+        - myfinance-network
+      healthcheck:
+        test: [ "CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER} -d ${KEYCLOAK_DB}" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
 
-  postgres:
-    image: postgres:16-alpine
-    container_name: db-my-finance
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5051:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - myfinance-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    postgres:
+      image: postgres:16-alpine
+      container_name: db-my-finance
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      ports:
+        - "5051:5432"
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      networks:
+        - myfinance-network
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
 
-  dragonfly:
-    image: ghcr.io/dragonflydb/dragonfly:v1.37.0
-    container_name: myfinance-dragonfly
-    restart: unless-stopped
-    ports:
-      - "5052:6379"
-    volumes:
-      - dragonfly_data:/data
-    command:
-      - "--dbfilename=dump"
-      - "--dir=/data"
-    networks:
-      - myfinance-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    dragonfly:
+      image: ghcr.io/dragonflydb/dragonfly:v1.37.0
+      container_name: myfinance-dragonfly
+      restart: unless-stopped
+      ports:
+        - "5052:6379"
+      volumes:
+        - dragonfly_data:/data
+      command:
+        - "--dbfilename=dump"
+        - "--dir=/data"
+      networks:
+        - myfinance-network
+      healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
 
-  prometheus:
-    image: prom/prometheus:v2.52.0
-    container_name: myfinance-prometheus
-    restart: unless-stopped
-    ports:
-      - "5054:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=15d'
-      - '--storage.tsdb.retention.size=2GB'
-    networks:
-      - myfinance-network
+    prometheus:
+      image: prom/prometheus:v2.52.0
+      container_name: myfinance-prometheus
+      restart: unless-stopped
+      ports:
+        - "5054:9090"
+      volumes:
+        - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+        - prometheus_data:/prometheus
+      command:
+        - '--config.file=/etc/prometheus/prometheus.yml'
+        - '--storage.tsdb.path=/prometheus'
+        - '--storage.tsdb.retention.time=15d'
+        - '--storage.tsdb.retention.size=2GB'
+      networks:
+        - myfinance-network
 
-  grafana:
-    image: grafana/grafana:10.4.2
-    container_name: myfinance-grafana
-    restart: unless-stopped
-    ports:
-      - "5055:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
-    volumes:
-      - grafana_data:/var/lib/grafana
-    networks:
-      - myfinance-network
-
-
-  watchtower:
-    image: containrrr/watchtower:1.7.1
-    container_name: watchtower-my-finance
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command:
-      - --interval
-      - "300"
-    networks:
-      - myfinance-network
+    grafana:
+      image: grafana/grafana:10.4.2
+      container_name: myfinance-grafana
+      restart: unless-stopped
+      ports:
+        - "5055:3000"
+      environment:
+        - GF_SECURITY_ADMIN_USER=admin
+        - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      volumes:
+        - grafana_data:/var/lib/grafana
+      networks:
+        - myfinance-network
 
 
-networks:
-  myfinance-network:
-    driver: bridge
+    watchtower:
+      image: containrrr/watchtower:1.7.1
+      container_name: watchtower-my-finance
+      restart: unless-stopped
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+      command:
+        - --interval
+        - "300"
+      networks:
+        - myfinance-network
 
-volumes:
-  postgres_keycloak_data:
-  postgres_data:
-  dragonfly_data:
-  prometheus_data:
-  grafana_data:
+
+  networks:
+    myfinance-network:
+      driver: bridge
+
+  volumes:
+    postgres_keycloak_data:
+    postgres_data:
+    dragonfly_data:
+    prometheus_data:
+    grafana_data:

@@ -4,17 +4,62 @@ services:
     container_name: my-finance-app
     restart: unless-stopped
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:5432/${POSTGRES_DB}
-      - SPRING_DATA_REDIS_HOST=${DB_HOST}
-      - SPRING_DATA_REDIS_PORT=6379
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - SPRING_PROFILES_ACTIVE=docker
-      - CLIENT_ID=${CLIENT_ID}
-      - CLIENT_SECRET=${CLIENT_SECRET}
-      - ADMIN_EMAILS=${ADMIN_EMAILS}
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:5432/${POSTGRES_DB}
+      SPRING_DATA_REDIS_HOST: ${DB_HOST}
+      SPRING_DATA_REDIS_PASSWORD: ${DRAGONFLY_PASSWORD}
+      SPRING_DATA_REDIS_PORT: 6379
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      CLIENT_ID: ${CLIENT_ID}
+      CLIENT_SECRET: ${CLIENT_SECRET}
+      ADMIN_EMAILS: ${ADMIN_EMAILS}
+      ISSUER_URI: ${ISSUER_URI}
     ports:
       - "5050:5050"
+    networks:
+      - myfinance-network
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5050/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: keycloak-my-finance
+    restart: unless-stopped
+    command: start
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL_HOST: ${DB_HOST}
+      KC_DB_URL_DATABASE: ${KEYCLOAK_DB}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME: ${KC_HOSTNAME}
+      KC_HOSTNAME_STRICT: "false"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_RELATIVE_PATH: /auth
+      JAVA_OPTS_APPEND: "-Xms256m -Xmx512m"
+    ports:
+      - "5053:8080"
+    networks:
+      - myfinance-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/realms/master || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   watchtower:
     image: containrrr/watchtower:1.7.1
@@ -22,6 +67,10 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command:
-      - --interval
-      - "300"
+    command: --interval 300 --label-enable
+    networks:
+      - myfinance-network
+
+networks:
+  myfinance-network:
+    driver: bridge
