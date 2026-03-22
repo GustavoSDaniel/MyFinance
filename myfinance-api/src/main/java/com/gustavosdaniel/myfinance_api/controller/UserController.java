@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.UserMetrics;
 import com.gustavosdaniel.myfinance_api.controller.openApi.UserOpenApi;
 import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
@@ -24,15 +25,17 @@ import java.util.UUID;
 public class UserController implements UserOpenApi {
 
     private final UserService userService;
+    private final UserMetrics userMetrics;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserMetrics userMetrics) {
         this.userService = userService;
+        this.userMetrics = userMetrics;
     }
 
     @GetMapping("/me")
     public ResponseEntity<UserInfoResponse> me(@AuthenticationPrincipal Jwt jwt){
 
-        return userService.getCurrentUser(jwt);
+        return userMetrics.recordCurrent(() -> userService.getCurrentUser(jwt));
     }
 
     @GetMapping("/allUsers")
@@ -41,19 +44,19 @@ public class UserController implements UserOpenApi {
             @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC)
             Pageable pageable){
 
-        return userService.getAllUsers(pageable);
+        return userMetrics.recordGetAll(() -> userService.getAllUsers(pageable));
     }
 
     @GetMapping("/email")
     public ResponseEntity<UserResponse> getEmailByUser(@RequestParam String email){
 
-        return userService.getUserByEmail(email);
+        return userMetrics.recordGetByEmail(() -> userService.getUserByEmail(email));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id){
 
-        return userService.getUserById(id);
+        return userMetrics.recordGetById(() -> userService.getUserById(id));
     }
 
     @DeleteMapping("/{id}")

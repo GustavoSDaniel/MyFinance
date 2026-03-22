@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.AccountMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
@@ -20,14 +21,12 @@ import java.util.UUID;
 public class AccountController{
 
     private final AccountService accountService;
+    private final AccountMetrics accountMetrics;
 
-
-
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountService accountService, AccountMetrics accountMetrics) {
         this.accountService = accountService;
-
+        this.accountMetrics = accountMetrics;
     }
-
 
     @PostMapping()
     public ResponseEntity<AccountResponse> createdAccount(
@@ -42,7 +41,7 @@ public class AccountController{
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) String status){
 
-        return accountService.getAllAccounts(jwt, status);
+        return accountMetrics.recordGetAll(() -> accountService.getAllAccounts(jwt, status));
     }
 
     @GetMapping("/search")
@@ -51,7 +50,7 @@ public class AccountController{
             @AuthenticationPrincipal Jwt jwt
     ){
 
-        return accountService.searchAccount(name, jwt);
+        return accountMetrics.recordGetSearch(() -> accountService.searchAccount(name, jwt));
     }
 
     @GetMapping("/{id}")
@@ -59,7 +58,7 @@ public class AccountController{
             @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt){
 
-        return accountService.getById(id, jwt);
+        return accountMetrics.recordGetById(() -> accountService.getById(id, jwt));
     }
 
     @PatchMapping("/{id}")

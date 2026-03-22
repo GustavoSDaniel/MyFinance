@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.TransactionMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.TransactionRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.TransactionResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.TransactionSearchFilter;
@@ -23,9 +24,11 @@ import java.util.UUID;
 public class TransactionController{
 
     private final TransactionService transactionService;
+    private final TransactionMetrics transactionMetrics;
 
-    public TransactionController(TransactionService transactionService) {
+    public TransactionController(TransactionService transactionService, TransactionMetrics transactionMetrics) {
         this.transactionService = transactionService;
+        this.transactionMetrics = transactionMetrics;
     }
 
 
@@ -71,7 +74,7 @@ public class TransactionController{
             @AuthenticationPrincipal Jwt jwt
     ){
 
-        return transactionService.getTransactionById(id, jwt);
+        return transactionMetrics.recordGetById(() -> transactionService.getTransactionById(id, jwt));
 
     }
 
@@ -83,7 +86,7 @@ public class TransactionController{
             @ParameterObject @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable
     ){
-        return transactionService.getAllWithFilter(jwt, filter, pageable);
+        return transactionMetrics.recordGetAll(() -> transactionService.getAllWithFilter(jwt, filter, pageable));
     }
 
     @DeleteMapping("/{id}")

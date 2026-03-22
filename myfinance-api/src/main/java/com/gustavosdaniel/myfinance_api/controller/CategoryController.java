@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.CategoryMetrics;
 import com.gustavosdaniel.myfinance_api.service.CategoryService;
 import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequestUpdate;
@@ -19,9 +20,11 @@ import java.util.UUID;
 public class CategoryController{
 
     private final CategoryService categoryService;
+    private final CategoryMetrics categoryMetrics;
 
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService, CategoryMetrics categoryMetrics) {
         this.categoryService = categoryService;
+        this.categoryMetrics = categoryMetrics;
     }
 
     @PostMapping
@@ -39,7 +42,7 @@ public class CategoryController{
             @RequestParam(required = false) String status)
     {
 
-        return categoryService.getAllCategories(jwt, status);
+        return categoryMetrics.recordGetAll(() -> categoryService.getAllCategories(jwt, status));
     }
 
     @GetMapping("/search")
@@ -48,7 +51,7 @@ public class CategoryController{
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam String name
     ){
-        return categoryService.searchByName(jwt, name);
+        return categoryMetrics.recordSearchName(() -> categoryService.searchByName(jwt, name));
     }
 
     @GetMapping("/{id}")
@@ -57,7 +60,7 @@ public class CategoryController{
             @AuthenticationPrincipal Jwt jwt
             )
     {
-        return categoryService.getById(id, jwt);
+        return categoryMetrics.recordGetById(() -> categoryService.getById(id, jwt));
     }
 
     @PatchMapping("/{id}")

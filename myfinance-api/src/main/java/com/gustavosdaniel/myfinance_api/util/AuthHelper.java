@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.util;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.UserMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.UserRequest;
 import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
 import com.gustavosdaniel.myfinance_api.domain.mapping.UserMapper;
@@ -15,15 +16,17 @@ import java.util.List;
 @Component
 public class AuthHelper {
 
+    private final UserMetrics userMetrics;
     @Value("${app.security.admin-emails}")
     private List<String> adminEmails;
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public AuthHelper(UserRepository userRepository, UserMapper userMapper) {
+    public AuthHelper(UserRepository userRepository, UserMapper userMapper, UserMetrics userMetrics) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.userMetrics = userMetrics;
     }
 
 
@@ -55,6 +58,8 @@ public class AuthHelper {
         user.setRole(role);
 
         User userSalved = userRepository.save(user);
+
+        userMetrics.incrementCreated();
 
         return userSalved;
 

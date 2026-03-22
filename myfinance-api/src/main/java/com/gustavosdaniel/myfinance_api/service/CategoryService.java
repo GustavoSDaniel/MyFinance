@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.service;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.CategoryMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequestUpdate;
 import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponse;
@@ -53,11 +54,13 @@ public class CategoryService {
     private final CategoryMapper categoryMapper;
     private final AuthHelper authHelper;
     private final Logger log = LoggerFactory.getLogger(CategoryService.class);
+    private final CategoryMetrics categoryMetrics;
 
-    public CategoryService(CategoryRepository categoryRepository, CategoryMapper categoryMapper, AuthHelper authHelper) {
+    public CategoryService(CategoryRepository categoryRepository, CategoryMapper categoryMapper, AuthHelper authHelper, CategoryMetrics categoryMetrics) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
         this.authHelper = authHelper;
+        this.categoryMetrics = categoryMetrics;
     }
 
     /**
@@ -100,6 +103,8 @@ public class CategoryService {
                 .toUri();
 
         log.info("Categoria: {} criada com sucesso", saveCategory.getName());
+
+        categoryMetrics.incrementCreated();
 
         return ResponseEntity.created(uri).body(categoryMapper.toCategoryResponse(saveCategory));
     }
@@ -251,6 +256,8 @@ public class CategoryService {
 
         log.info("Categoria {} atualizada com sucesso", savedCategory.getId());
 
+        categoryMetrics.incrementUpdate();
+
         return ResponseEntity.ok(categoryMapper.toCategoryResponseUpdate(savedCategory));
     }
 
@@ -354,6 +361,8 @@ public class CategoryService {
         categoryRepository.delete(category);
 
         log.info("Categoria {} deletada com sucesso", category.getName());
+
+        categoryMetrics.incrementDelete();
 
         return ResponseEntity.noContent().build();
     }

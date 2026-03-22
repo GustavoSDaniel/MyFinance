@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.service;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.GoalMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequestUpdate;
 import com.gustavosdaniel.myfinance_api.domain.dto.GoalResponse;
@@ -71,14 +72,16 @@ public class GoalService {
     private final TransactionRepository transactionRepository;
     private final AuthHelper authHelper;
     private final Logger log = LoggerFactory.getLogger(GoalService.class);
+    private final GoalMetrics goalMetrics;
 
-    public GoalService(GoalRepository goalRepository, GoalMapper goalMapper, CategoryRepository categoryRepository, AccountRepository accountRepository, TransactionRepository transactionRepository, AuthHelper authHelper) {
+    public GoalService(GoalRepository goalRepository, GoalMapper goalMapper, CategoryRepository categoryRepository, AccountRepository accountRepository, TransactionRepository transactionRepository, AuthHelper authHelper, GoalMetrics goalMetrics) {
         this.goalRepository = goalRepository;
         this.goalMapper = goalMapper;
         this.categoryRepository = categoryRepository;
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.authHelper = authHelper;
+        this.goalMetrics = goalMetrics;
     }
 
     /**
@@ -120,6 +123,8 @@ public class GoalService {
                 .toUri();
 
         log.info("Meta criado com sucesso: {}", saveGoal.getName());
+
+        goalMetrics.incrementCreated();
 
         return ResponseEntity.created(uri).body(goalMapper.toGoalResponse(saveGoal));
     }
@@ -287,6 +292,8 @@ public class GoalService {
         Goal saveGoal = goalRepository.save(goal);
 
         log.info("Meta atualizada com sucesso {}", saveGoal.getName());
+
+        goalMetrics.incrementUpdate();
 
         return ResponseEntity.ok(goalMapper.toGoalResponse(saveGoal));
     }
@@ -458,6 +465,8 @@ public class GoalService {
         goalRepository.delete(goal);
 
         log.info("Meta deletada com sucesso!");
+
+        goalMetrics.incrementDelete();
 
         return ResponseEntity.noContent().build();
     }

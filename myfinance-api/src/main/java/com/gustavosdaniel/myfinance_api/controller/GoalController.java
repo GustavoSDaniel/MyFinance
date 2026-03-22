@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.GoalMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequestUpdate;
 import com.gustavosdaniel.myfinance_api.domain.dto.GoalResponse;
@@ -24,9 +25,11 @@ import java.util.UUID;
 public class GoalController{
 
     private final GoalService goalService;
+    private final GoalMetrics goalMetrics;
 
-    public GoalController(GoalService goalService) {
+    public GoalController(GoalService goalService, GoalMetrics goalMetrics) {
         this.goalService = goalService;
+        this.goalMetrics = goalMetrics;
     }
 
     @PostMapping
@@ -45,7 +48,7 @@ public class GoalController{
             @PathVariable UUID id
             ){
 
-        return goalService.getGoalById(id, jwt);
+        return goalMetrics.recordGetById(() -> goalService.getGoalById(id, jwt));
     }
 
     @GetMapping("/search")
@@ -54,7 +57,7 @@ public class GoalController{
             @RequestParam String name
     ){
 
-        return goalService.searchGoal(jwt, name);
+        return goalMetrics.recordSearchName(() -> goalService.searchGoal(jwt, name));
     }
 
     @GetMapping
@@ -65,7 +68,7 @@ public class GoalController{
             @RequestParam(required = false) String status
             ){
 
-        return goalService.getAllGoals(jwt, status, pageable);
+        return goalMetrics.recordGetAll(() -> goalService.getAllGoals(jwt, status, pageable));
     }
 
     @PatchMapping("/{id}")

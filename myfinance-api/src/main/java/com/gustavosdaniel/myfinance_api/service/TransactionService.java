@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.service;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.TransactionMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.TransactionRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.TransactionResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.TransactionSearchFilter;
@@ -70,13 +71,15 @@ public class TransactionService {
     private final AuthHelper authHelper;
 
     private final Logger log = LoggerFactory.getLogger(TransactionService.class);
+    private final TransactionMetrics transactionMetrics;
 
-    public TransactionService(CategoryRepository categoryRepository, TransactionRepository transactionRepository, TransactionMapper transactionMapper, AccountRepository accountRepository, AuthHelper authHelper) {
+    public TransactionService(CategoryRepository categoryRepository, TransactionRepository transactionRepository, TransactionMapper transactionMapper, AccountRepository accountRepository, AuthHelper authHelper, TransactionMetrics transactionMetrics) {
         this.categoryRepository = categoryRepository;
         this.transactionRepository = transactionRepository;
         this.transactionMapper = transactionMapper;
         this.accountRepository = accountRepository;
         this.authHelper = authHelper;
+        this.transactionMetrics = transactionMetrics;
     }
 
     /**
@@ -136,6 +139,8 @@ public class TransactionService {
 
         log.info("Transação criada com sucesso");
 
+        transactionMetrics.incrementCreated();
+
         return ResponseEntity.created(uri)
                 .body(transactionMapper.toTransactionResponse(transactionSave));
     }
@@ -176,6 +181,8 @@ public class TransactionService {
 
         log.info("Transação: {} confirmada com sucesso", id);
 
+        transactionMetrics.incrementConfirm();
+
         return ResponseEntity.noContent().build();
     }
 
@@ -208,6 +215,8 @@ public class TransactionService {
         accountRepository.save(transaction.getAccount());
 
         log.info("Transaction {} canceled with sucesso", id);
+
+        transactionMetrics.incrementCancel();
 
         return ResponseEntity.noContent().build();
 
@@ -306,6 +315,8 @@ public class TransactionService {
 
         log.info("Transferência realizada com sucesso: {} -> {} valor: {}",
                 fromAccount.getName(), toAccount.getName(), transferRequest.amount());
+
+        transactionMetrics.incrementTransfer();
 
         return ResponseEntity.noContent().build();
     }
@@ -410,6 +421,8 @@ public class TransactionService {
         transactionRepository.delete(transaction);
 
         log.info("Transação: {} deletada com sucesso", id);
+
+        transactionMetrics.incrementDeleted();
 
         return ResponseEntity.noContent().build();
     }

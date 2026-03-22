@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.service;
 
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.UserMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
 import com.gustavosdaniel.myfinance_api.domain.mapping.UserMapper;
@@ -46,11 +47,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final AuthHelper authHelpe;
+    private final UserMetrics userMetrics;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper, AuthHelper authHelpe) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, AuthHelper authHelpe, UserMetrics userMetrics) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.authHelpe = authHelpe;
+        this.userMetrics = userMetrics;
     }
 
     @Transactional(readOnly = true)
@@ -195,6 +198,8 @@ public class UserService {
         userRepository.delete(user);
 
         log.info("Usuário {} deletado com sucesso", user.getName());
+
+        userMetrics.incrementDeleted();
 
         return ResponseEntity.noContent().build();
     }

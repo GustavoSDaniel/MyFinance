@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.DashboardMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.BetweenDateDashboard;
 import com.gustavosdaniel.myfinance_api.domain.dto.DashboardResponse;
 import com.gustavosdaniel.myfinance_api.service.DashboardService;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 public class DashboardController {
 
     private final DashboardService dashboardService;
+    private final DashboardMetrics dashboardMetrics;
 
-    public DashboardController(DashboardService dashboardService) {
+    public DashboardController(DashboardService dashboardService, DashboardMetrics dashboardMetrics) {
         this.dashboardService = dashboardService;
+        this.dashboardMetrics = dashboardMetrics;
     }
 
     @GetMapping
@@ -26,6 +29,6 @@ public class DashboardController {
             @Valid @ModelAttribute BetweenDateDashboard date
             ){
 
-        return dashboardService.getDashboard(jwt, date);
+        return dashboardMetrics.dashboard(() -> dashboardService.getDashboard(jwt, date));
     }
 }

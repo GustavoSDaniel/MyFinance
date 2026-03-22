@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.service;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.AccountMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
@@ -54,6 +55,7 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
     private final AuthHelper authHelper;
+    private final AccountMetrics accountMetrics;
 
     BiPredicate<Account, AccountUpdateRequest> nameChanged =
             (account, request) ->
@@ -63,10 +65,11 @@ public class AccountService {
 
 
 
-    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper, AuthHelper authHelper) {
+    public AccountService(AccountRepository accountRepository, AccountMapper accountMapper, AuthHelper authHelper, AccountMetrics accountMetrics) {
         this.accountRepository = accountRepository;
         this.accountMapper = accountMapper;
         this.authHelper = authHelper;
+        this.accountMetrics = accountMetrics;
     }
 
 
@@ -109,6 +112,8 @@ public class AccountService {
                 .path("/{id}")
                 .buildAndExpand(savedAccount.getId())
                 .toUri();
+
+        accountMetrics.incrementCreate();
 
         return ResponseEntity.created(uri).body(accountMapper.toAccountResponse(savedAccount));
     }
@@ -243,6 +248,8 @@ public class AccountService {
 
         log.info("Conta: {} atualizada com sucesso", accountUpdated.getName());
 
+        accountMetrics.incrementUpdate();
+
         return ResponseEntity.ok(accountMapper.toAccountResponseInfo(accountUpdated));
     }
 
@@ -345,6 +352,8 @@ public class AccountService {
         user.removeAccount(account);
 
         accountRepository.delete(account);
+
+        accountMetrics.incrementDelete();
 
         return ResponseEntity.noContent().build();
 
