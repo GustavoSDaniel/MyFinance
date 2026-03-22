@@ -34,32 +34,33 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:23.0
     container_name: keycloak-my-finance
-    restart: unless-stopped
     command: start
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_DB: postgres
       KC_DB_URL_HOST: ${DB_HOST}
+      KC_DB_URL_PORT: 5433
       KC_DB_URL_DATABASE: ${KEYCLOAK_DB}
       KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
       KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME: ${KC_HOSTNAME}
       KC_HOSTNAME_STRICT: "false"
-      KC_PROXY_HEADERS: xforwarded
+      KC_PROXY: edge
       KC_HTTP_RELATIVE_PATH: /auth
+      KC_HEALTH_ENABLED: "true"
       JAVA_OPTS_APPEND: "-Xms256m -Xmx512m"
     ports:
       - "5053:8080"
     networks:
       - myfinance-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/realms/master || exit 1"]
+      test: [ "CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /auth/health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q '200' <&3" ]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 60s
+      retries: 10
+      start_period: 120s
 
   watchtower:
     image: containrrr/watchtower:1.7.1
