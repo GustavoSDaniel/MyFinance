@@ -1,5 +1,7 @@
 package com.gustavosdaniel.myfinance_api.domain.mapping;
 
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalTransferRequest;
+import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.domain.po.Transaction;
@@ -43,7 +45,8 @@ public class TransactionMapper {
      * @return Uma nova instância de {@link Transaction} preenchida com os dados fornecidos,
      *         ou {@code null} se o {@code request} for {@code null}.
      */
-    public Transaction toTransaction(TransactionRequest request, User user, Account account, Category category){
+    public Transaction toTransaction(
+            TransactionRequest request, User user, Account account, Category category){
 
         if (request == null){
             return null;
@@ -92,6 +95,28 @@ public class TransactionMapper {
                 categoryMapper.toCategoryResponse(transaction.getCategory()),
                 transaction.getIsRecurring(),
                 transaction.getRecurrenceType()
+        );
+    }
+
+    public Transaction toTransactionGoal(
+            GoalTransferRequest request,
+            User user, Account account, Category category, TransactionType type){
+
+        if (request == null){
+            return null;
+        }
+
+        return new  Transaction(
+                request.idempotencyKey(),
+                user,
+                account,
+                category,
+                request.description(),
+                request.amount(),
+                type,
+                request.date().atStartOfDay(),
+                request.isRecurring(),
+                request.recurrenceType()
         );
     }
 }

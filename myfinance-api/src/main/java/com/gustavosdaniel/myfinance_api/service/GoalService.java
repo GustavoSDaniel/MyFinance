@@ -236,7 +236,7 @@ public class GoalService {
      * Limpa o cache de metas.
      *
      * @param id       ID da meta que receberá o depósito.
-     * @param transfer DTO contendo o valor, a conta de origem e a chave de idempotência.
+     * @param request DTO contendo o valor, a conta de origem e a chave de idempotência.
      * @param user     Entidade do usuário logado.
      * @return DTO da meta atualizada com o novo saldo.
      * @throws IdempotencyKeyException       Caso uma transação com a mesma chave de idempotência já tenha sido processada.
@@ -247,33 +247,28 @@ public class GoalService {
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public GoalResponse depositToGoal(UUID id, GoalTransferRequest transfer, User user){
+    public GoalResponse depositToGoal(UUID id, GoalTransferRequest request, User user){
 
-        log.info("Realizando transação da conta {}, para a Meta {}", transfer.accountId(), id);
+        log.info("Realizando transação da conta {}, para a Meta {}", request.accountId(), id);
 
-        assertIdempotencyKeyIsUnique(transfer, user.getId());
+        assertIdempotencyKeyIsUnique(request, user.getId());
 
         Goal goal = goalRepository
                 .findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
 
         Account account = accountRepository
-                .findByIdAndUserId(transfer.accountId(), user.getId())
+                .findByIdAndUserId(request.accountId(), user.getId())
                 .orElseThrow(AccountNotFoundException::new);
 
-        Transaction transaction = new Transaction(
-                transfer.idempotencyKey(),
-                user,
-                account,
-                goal.getCategory(),
-                transfer.description(),
-                transfer.amount(),
-                TransactionType.DESPESA,
-                LocalDateTime.now(),
-                null,
-                null
-        );
+        Transaction transaction = transactionMapper
+                .toTransactionGoal(request,
+                        user,
+                        account,
+                        goal.getCategory(),
+                        TransactionType.DESPESA);
 
-        goal.addAmount(transfer.amount());
+
+        goal.addAmount(request.amount());
         transaction.process();
 
         Goal saveGoal = goalRepository.save(goal);
@@ -291,7 +286,7 @@ public class GoalService {
      * Limpa o cache de metas.
      *
      * @param id       ID da meta de onde o valor será resgatado.
-     * @param transfer DTO contendo o valor, a conta de destino e a chave de idempotência.
+     * @param request DTO contendo o valor, a conta de destino e a chave de idempotência.
      * @param user     Entidade do usuário logado.
      * @return DTO da meta atualizada com o novo saldo reduzido.
      * @throws IdempotencyKeyException       Caso uma transação com a mesma chave de idempotência já tenha sido processada.
@@ -302,34 +297,27 @@ public class GoalService {
      */
     @Transactional
     @CacheEvict(allEntries = true)
-    public GoalResponse withdrawFromGoal(UUID id, GoalTransferRequest transfer, User user){
+    public GoalResponse withdrawFromGoal(UUID id, GoalTransferRequest request, User user){
 
-        log.info("Resgatando valor do Goal {} para a conta {}", id, transfer.accountId());
+        log.info("Resgatando valor do Goal {} para a conta {}", id, request.accountId());
 
-        assertIdempotencyKeyIsUnique(transfer, user.getId());
+        assertIdempotencyKeyIsUnique(request, user.getId());
 
         Goal goal = goalRepository
                 .findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
 
         Account account = accountRepository
-                .findByIdAndUserId(transfer.accountId(), user.getId())
+                .findByIdAndUserId(request.accountId(), user.getId())
                 .orElseThrow(AccountNotFoundException::new);
 
+        Transaction transaction = transactionMapper
+                .toTransactionGoal(request,
+                        user,
+                        account,
+                        goal.getCategory(),
+                        TransactionType.RECEITA);
 
-        Transaction transaction = new Transaction(
-                transfer.idempotencyKey(),
-                user,
-                account,
-                goal.getCategory(),
-                transfer.description(),
-                transfer.amount(),
-                TransactionType.RECEITA,
-                LocalDateTime.now(),
-                null,
-                null
-        );
-
-        goal.removeAmount(transfer.amount());
+        goal.removeAmount(request.amount());
         transaction.process();
 
         Goal saveGoal = goalRepository.save(goal);
@@ -337,7 +325,7 @@ public class GoalService {
         transactionRepository.save(transaction);
 
         log.info("Resgate no valor de {} realizado com sucesso para a conta {}",
-                transfer.amount(), account.getName());
+                request.amount(), account.getName());
         return goalMapper.toGoalResponse(saveGoal);
     }
 
@@ -355,17 +343,12 @@ public class GoalService {
     @CacheEvict(allEntries = true)
     public void deleteGoal(UUID id, User user) {
 
-        log.info("Deletando Meta {}", id);
+        log.info("Meta deletada com sucesso!");
 
         Goal goal = goalRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(GoalNotFoundException::new);
 
-        if (goal.getCurrentAmount().compareTo(BigDecimal.ZERO) > 0){
-
-            throw new IllegalArgumentException(
-                    "Não é possível deletar a Meta pois ela contém saldo. " +
-                            "Resgate o dinheiro antes.");
-        }
+        assertGoalHasNoBalance(goal.getCurrentAmount());
 
         user.removeGoals(goal);
         goalRepository.delete(goal);
@@ -406,8 +389,6 @@ public class GoalService {
 
                 throw new GoalNameDuplicateException();
 
-
-
     }
 
 
@@ -422,5 +403,14 @@ public class GoalService {
         }
     }
 
+    private void assertGoalHasNoBalance(BigDecimal value){
+
+        if (value.compareTo(BigDecimal.ZERO) > 0){
+
+            throw new IllegalArgumentException(
+                    "Não é possível deletar a Meta pois ela contém saldo. " +
+                            "Resgate o dinheiro antes.");
+        }
+    }
 
 }
