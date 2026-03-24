@@ -77,16 +77,9 @@ public class TransactionService {
             User user,
             TransactionRequest request){
 
-        log.info("Criando transação");
+        log.info("Criando transação para User {}", user.getName());
 
-        if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(),
-                user.getId())){
-
-            log.warn("Transação já processada anteriormente. idempotencyKey = {}",
-                    request.idempotencyKey());
-
-            throw new IdempotencyKeyException();
-        }
+        assertIdempotencyKeyIsUnique(request, user.getId());
 
         Account account = accountRepository
                 .findByIdAndUserId(request.accountId(), user.getId())
@@ -203,14 +196,7 @@ public class TransactionService {
         log.info("Iniciando transferência da conta: {} para a conta: {}",
                 transferRequest.fromAccountId(), transferRequest.toAccountId());
 
-        if (transactionRepository.existsByIdempotencyKeyAndUserId(
-                transferRequest.idempotencyKey(), user.getId())){
-
-            log.warn("Transferência já processada anteriormente. idempotencyKey = {}",
-                    transferRequest.idempotencyKey());
-
-            throw  new IdempotencyKeyException();
-        }
+        assertIdempotencyKeyIsUnique(transferRequest, user.getId());
 
         Account fromAccount = accountRepository.findByIdAndUserId(
                 transferRequest.fromAccountId(), user.getId())
@@ -224,10 +210,8 @@ public class TransactionService {
                 (transferRequest.categoryId(), user.getId())
                 .orElseThrow(CategoryNotFoundException::new);
 
-        if (fromAccount.equals(toAccount)){
+        if (fromAccount.equals(toAccount)) throw new TransactionEqualsAccountException();
 
-            throw new TransactionEqualsAccountException();
-        }
 
         LocalDateTime transactionDate = transferRequest.date() != null
                 ? transferRequest.date().atStartOfDay()
@@ -343,15 +327,39 @@ public class TransactionService {
         Transaction transaction = transactionRepository
                 .findByIdAndUserId(id, userId).orElseThrow(TransactionNotFoundException::new);
 
-        if (transaction.getStatus() == TransactionStatus.CONFIRMADA){
-            throw new BusinessRuleException();
-        }
+        if (transaction.getStatus() == TransactionStatus.CONFIRMADA) throw new BusinessRuleException();
 
         transactionRepository.delete(transaction);
 
         transactionMetrics.incrementDeleted();
 
         log.info("Transação: {} deletada com sucesso", id);
+    }
+
+    private void assertIdempotencyKeyIsUnique(TransactionRequest request, UUID userId){
+
+        if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(),
+                userId)){
+
+            log.warn("Transação já processada anteriormente. idempotencyKey = {}",
+                    request.idempotencyKey());
+
+            throw new IdempotencyKeyException();
+        }
+
+    }
+
+    private void assertIdempotencyKeyIsUnique(TransferRequest request, UUID userId){
+
+        if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(),
+                userId)){
+
+            log.warn("Transação já processada anteriormente. idempotencyKey = {}",
+                    request.idempotencyKey());
+
+            throw new IdempotencyKeyException();
+        }
+
     }
 
 }

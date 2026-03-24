@@ -34,7 +34,7 @@ public class GoalMapper {
 
                 user,
                 category,
-                request.name(),
+                request.name().trim(),
                 request.description(),
                 request.targetAmount(),
                 request.deadLine(),
@@ -105,4 +105,6 @@ public class GoalMapper {
             goal.setPriority(requestUpdate.priority());
         }
     }
+
+
 }

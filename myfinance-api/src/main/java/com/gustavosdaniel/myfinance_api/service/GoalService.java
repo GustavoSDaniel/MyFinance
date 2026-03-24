@@ -2,8 +2,12 @@ package com.gustavosdaniel.myfinance_api.service;
 
 import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransferRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.GoalResponse;
+import com.gustavosdaniel.myfinance_api.domain.enuns.GoalStatus;
+import com.gustavosdaniel.myfinance_api.domain.enuns.Status;
 import com.gustavosdaniel.myfinance_api.domain.mapping.GoalMapper;
+import com.gustavosdaniel.myfinance_api.domain.mapping.TransactionMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.domain.po.Goal;
 import com.gustavosdaniel.myfinance_api.exception.AccountNotFoundException;
@@ -54,14 +58,16 @@ public class GoalService {
     private final TransactionRepository transactionRepository;
     private final Logger log = LoggerFactory.getLogger(GoalService.class);
     private final GoalMetrics goalMetrics;
+    private final TransactionMapper transactionMapper;
 
-    public GoalService(GoalRepository goalRepository, GoalMapper goalMapper, CategoryRepository categoryRepository, AccountRepository accountRepository, TransactionRepository transactionRepository, GoalMetrics goalMetrics) {
+    public GoalService(GoalRepository goalRepository, GoalMapper goalMapper, CategoryRepository categoryRepository, AccountRepository accountRepository, TransactionRepository transactionRepository, GoalMetrics goalMetrics, TransactionMapper transactionMapper) {
         this.goalRepository = goalRepository;
         this.goalMapper = goalMapper;
         this.categoryRepository = categoryRepository;
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.goalMetrics = goalMetrics;
+        this.transactionMapper = transactionMapper;
     }
 
     /**
@@ -81,10 +87,7 @@ public class GoalService {
 
         log.info("Criando Meta para o usuário: {}", user.getName());
 
-        if (goalRepository.existsByNameIgnoreCaseAndUserId(request.name().trim(), user.getId())){
-
-            throw new GoalNameDuplicateException();
-        }
+        assertGoalNameIsUnique(request.name(), user.getId());
 
         Category category = categoryRepository
                 .findByIdAndUserId(request.categoryId(), user.getId())
@@ -163,26 +166,20 @@ public class GoalService {
     @Transactional(readOnly = true)
     public Page<GoalResponse> getAllGoals(User user, String status,  Pageable pageable) {
 
-        Page<Goal> goals;
+        Page<Goal> goals = null;
 
-        if ("achieved".equalsIgnoreCase(status)){
-
-            goals = goalRepository.findAchievedGoals(user.getId(), pageable);
-
-            log.info("Todos as Metas já alcançados {}", goals.getTotalElements());
-
-        } else if ("progress".equalsIgnoreCase(status)) {
-
-            goals = goalRepository.findPendingGoals(user.getId(), pageable);
-
-            log.info("Todos as Metas  em progresso {}", goals.getTotalElements());
+        GoalStatus goalStatus = GoalStatus.fromString(status);
 
 
-        } else {
-            goals = goalRepository.findByUserId(user.getId(), pageable);
+        switch (goalStatus){
 
-            log.info("Todos as Metas encontrados {}", goals.getTotalElements());
+            case ACHIEVED -> goals = goalRepository.findAchievedGoals(user.getId(), pageable);
+
+            case PROGRESS -> goals = goalRepository.findPendingGoals(user.getId(), pageable);
+
+            case ALL -> goals = goalRepository.findByUserId(user.getId(), pageable);
         }
+        
 
         if (goals.isEmpty()){
 
@@ -217,23 +214,9 @@ public class GoalService {
 
         Category category = null;
 
-        if (requestUpdate.categoryId() != null) {
+        assertGoalCategoryNotNull(requestUpdate.categoryId(), user.getId());
 
-           category = categoryRepository
-                    .findByIdAndUserId(requestUpdate.categoryId(), user.getId())
-                    .orElseThrow(CategoryNotFoundException::new);
-
-        }
-
-        if (requestUpdate.name() != null && !requestUpdate.name().equalsIgnoreCase(goal.getName())) {
-
-            if (goalRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(requestUpdate.name()
-                    , user.getId(), id)) {
-
-                throw new GoalNameDuplicateException();
-
-            }
-        }
+        assertGoalNameIsUnique(requestUpdate.name(), user.getId(), goal);
 
 
         goalMapper.toGoalUpdate(requestUpdate, goal, category);
@@ -268,14 +251,7 @@ public class GoalService {
 
         log.info("Realizando transação da conta {}, para a Meta {}", transfer.accountId(), id);
 
-        if (transactionRepository.existsByIdempotencyKeyAndUserId(transfer.idempotencyKey(),
-                user.getId())){
-
-            log.warn("Transação já processada anteriormente. idempotencyKey = {}",
-                    transfer.idempotencyKey());
-
-            throw new IdempotencyKeyException();
-        }
+        assertIdempotencyKeyIsUnique(transfer, user.getId());
 
         Goal goal = goalRepository
                 .findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
@@ -330,14 +306,7 @@ public class GoalService {
 
         log.info("Resgatando valor do Goal {} para a conta {}", id, transfer.accountId());
 
-        if (transactionRepository.existsByIdempotencyKeyAndUserId(transfer.idempotencyKey(),
-                user.getId())){
-
-            log.warn("Transação já processada anteriormente. idempotencyKey = {}",
-                    transfer.idempotencyKey());
-
-            throw new IdempotencyKeyException();
-        }
+        assertIdempotencyKeyIsUnique(transfer, user.getId());
 
         Goal goal = goalRepository
                 .findByIdAndUserId(id, user.getId()).orElseThrow(GoalNotFoundException::new);
@@ -345,6 +314,7 @@ public class GoalService {
         Account account = accountRepository
                 .findByIdAndUserId(transfer.accountId(), user.getId())
                 .orElseThrow(AccountNotFoundException::new);
+
 
         Transaction transaction = new Transaction(
                 transfer.idempotencyKey(),
@@ -404,4 +374,53 @@ public class GoalService {
 
         log.info("Meta deletada com sucesso!");
     }
+
+    private void assertIdempotencyKeyIsUnique(GoalTransferRequest request, UUID userId){
+
+        if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(),
+                userId)){
+
+            log.warn("Transação já processada anteriormente. idempotencyKey = {}",
+                    request.idempotencyKey());
+
+            throw new IdempotencyKeyException();
+        }
+    }
+
+    private void assertGoalNameIsUnique(String name, UUID userId){
+
+        if (goalRepository.existsByNameIgnoreCaseAndUserId(name.trim(), userId))
+
+            throw new GoalNameDuplicateException();
+
+    }
+
+    private void assertGoalNameIsUnique(
+            String requestName, UUID userId, Goal goal){
+
+
+        if (requestName != null && !requestName.equalsIgnoreCase(goal.getName()))
+
+            if (goalRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(requestName
+                    , userId, goal.getId()))
+
+                throw new GoalNameDuplicateException();
+
+
+
+    }
+
+
+    private void assertGoalCategoryNotNull(UUID categoryRequestId, UUID userId){
+
+        if (categoryRequestId != null) {
+
+            categoryRepository
+                    .findByIdAndUserId(categoryRequestId, userId)
+                    .orElseThrow(CategoryNotFoundException::new);
+
+        }
+    }
+
+
 }
