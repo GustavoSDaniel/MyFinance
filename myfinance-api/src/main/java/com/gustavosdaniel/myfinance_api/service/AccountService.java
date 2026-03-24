@@ -4,6 +4,7 @@ import com.gustavosdaniel.myfinance_api.domain.dto.request.AccountUpdateRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.AccountRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.AccountResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.AccountResponseInfo;
+import com.gustavosdaniel.myfinance_api.domain.enuns.Status;
 import com.gustavosdaniel.myfinance_api.domain.mapping.AccountMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.exception.AccountNameDuplicateException;
@@ -57,10 +58,7 @@ public class AccountService {
     public AccountResponse createAccount(AccountRequest accountRequest, User user)
     {
 
-        if (accountRepository.existsByNameIgnoreCaseAndUserId(accountRequest.name().trim(), user.getId())){
-
-            throw new AccountNameDuplicateException();
-        }
+        assertAccountNameIsUnique(accountRequest.name(), user.getId());
 
         log.info("Criando uma nova conta para o usuário: {}", user.getName());
 
@@ -91,18 +89,18 @@ public class AccountService {
 
         log.info("Buscando todas as contas do usuário: {} com status: {}", userId, status);
 
-        List<Account> accounts;
+        List<Account> accounts = List.of();
 
-        if ("active".equalsIgnoreCase(status)){
+        Status accountStatus = Status.fromString(status);
 
-            accounts = accountRepository.findByUserIdAndIsActiveTrue(userId);
+        switch (accountStatus) {
 
-        }  else if ("disabled".equalsIgnoreCase(status)) {
+            case ACTIVE -> accounts = accountRepository.findByUserIdAndIsActiveTrue(userId);
 
-            accounts = accountRepository.findByUserIdAndIsActiveFalse(userId);
-        } else {
+            case DISABLED -> accounts = accountRepository.findByUserIdAndIsActiveFalse(userId);
 
-            accounts = accountRepository.findByUserId(userId);
+            case ALL -> accounts = accountRepository.findByUserId(userId);
+
         }
 
         log.info("Total de contas encontradas: {}", accounts.size());
@@ -125,7 +123,8 @@ public class AccountService {
 
         log.info("Buscando conta {} para o usuário {}", id, userId);
 
-        Account account = accountRepository.findByIdAndUserId(id, userId).orElseThrow(AccountNotFoundException::new);
+        Account account = accountRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(AccountNotFoundException::new);
 
         log.info("Conta encontrada com sucesso");
 
@@ -171,13 +170,7 @@ public class AccountService {
 
         log.info("Atualizando informações da conta: {}", account.getName());
 
-        if (request.name() != null && !account.getName().equalsIgnoreCase(request.name())){
-
-            if (accountRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(request.name(), userId, id)){
-
-                    throw new AccountNameDuplicateException();
-            }
-        }
+        assertAccountNameIsUnique(request.name(), account, userId);
 
         accountMapper.updateAccountFromRequest(request, account);
 
@@ -261,15 +254,39 @@ public class AccountService {
     @CacheEvict(allEntries = true)
     public void deleteAccount(UUID id, User user) {
 
-        Account account = accountRepository.findByIdAndUserId(id, user.getId()).orElseThrow(AccountNotFoundException::new);
+        Account account = accountRepository.findByIdAndUserId(id, user.getId())
+                .orElseThrow(AccountNotFoundException::new);
 
         user.removeAccount(account);
 
-        log.warn("Deletando conta permanentemente: {} do usuário {}", account.getName(), account.getUser().getName());
+        log.warn("Deletando conta permanentemente: {} do usuário {}",
+                account.getName(), account.getUser().getName());
 
         accountRepository.delete(account);
 
         accountMetrics.incrementDelete();
 
     }
+
+    private void assertAccountNameIsUnique(String name, UUID userId){
+
+
+        if (accountRepository.existsByNameIgnoreCaseAndUserId(name, userId))
+
+            throw new AccountNameDuplicateException();
+
+    }
+
+    private void assertAccountNameIsUnique(String name, Account account, UUID userId){
+
+        if (name != null && !account.getName().equalsIgnoreCase(name)){
+
+            if (accountRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(
+                    name, userId, account.getId()))
+
+                throw new AccountNameDuplicateException();
+
+        }
+    }
+
 }

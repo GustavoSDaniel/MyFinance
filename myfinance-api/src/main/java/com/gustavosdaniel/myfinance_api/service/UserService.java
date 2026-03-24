@@ -141,6 +141,17 @@ public class UserService {
 
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);
 
+        assertUserCanDelete(user, authentication);
+
+        userRepository.delete(user);
+
+        userMetrics.incrementDeleted();
+
+        log.info("Usuário {} deletado com sucesso", user.getName());
+    }
+
+    private void  assertUserCanDelete(User user, Authentication authentication){
+
         boolean isAdmin = authentication.getAuthorities()
                 .contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
 
@@ -149,16 +160,11 @@ public class UserService {
         if (!isAdmin && !user.getKeycloakId().equals(loggedInKeycloakId)){
 
             log.warn("Usuário {} tentou deletar a conta do usuário de ID {}",
-                    loggedInKeycloakId, id);
+                    loggedInKeycloakId, user.getId());
 
             throw new AccessDeniedException();
         }
 
-        userRepository.delete(user);
-
-        userMetrics.incrementDeleted();
-
-        log.info("Usuário {} deletado com sucesso", user.getName());
     }
 
 }

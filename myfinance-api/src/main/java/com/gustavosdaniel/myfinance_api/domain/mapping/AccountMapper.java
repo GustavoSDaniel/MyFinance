@@ -29,7 +29,7 @@ public class AccountMapper {
 
         return new Account(
                 user,
-                request.name(),
+                request.name().trim(),
                 request.type(),
                 request.description(),
                 request.initialBalance()
@@ -99,7 +99,7 @@ public class AccountMapper {
     public void updateAccountFromRequest(AccountUpdateRequest request, Account account){
 
         if (request.name() != null && !request.name().isBlank()){
-            account.setName(request.name());
+            account.setName(request.name().trim());
         }
 
         if (request.description() != null){

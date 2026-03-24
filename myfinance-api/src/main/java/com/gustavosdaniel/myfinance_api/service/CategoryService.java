@@ -5,6 +5,7 @@ import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequestUpdate;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponseUpdate;
+import com.gustavosdaniel.myfinance_api.domain.enuns.Status;
 import com.gustavosdaniel.myfinance_api.domain.mapping.CategoryMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.exception.CategoryNameDuplicateException;
@@ -58,14 +59,7 @@ public class CategoryService {
 
         log.info("Criando categoria para usuário {}", user.getName());
 
-        if (categoryRepository.existsByNameIgnoreCaseAndUserIdAndType(
-                request.name().trim(),
-                user.getId(),
-                request.type())
-        ){
-
-            throw new CategoryNameDuplicateException();
-        }
+        assertCategoryNameIsUnique(request.name(),user.getId(), request.type());
 
         Category newCategory = categoryMapper.toCategory(user, request);
         user.addCategory(newCategory);
@@ -91,25 +85,17 @@ public class CategoryService {
     @Cacheable(key = "#userId + '_' + #status")
     public List<CategoryResponse> getAllCategories(UUID userId, String status) {
 
-        List<Category> categories;
+        List<Category> categories = List.of();
 
-        if ("active".equalsIgnoreCase(status)){
+        Status categoryStatus = Status.fromString(status);
 
-            log.info("Buscando categorias ativas do usuário: {}", userId);
+        switch (categoryStatus){
 
-            categories = categoryRepository.findByUserIdAndIsActiveTrue(userId);
+            case ACTIVE -> categories = categoryRepository.findByUserIdAndIsActiveTrue(userId);
 
-        } else if ("disabled".equalsIgnoreCase(status)) {
+            case DISABLED -> categories = categoryRepository.findByUserIdAndIsActiveFalse(userId);
 
-            log.info("Buscando categorias desativadas do usuário: {}", userId);
-
-            categories = categoryRepository.findByUserIdAndIsActiveFalse(userId);
-
-        } else {
-
-            log.info("Buscando todas as categorias do usuário: {}", userId);
-
-            categories = categoryRepository.findByUserId(userId);
+            case ALL -> categories = categoryRepository.findByUserId(userId);
         }
 
         log.info("Total de categorias encontrados: {}", categories.size());
@@ -176,7 +162,6 @@ public class CategoryService {
     @CacheEvict(allEntries = true)
     public CategoryResponseUpdate updateCategory(UUID id, UUID userId,
                                                  CategoryRequestUpdate request)
-
     {
 
         log.info("Atualizando categoria {} ", id);
@@ -185,16 +170,7 @@ public class CategoryService {
                 .findByIdAndUserId(id, userId)
                 .orElseThrow(CategoryNotFoundException::new);
 
-        CategoryType typeToCheck = request.type() != null ? request.type() : category.getType();
-
-        if (request.name() != null && !request.name().equalsIgnoreCase(category.getName())){
-
-            if (categoryRepository
-                    .existsByNameIgnoreCaseAndUserIdAndType(request.name(), userId, typeToCheck)){
-
-                throw new CategoryNameDuplicateException();
-            }
-        }
+        assertCategoryNameIsUnique(request.name(), userId, request.type(), category);
 
         categoryMapper.toCategoryUpdate(category, request);
 
@@ -298,5 +274,33 @@ public class CategoryService {
         categoryMetrics.incrementDelete();
 
         log.info("Categoria {} deletada com sucesso", category.getName());
+    }
+
+    private void assertCategoryNameIsUnique(String name, UUID userId, CategoryType type){
+
+        if (categoryRepository.existsByNameIgnoreCaseAndUserIdAndType(
+                name,
+                userId,
+                type)
+        )
+
+            throw new CategoryNameDuplicateException();
+    }
+
+    private void assertCategoryNameIsUnique(String name,
+                                            UUID userId,
+                                            CategoryType type, Category category){
+
+        CategoryType typeToCheck = type != null ? type : category.getType();
+
+        if (name != null &&  !name.equalsIgnoreCase(category.getName())){
+
+            if (categoryRepository
+                    .existsByNameIgnoreCaseAndUserIdAndTypeAndIdNot(
+                            name, userId, typeToCheck, category.getId()))
+
+                throw new CategoryNameDuplicateException();
+
+        }
     }
 }

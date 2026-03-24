@@ -27,7 +27,7 @@ public class CategoryMapper {
             return null;
         }
 
-       return new Category(user, request.name(), request.type(), request.color());
+       return new Category(user, request.name().trim(), request.type(), request.color());
     }
 
     /**
