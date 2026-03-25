@@ -109,8 +109,6 @@ public class TransactionService {
      * Se a transação já estiver confirmada, ignora a ação.
      * Limpa o cache de transações.
      *
-     *
-     *
      * @param id     ID da transação a ser confirmada.
      * @param userId ID do usuário proprietário da transação.
      * @throws TransactionNotFoundException Caso a transação não seja encontrada.
@@ -178,7 +176,6 @@ public class TransactionService {
      * O processo cria automaticamente duas transações: uma DESPESA na conta de origem e
      * uma RECEITA na conta de destino.
      * Limpa o cache de transações.
-     * *
      *
      * @param user            Entidade do usuário que está realizando a transferência.
      * @param transferRequest DTO contendo contas de origem/destino, valor, categoria e chave de idempotência.
@@ -206,42 +203,20 @@ public class TransactionService {
                 transferRequest.toAccountId(), user.getId())
                 .orElseThrow(AccountNotFoundException::new);
 
+        assertDifferentAccounts(fromAccount.getId(), toAccount.getId());
+
         Category category = categoryRepository.findByIdAndUserId
                 (transferRequest.categoryId(), user.getId())
                 .orElseThrow(CategoryNotFoundException::new);
 
-        if (fromAccount.equals(toAccount)) throw new TransactionEqualsAccountException();
 
+        Transaction from = transactionMapper
+                .toTransfer(transferRequest,
+                        user, fromAccount, category, TransactionType.DESPESA);
 
-        LocalDateTime transactionDate = transferRequest.date() != null
-                ? transferRequest.date().atStartOfDay()
-                : LocalDateTime.now();
-
-
-        Transaction from = new Transaction(
-                transferRequest.idempotencyKey(),
-                user,
-                fromAccount,
-                category,
-                transferRequest.description(),
-                transferRequest.amount(),
-                TransactionType.DESPESA,
-                transactionDate,
-                null,
-                null
-                );
-
-        Transaction to = new Transaction(transferRequest.idempotencyKey(),
-                user,
-                toAccount,
-                category,
-                transferRequest.description(),
-                transferRequest.amount(),
-                TransactionType.RECEITA,
-                transactionDate,
-                null,
-                null
-        );
+        Transaction to = transactionMapper
+                .toTransfer(transferRequest,
+                        user, toAccount, category, TransactionType.RECEITA);
 
         from.process();
         to.process();
@@ -280,10 +255,11 @@ public class TransactionService {
 
     /**
      * Retorna uma lista paginada de transações com base em filtros dinâmicos utilizando Specifications.
+     * Os filtros disponíveis incluem período, status, categoria, entre outros, conforme definido em {@link TransactionSearchFilter}.
      *
      * @param user     Entidade do usuário proprietário das transações.
      * @param filter   Objeto contendo os critérios de busca (ex: período, status, categoria).
-     * @param pageable Configurações de paginação e ordenação.
+     * @param pageable Configurações de paginação e ordenação (número da página, tamanho, ordenação).
      * @return Página contendo os DTOs das transações que correspondem aos filtros informados.
      */
     @Transactional(readOnly = true)
@@ -336,6 +312,14 @@ public class TransactionService {
         log.info("Transação: {} deletada com sucesso", id);
     }
 
+    /**
+     * Verifica se a chave de idempotência já foi utilizada em uma transação do tipo {@link TransactionRequest}.
+     * Utilizada na criação de transações comuns.
+     *
+     * @param request DTO contendo a chave de idempotência.
+     * @param userId  ID do usuário.
+     * @throws IdempotencyKeyException Se a chave já existir.
+     */
     private void assertIdempotencyKeyIsUnique(TransactionRequest request, UUID userId){
 
         if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(),
@@ -349,6 +333,14 @@ public class TransactionService {
 
     }
 
+    /**
+     * Verifica se a chave de idempotência já foi utilizada em uma transferência ({@link TransferRequest}).
+     * Utilizada na criação de transferências entre contas.
+     *
+     * @param request DTO contendo a chave de idempotência.
+     * @param userId  ID do usuário.
+     * @throws IdempotencyKeyException Se a chave já existir.
+     */
     private void assertIdempotencyKeyIsUnique(TransferRequest request, UUID userId){
 
         if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(),
@@ -360,6 +352,20 @@ public class TransactionService {
             throw new IdempotencyKeyException();
         }
 
+    }
+
+    /**
+     * Verifica se as contas de origem e destino são diferentes.
+     * Utilizada em transferências para evitar movimentação para a mesma conta.
+     *
+     * @param fromAccountId ID da conta de origem.
+     * @param toAccountId   ID da conta de destino.
+     * @throws TransactionEqualsAccountException Se os IDs forem iguais.
+     */
+    private void assertDifferentAccounts(UUID fromAccountId, UUID toAccountId){
+
+        if (fromAccountId.equals(toAccountId))
+            throw new TransactionEqualsAccountException();
     }
 
 }

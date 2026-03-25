@@ -81,6 +81,7 @@ public class AccountService {
      *
      * @param userId ID do usuário dono das contas.
      * @param status Status para filtro ("active", "disabled" ou qualquer outro valor para buscar todas).
+     *               O valor é tratado de forma case-insensitive.
      * @return Lista de DTOs com as informações das contas encontradas.
      */
     @Transactional(readOnly = true)
@@ -133,6 +134,8 @@ public class AccountService {
 
     /**
      * Realiza a busca de contas pelo nome para um usuário específico.
+     * A busca é feita de forma case-insensitive, retornando contas cujo nome contenha
+     * o valor informado (busca parcial).
      *
      * @param name   Parte ou nome completo da conta a ser pesquisada.
      * @param userId ID do usuário dono das contas.
@@ -268,6 +271,14 @@ public class AccountService {
 
     }
 
+    /**
+     * Verifica se já existe uma conta ativa com o mesmo nome para o usuário.
+     * Utilizada na criação de uma nova conta.
+     *
+     * @param name   Nome da conta a ser validado.
+     * @param userId ID do usuário dono da conta.
+     * @throws AccountNameDuplicateException Se o nome já estiver em uso.
+     */
     private void assertAccountNameIsUnique(String name, UUID userId){
 
 
@@ -277,6 +288,15 @@ public class AccountService {
 
     }
 
+    /**
+     * Verifica se o novo nome informado é único, ignorando a própria conta que está sendo atualizada.
+     * Utilizada na atualização de conta.
+     *
+     * @param name    Novo nome proposto (pode ser null, indicando que não será alterado).
+     * @param account Conta que está sendo atualizada.
+     * @param userId  ID do usuário dono da conta.
+     * @throws AccountNameDuplicateException Se o novo nome (não nulo e diferente do atual) já estiver em uso.
+     */
     private void assertAccountNameIsUnique(String name, Account account, UUID userId){
 
         if (name != null && !account.getName().equalsIgnoreCase(name)){

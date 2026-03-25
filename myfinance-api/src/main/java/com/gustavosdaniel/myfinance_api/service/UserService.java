@@ -51,9 +51,10 @@ public class UserService {
 
     /**
      * Retorna uma lista paginada de todos os usuários cadastrados.
+     * A ordenação e o tamanho da página são definidos pelo parâmetro {@code pageable}.
      *
-     * @param pageable informações de paginação e ordenação
-     * @return página contendo os usuários encontrados
+     * @param pageable informações de paginação (número da página, tamanho, ordenação)
+     * @return página contendo os DTOs dos usuários encontrados
      */
     @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(Pageable pageable) {
@@ -78,8 +79,8 @@ public class UserService {
      *
      * <p>Utiliza cache para melhorar a performance em consultas repetidas.
      *
-     * @param email email do usuário
-     * @return dados do usuário caso encontrado
+     * @param email email do usuário (case-insensitive)
+     * @return {@code Optional} contendo o DTO do usuário se encontrado, ou vazio caso contrário
      */
     @Transactional(readOnly = true)
     @Cacheable(key = "#email", unless = "#result == null")
@@ -150,6 +151,18 @@ public class UserService {
         log.info("Usuário {} deletado com sucesso", user.getName());
     }
 
+    /**
+     * Verifica se o usuário autenticado tem permissão para deletar o usuário alvo.
+     * A regra é:
+     * <ul>
+     * <li>Administradores (ROLE_ADMIN) podem deletar qualquer usuário.</li>
+     * <li>Usuários comuns só podem deletar sua própria conta.</li>
+     * </ul>
+     *
+     * @param user           usuário que será deletado
+     * @param authentication contexto de segurança do usuário logado
+     * @throws AccessDeniedException se o usuário logado não tiver permissão para deletar o alvo
+     */
     private void  assertUserCanDelete(User user, Authentication authentication){
 
         boolean isAdmin = authentication.getAuthorities()

@@ -495,6 +495,7 @@ class GoalServiceImplTest {
             UUID accountId = UUID.randomUUID();
             UUID transactionId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
+            LocalDate data = LocalDate.of(2026, 8, 25);
 
             BigDecimal transactionAMount = new BigDecimal("300.96");
             BigDecimal currentBalance = new BigDecimal("500.25");
@@ -532,6 +533,9 @@ class GoalServiceImplTest {
                     transaction.getIdempotencyKey(),
                     account.getId(),
                     transaction.getAmount(),
+                    data,
+                    null,
+                    null,
                     "Realizando transferencia para conta");
 
             Goal goal = new Goal(
@@ -592,6 +596,7 @@ class GoalServiceImplTest {
             UUID accountId = UUID.randomUUID();
             UUID transactionId = UUID.randomUUID();
             UUID idempotencyKey = UUID.randomUUID();
+            LocalDate date = LocalDate.of(2026, 7, 6);
 
             BigDecimal transactionAMount = new BigDecimal("300.96");
             BigDecimal currentBalance = new BigDecimal("500.25");
@@ -630,6 +635,9 @@ class GoalServiceImplTest {
                     transaction.getIdempotencyKey(),
                     account.getId(),
                     transaction.getAmount(),
+                    date,
+                    null,
+                    null,
                     "Realizando transferencia para conta");
 
             Goal goal = new Goal(

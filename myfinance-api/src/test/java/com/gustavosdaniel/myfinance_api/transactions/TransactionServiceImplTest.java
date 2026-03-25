@@ -308,7 +308,7 @@ class TransactionServiceImplTest {
                     null);
             ReflectionTestUtils.setField(to, "id", toAccountId);
 
-            TransferRequest request = new TransferRequest(fromAccountId, toAccountId, amountRequest, categoryId, idempotencyKey, descriptionRequest, dateRequest);
+            TransferRequest request = new TransferRequest(fromAccountId, toAccountId, amountRequest, categoryId, idempotencyKey, descriptionRequest, dateRequest, null, null);
 
             List<Account> accounts = Arrays.asList(fromAccount, toAccount);
             List<Transaction> transactions = Arrays.asList(from, to);

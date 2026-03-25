@@ -32,10 +32,19 @@ public class DashboardService {
     /**
      * Gera o resumo financeiro (Dashboard) para um usuário dentro de um período específico.
      * Calcula o total de receitas, despesas, saldo e despesas agrupadas por categoria.
+     * <p>
+     * O período considerado é inclusivo para as datas de início e fim, sendo que a data final
+     * é tratada como o final do dia (23:59:59.999...), garantindo que todas as transações
+     * do dia final sejam incluídas.
+     * </p>
+     * <p>
+     * Caso não existam transações em uma das categorias de receita ou despesa, o valor
+     * será tratado como zero para fins de cálculo do saldo.
+     * </p>
      *
      * @param user        Entidade do usuário para o qual o dashboard será gerado.
      * @param betweenDate Objeto (Record/DTO) contendo as datas inicial e final do período a ser analisado.
-     * @return DTO contendo os totais consolidados e a lista de despesas por categoria.
+     * @return DTO contendo os totais consolidados (receitas, despesas, saldo) e a lista de despesas por categoria.
      * @throws IllegalArgumentException Caso a data final informada seja anterior à data inicial.
      */
     @Transactional(readOnly = true)
@@ -76,6 +85,13 @@ public class DashboardService {
 
     }
 
+    /**
+     * Valida se o período informado é coerente, verificando se a data final é posterior
+     * ou igual à data inicial.
+     *
+     * @param betweenDate Objeto contendo as datas de início e fim do período.
+     * @throws IllegalArgumentException Se a data final for anterior à data inicial.
+     */
     private void assertValidDateRange(BetweenDate betweenDate){
 
         if (betweenDate.endDate().isBefore(betweenDate.startDate()) )

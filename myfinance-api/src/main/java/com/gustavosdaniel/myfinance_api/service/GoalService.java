@@ -130,6 +130,7 @@ public class GoalService {
 
     /**
      * Realiza uma busca de metas pelo nome para um usuário específico.
+     * A busca é case-insensitive e retorna metas cujo nome contenha o valor informado (busca parcial).
      *
      * @param user Entidade do usuário dono das metas.
      * @param name Nome parcial ou total a ser pesquisado.
@@ -157,10 +158,12 @@ public class GoalService {
 
     /**
      * Retorna uma lista paginada de metas de um usuário com base no status solicitado.
+     * O status é tratado de forma case-insensitive através do enum {@link GoalStatus}.
      *
      * @param user     Entidade do usuário dono das metas.
-     * @param status   Filtro de status ("achieved" para alcançadas, "progress" para em andamento).
-     * @param pageable Configurações de paginação.
+     * @param status   Filtro de status ("achieved" para alcançadas, "progress" para em andamento,
+     *                 ou qualquer outro valor para listar todas).
+     * @param pageable Configurações de paginação (número da página, tamanho, ordenação).
      * @return Página contendo os DTOs das metas encontradas.
      */
     @Transactional(readOnly = true)
@@ -194,6 +197,10 @@ public class GoalService {
     /**
      * Atualiza as informações de uma meta existente.
      * Limpa o cache de metas após a atualização.
+     * <p>
+     * Se um novo {@code categoryId} for informado no request, a categoria correspondente é validada
+     * e associada à meta. Caso não seja informado, a categoria permanece inalterada.
+     * </p>
      *
      * @param id            ID da meta a ser atualizada.
      * @param requestUpdate DTO contendo os novos dados para a meta.
@@ -261,10 +268,7 @@ public class GoalService {
                 .orElseThrow(AccountNotFoundException::new);
 
         Transaction transaction = transactionMapper
-                .toTransactionGoal(request,
-                        user,
-                        account,
-                        goal.getCategory(),
+                .toTransactionGoal(request, user, account, goal.getCategory(),
                         TransactionType.DESPESA);
 
 
@@ -311,10 +315,7 @@ public class GoalService {
                 .orElseThrow(AccountNotFoundException::new);
 
         Transaction transaction = transactionMapper
-                .toTransactionGoal(request,
-                        user,
-                        account,
-                        goal.getCategory(),
+                .toTransactionGoal(request, user, account, goal.getCategory(),
                         TransactionType.RECEITA);
 
         goal.removeAmount(request.amount());
@@ -358,6 +359,14 @@ public class GoalService {
         log.info("Meta deletada com sucesso!");
     }
 
+    /**
+     * Verifica se a chave de idempotência já foi utilizada para uma transação do usuário.
+     * Utilizada para evitar duplicidade de depósitos/resgates.
+     *
+     * @param request DTO contendo a chave de idempotência.
+     * @param userId  ID do usuário.
+     * @throws IdempotencyKeyException Se a chave já existir.
+     */
     private void assertIdempotencyKeyIsUnique(GoalTransferRequest request, UUID userId){
 
         if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(),
@@ -370,6 +379,13 @@ public class GoalService {
         }
     }
 
+    /**
+     * Valida a unicidade do nome de uma meta para o usuário, utilizado na criação.
+     *
+     * @param name   Nome da meta a ser validado.
+     * @param userId ID do usuário.
+     * @throws GoalNameDuplicateException Se o nome já existir.
+     */
     private void assertGoalNameIsUnique(String name, UUID userId){
 
         if (goalRepository.existsByNameIgnoreCaseAndUserId(name.trim(), userId))
@@ -378,6 +394,14 @@ public class GoalService {
 
     }
 
+    /**
+     * Valida a unicidade do nome de uma meta na atualização, ignorando a própria meta.
+     *
+     * @param requestName Novo nome proposto (pode ser null, indicando que não será alterado).
+     * @param userId      ID do usuário.
+     * @param goal        Meta que está sendo atualizada.
+     * @throws GoalNameDuplicateException Se o novo nome (quando não nulo e diferente do atual) já existir.
+     */
     private void assertGoalNameIsUnique(
             String requestName, UUID userId, Goal goal){
 
@@ -392,25 +416,40 @@ public class GoalService {
     }
 
 
+    /**
+     * Verifica se a categoria informada existe e pertence ao usuário.
+     * Utilizada na atualização da meta quando um novo categoryId é fornecido.
+     *
+     * @param categoryRequestId ID da categoria a ser validada (pode ser null).
+     * @param userId            ID do usuário.
+     * @throws CategoryNotFoundException Se a categoria fornecida não existir ou não pertencer ao usuário.
+     */
     private void assertGoalCategoryNotNull(UUID categoryRequestId, UUID userId){
 
-        if (categoryRequestId != null) {
+        if (categoryRequestId != null) 
 
             categoryRepository
                     .findByIdAndUserId(categoryRequestId, userId)
                     .orElseThrow(CategoryNotFoundException::new);
 
-        }
+
     }
 
+    /**
+     * Verifica se a meta possui saldo para ser excluída.
+     * A exclusão só é permitida se o saldo atual for zero.
+     *
+     * @param value Saldo atual da meta.
+     * @throws IllegalArgumentException Se o saldo for maior que zero.
+     */
     private void assertGoalHasNoBalance(BigDecimal value){
 
-        if (value.compareTo(BigDecimal.ZERO) > 0){
+        if (value.compareTo(BigDecimal.ZERO) > 0)
 
             throw new IllegalArgumentException(
                     "Não é possível deletar a Meta pois ela contém saldo. " +
                             "Resgate o dinheiro antes.");
-        }
+
     }
 
 }

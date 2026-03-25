@@ -107,6 +107,8 @@ public class CategoryService {
 
     /**
      * Realiza a busca de categorias pelo nome para um usuário específico.
+     * A busca é feita de forma case-insensitive, retornando categorias cujo nome contenha
+     * o valor informado (busca parcial).
      *
      * @param userId ID do usuário dono das categorias.
      * @param name   Parte ou nome completo da categoria a ser pesquisada.
@@ -276,6 +278,15 @@ public class CategoryService {
         log.info("Categoria {} deletada com sucesso", category.getName());
     }
 
+    /**
+     * Verifica se já existe uma categoria com o mesmo nome e tipo para o usuário.
+     * Utilizada na criação de uma nova categoria.
+     *
+     * @param name   Nome da categoria a ser validado.
+     * @param userId ID do usuário dono da categoria.
+     * @param type   Tipo da categoria (ex.: RECEITA, DESPESA).
+     * @throws CategoryNameDuplicateException Se o nome e tipo já estiverem em uso.
+     */
     private void assertCategoryNameIsUnique(String name, UUID userId, CategoryType type){
 
         if (categoryRepository.existsByNameIgnoreCaseAndUserIdAndType(
@@ -287,6 +298,16 @@ public class CategoryService {
             throw new CategoryNameDuplicateException();
     }
 
+    /**
+     * Verifica se o novo nome e tipo são únicos, ignorando a própria categoria que está sendo atualizada.
+     * Utilizada na atualização de categoria.
+     *
+     * @param name    Novo nome proposto (pode ser null, indicando que não será alterado).
+     * @param userId  ID do usuário dono da categoria.
+     * @param type    Novo tipo proposto (pode ser null, indicando que não será alterado).
+     * @param category Categoria que está sendo atualizada.
+     * @throws CategoryNameDuplicateException Se a combinação nome/tipo (quando alterada) já existir para este usuário.
+     */
     private void assertCategoryNameIsUnique(String name,
                                             UUID userId,
                                             CategoryType type, Category category){

@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.domain.mapping;
 
 import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalTransferRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransferRequest;
 import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
@@ -9,6 +10,9 @@ import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.TransactionRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionResponse;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Componente responsável por mapear (converter) objetos relacionados à entidade {@link Transaction}.
@@ -102,10 +106,6 @@ public class TransactionMapper {
             GoalTransferRequest request,
             User user, Account account, Category category, TransactionType type){
 
-        if (request == null){
-            return null;
-        }
-
         return new  Transaction(
                 request.idempotencyKey(),
                 user,
@@ -118,5 +118,24 @@ public class TransactionMapper {
                 request.isRecurring(),
                 request.recurrenceType()
         );
+    }
+
+    public Transaction toTransfer(
+            TransferRequest request,
+            User user,Account account ,Category category, TransactionType type) {
+
+        return new Transaction(
+                request.idempotencyKey(),
+                user,
+                account,
+                category,
+                request.description(),
+                request.amount(),
+                type,
+                request.date().atStartOfDay(),
+                request.isRecurring(),
+                request.recurrenceType()
+        );
+
     }
 }
