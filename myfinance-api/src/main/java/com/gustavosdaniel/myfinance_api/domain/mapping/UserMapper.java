@@ -11,7 +11,14 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
- * Componente responsável pela conversão e mapeamento de objetos relacionados à entidade User.
+ * Componente responsável pela conversão e mapeamento de objetos relacionados à entidade {@link User}.
+ * <p>
+ * Fornece métodos para:
+ * <ul>
+ *   <li>Criar uma entidade {@link User} a partir de um {@link UserRequest};</li>
+ *   <li>Converter uma entidade {@link User} em DTOs de resposta ({@link UserInfoResponse} e {@link UserResponse}).</li>
+ * </ul>
+ * </p>
  */
 @Component
 public class UserMapper {

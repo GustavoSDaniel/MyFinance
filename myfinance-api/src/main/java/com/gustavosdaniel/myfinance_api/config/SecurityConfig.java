@@ -19,10 +19,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Configuração de segurança da aplicação utilizando Spring Security com OAuth2 Resource Server (JWT).
+ * <p>
+ * Define as regras de autorização para os endpoints da API, configurando acesso público para
+ * documentação Swagger, actuator e documentação de erros, além de exigir autenticação para
+ * todos os demais endpoints. A autenticação é baseada em tokens JWT provenientes do Keycloak.
+ * </p>
+ * <p>
+ * As roles são extraídas dos claims do token JWT, tanto do campo {@code realm_access} (roles do realm)
+ * quanto do campo {@code resource_access} (roles específicas do cliente "my-finance-app").
+ * </p>
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    /**
+     * URLs públicas que não exigem autenticação.
+     * <p>
+     * Incluem documentação Swagger/OpenAPI, endpoints do Actuator e documentação de erros.
+     * </p>
+     */
     public static final String[] PUBLIC_URLS = {
 
             "/swagger-ui/**",
@@ -34,6 +52,22 @@ public class SecurityConfig {
             "/erros/**"
     };
 
+    /**
+     * Configura a cadeia de filtros de segurança.
+     * <p>
+     * Define:
+     * <ul>
+     *   <li>Desativação de CSRF (stateless)</li>
+     *   <li>Gerenciamento de sessão STATELESS (sem estado)</li>
+     *   <li>Regras de autorização para diferentes endpoints e métodos HTTP</li>
+     *   <li>Configuração de Resource Server OAuth2 com JWT</li>
+     * </ul>
+     * </p>
+     *
+     * @param http o objeto {@link HttpSecurity} para configuração
+     * @return a cadeia de filtros configurada
+     * @throws Exception em caso de erro na configuração
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -83,6 +117,19 @@ public class SecurityConfig {
 
     }
 
+    /**
+     * Configura o conversor de autenticação JWT para extrair as roles dos claims do token.
+     * <p>
+     * As roles são extraídas de duas fontes:
+     * <ul>
+     *   <li><b>realm_access.roles</b> – roles globais do realm no Keycloak</li>
+     *   <li><b>resource_access.my-finance-app.roles</b> – roles específicas do cliente "my-finance-app"</li>
+     * </ul>
+     * Cada role é prefixada com {@code ROLE_} para compatibilidade com o Spring Security.
+     * </p>
+     *
+     * @return o conversor configurado
+     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter(){
 

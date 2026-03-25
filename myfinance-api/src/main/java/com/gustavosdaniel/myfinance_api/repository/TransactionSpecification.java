@@ -26,10 +26,14 @@ import java.util.UUID;
  */
 public class TransactionSpecification {
 
+    /**
+     * Construtor privado para evitar instanciação da classe utilitária.
+     */
     private TransactionSpecification(){}
 
     /**
      * Cria uma especificação para filtrar transações pelo ID do usuário.
+     * Este é um filtro obrigatório para todas as consultas de transações.
      *
      * @param userId Identificador do usuário (UUID). Não pode ser nulo.
      * @return Uma Specification que adiciona a condição {@code user.id = :userId}.
@@ -151,7 +155,7 @@ public class TransactionSpecification {
     /**
      * Cria uma especificação para filtrar transações por intervalo de datas (campo {@code time}).
      * <p>
-     * Dependendo dos parâmetros, são geradas as seguintes condições:
+     * O intervalo é tratado de forma inclusiva em ambas as extremidades:
      * <ul>
      *   <li>Se apenas {@code startDate} for fornecido: {@code time >= startDate}</li>
      *   <li>Se apenas {@code endDate} for fornecido: {@code time <= endDate}</li>
@@ -160,8 +164,8 @@ public class TransactionSpecification {
      * </ul>
      * </p>
      *
-     * @param startDate Data/hora inicial (pode ser {@code null}).
-     * @param endDate   Data/hora final (pode ser {@code null}).
+     * @param startDate Data/hora inicial (pode ser {@code null}, inclusive).
+     * @param endDate   Data/hora final (pode ser {@code null}, inclusive).
      * @return Uma Specification com a condição de data apropriada,
      *         ou {@code null} se ambos os parâmetros forem {@code null}.
      */
@@ -194,7 +198,7 @@ public class TransactionSpecification {
      * <p>
      * O método inicia com a especificação obrigatória {@link #byUserId(UUID)} e,
      * para cada campo presente no filtro (não nulo), adiciona a respectiva especificação
-     * utilizando o operador {@code AND}.
+     * utilizando o operador {@code AND}. Todos os filtros são combinados na mesma query.
      * </p>
      *
      * @param userId Identificador do usuário (obrigatório, não nulo). Será repassado a {@link #byUserId(UUID)}.

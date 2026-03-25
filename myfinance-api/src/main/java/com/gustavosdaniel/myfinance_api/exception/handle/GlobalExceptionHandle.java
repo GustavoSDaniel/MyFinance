@@ -14,11 +14,27 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Manipulador global de exceções da aplicação.
+ * <p>
+ * Utiliza a abordagem de {@link ProblemDetail} (RFC 7807) para padronizar
+ * as respostas de erro da API, centralizando o tratamento de exceções
+ * específicas do domínio e convertendo-as em respostas HTTP adequadas.
+ * </p>
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandle {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandle.class);
 
+    /**
+     * Constrói um objeto {@link ProblemDetail} com os dados básicos do erro.
+     *
+     * @param status Código de status HTTP.
+     * @param type   Tipo do problema (enum com URI e título).
+     * @param detail Detalhe específico do erro ocorrido.
+     * @return Instância de {@link ProblemDetail} preenchida.
+     */
     private ProblemDetail buildProblem(HttpStatus status, ProblemType type, String detail){
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);

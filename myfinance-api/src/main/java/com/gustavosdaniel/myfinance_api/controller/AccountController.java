@@ -26,7 +26,16 @@ import java.util.UUID;
  * Controlador REST responsável por gerenciar as requisições relacionadas às contas (Accounts) dos usuários.
  *
  * <p>Fornece endpoints para criação, listagem, busca, atualização, ativação, desativação
- * e remoção de contas vinculadas ao usuário autenticado.
+ * e remoção de contas vinculadas ao usuário autenticado.</p>
+ *
+ * <p>Os DTOs utilizados são:
+ * <ul>
+ *   <li>{@link AccountRequest} – entrada para criação de conta</li>
+ *   <li>{@link AccountUpdateRequest} – entrada para atualização de conta</li>
+ *   <li>{@link AccountResponse} – saída com detalhes da conta criada</li>
+ *   <li>{@link AccountResponseInfo} – saída para listagens e buscas</li>
+ * </ul>
+ * </p>
  */
 @RestController
 @RequestMapping("/api/v1/accounts")
@@ -68,9 +77,13 @@ public class AccountController implements AccountOpenApi {
 
     /**
      * Retorna uma lista com todas as contas do usuário autenticado, com a opção de filtrar pelo status.
+     * <p>
+     * O parâmetro {@code status} é tratado de forma case‑insensitive e aceita os valores:
+     * "active", "disabled" ou qualquer outro para retornar todas as contas.
+     * </p>
      *
      * @param jwt    o token JWT contendo as credenciais do usuário
-     * @param status filtro opcional pelo status da conta (ex: ativa, inativa)
+     * @param status filtro opcional pelo status da conta (ex: "active", "disabled")
      * @return um {@link ResponseEntity} contendo a lista de {@link AccountResponseInfo} com as contas encontradas
      */
     @GetMapping()

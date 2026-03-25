@@ -7,10 +7,10 @@ import com.gustavosdaniel.myfinance_api.domain.dto.response.GoalResponse;
 import com.gustavosdaniel.myfinance_api.controller.metrics.GoalMetrics;
 import com.gustavosdaniel.myfinance_api.controller.openApi.GoalOpenApi;
 import com.gustavosdaniel.myfinance_api.domain.po.User;
+import com.gustavosdaniel.myfinance_api.exception.TransactionCanceledException;
 import com.gustavosdaniel.myfinance_api.service.GoalService;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
-import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -31,7 +31,16 @@ import java.util.UUID;
  * Controlador REST responsável pelo gerenciamento de metas financeiras (Goals) do usuário.
  *
  * <p>Disponibiliza endpoints para criação, consulta, atualização, exclusão,
- * além de operações de depósito e saque vinculadas às metas.
+ * além de operações de depósito e saque vinculadas às metas.</p>
+ *
+ * <p>Os DTOs utilizados são:
+ * <ul>
+ *   <li>{@link GoalRequest} – entrada para criação de meta</li>
+ *   <li>{@link GoalRequestUpdate} – entrada para atualização de meta</li>
+ *   <li>{@link GoalTransferRequest} – entrada para depósito/saque</li>
+ *   <li>{@link GoalResponse} – saída com dados da meta</li>
+ * </ul>
+ * </p>
  */
 @RestController
 @RequestMapping("/api/v1/goals")
@@ -53,7 +62,7 @@ public class GoalController implements GoalOpenApi {
      * @param jwt     token de autenticação contendo os dados do usuário
      * @param request dados da meta a ser criada
      * @return um {@link ResponseEntity} com status 201 (Created) e a meta criada
-     * @throws com.gustavosdaniel.myfinance_api.util.InvalidAmountException caso os valores informados sejam inválidos
+     * @throws TransactionCanceledException.InvalidAmountException caso os valores informados sejam inválidos
      */
     @PostMapping
     public ResponseEntity<GoalResponse> create(
@@ -96,10 +105,14 @@ public class GoalController implements GoalOpenApi {
 
     /**
      * Busca metas do usuário autenticado filtrando pelo nome.
+     * <p>
+     * A busca é case‑insensitive e retorna metas cujo nome contenha o termo informado.
+     * Se nenhuma meta for encontrada, retorna uma lista vazia.
+     * </p>
      *
      * @param jwt  token de autenticação contendo os dados do usuário
      * @param name termo a ser pesquisado no nome das metas
-     * @return um {@link ResponseEntity} com a lista de metas encontradas
+     * @return um {@link ResponseEntity} com a lista de metas encontradas (pode ser vazia)
      */
     @GetMapping("/search")
     public ResponseEntity<List<GoalResponse>> searchName(
@@ -116,10 +129,14 @@ public class GoalController implements GoalOpenApi {
 
     /**
      * Lista todas as metas do usuário autenticado, com suporte a paginação e filtro por status.
+     * <p>
+     * O parâmetro {@code status} é tratado de forma case‑insensitive e aceita os valores:
+     * "achieved" (alcançadas), "progress" (em andamento) ou qualquer outro valor para listar todas.
+     * </p>
      *
      * @param jwt      token de autenticação contendo os dados do usuário
      * @param pageable configurações de paginação (padrão: ordenado por createdAt decrescente)
-     * @param status   filtro opcional pelo status da meta (ex: pendente, alcançada)
+     * @param status   filtro opcional pelo status da meta (ex: "achieved", "progress")
      * @return um {@link ResponseEntity} contendo uma página de metas
      */
     @GetMapping
@@ -165,9 +182,7 @@ public class GoalController implements GoalOpenApi {
      * @param jwt      token de autenticação contendo os dados do usuário
      * @param transfer dados da transferência (conta de origem e valor)
      * @return um {@link ResponseEntity} com a meta atualizada
-     * @throws InvalidAmountException se o valor do depósito for inválido
-     * @throws InsufficientBalanceException se a conta de origem não tiver saldo suficiente
-     * @throws com.gustavosdaniel.myfinance_api.util.InvalidAmountException caso ocorra outro erro de validação de valor
+     * @throws InsufficientBalanceException  se a conta de origem não tiver saldo suficiente
      */
     @PostMapping("/{id}/deposit")
     public ResponseEntity<GoalResponse> deposit(
@@ -190,9 +205,7 @@ public class GoalController implements GoalOpenApi {
      * @param jwt      token de autenticação contendo os dados do usuário
      * @param transfer dados da transferência (conta de destino e valor)
      * @return um {@link ResponseEntity} com a meta atualizada
-     * @throws InvalidAmountException se o valor do saque for inválido
-     * @throws InsufficientBalanceException se a meta não tiver saldo suficiente para o saque
-     * @throws com.gustavosdaniel.myfinance_api.util.InvalidAmountException caso ocorra outro erro de validação de valor
+     * @throws InsufficientBalanceException  se a meta não tiver saldo suficiente para o saque
      */
     @PostMapping("/{id}/withdraw")
     public ResponseEntity<GoalResponse> withdraw(
@@ -214,6 +227,7 @@ public class GoalController implements GoalOpenApi {
      * @param id  identificador único da meta a ser removida
      * @param jwt token de autenticação contendo os dados do usuário
      * @return um {@link ResponseEntity} com status 204 (No Content) indicando sucesso
+     * @throws IllegalArgumentException se a meta ainda possuir saldo (não pode ser deletada)
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt){

@@ -8,9 +8,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Registro centralizado de documentação de erros da API.
+ * <p>
+ * Esta classe mantém um mapa estático que associa uma chave identificadora do erro
+ * (ex: "conta-nao-encontrado") a um objeto {@link ErrorDocResponse} contendo informações
+ * detalhadas sobre o erro, como título, descrição, causa, solução e código HTTP.
+ * </p>
+ * <p>
+ * É utilizada para gerar documentação automática dos possíveis erros retornados pela API,
+ * facilitando a compreensão por parte dos clientes.
+ * </p>
+ */
 @Component
 public class ErroDocRegistry {
 
+    /**
+     * Mapa estático que armazena a documentação dos erros.
+     * A chave é um identificador textual único (ex: "validacao") e o valor é o DTO de resposta do erro.
+     */
     private static final Map<String, ErrorDocResponse> docs = new HashMap<>();
 
     static {
@@ -135,10 +151,21 @@ public class ErroDocRegistry {
         ));
     }
 
+    /**
+     * Retorna uma visão não modificável de todos os erros registrados.
+     *
+     * @return Mapa imutável contendo toda a documentação de erros.
+     */
     public static  Map<String, ErrorDocResponse> findAll() {
         return Collections.unmodifiableMap(docs);
     }
 
+    /**
+     * Busca a documentação de um erro específico pela sua chave identificadora.
+     *
+     * @param errorKey Chave do erro (ex: "usuario-nao-encontrado").
+     * @return Um {@link Optional} contendo o DTO de erro se encontrado, ou vazio caso contrário.
+     */
     public static Optional<ErrorDocResponse> find(String errorKey){
 
         return Optional.ofNullable(docs.get(errorKey));

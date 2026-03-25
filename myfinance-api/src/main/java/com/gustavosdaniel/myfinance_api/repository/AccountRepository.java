@@ -80,10 +80,15 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
     /**
      * Realiza uma busca por contas de um usuário cujo nome contenha o termo pesquisado,
      * ignorando diferenças entre letras maiúsculas e minúsculas.
+     * <p>
+     * A busca utiliza {@code LIKE} com o padrão {@code %:name%}, retornando todas as contas
+     * que possuem o termo em qualquer parte do nome.
+     * </p>
      *
      * @param name   O termo (ou parte dele) a ser pesquisado no nome da conta.
      * @param userId O ID do usuário proprietário.
      * @return Uma lista de contas que correspondem ao critério de busca.
+     *         Retorna uma lista vazia se nenhuma conta for encontrada.
      */
     @Query("""
            SELECT a FROM Account a

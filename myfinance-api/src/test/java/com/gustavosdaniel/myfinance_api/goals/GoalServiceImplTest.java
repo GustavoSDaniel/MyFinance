@@ -8,6 +8,7 @@ import com.gustavosdaniel.myfinance_api.domain.enuns.PriorityStatus;
 import com.gustavosdaniel.myfinance_api.domain.mapping.GoalMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.domain.po.Goal;
+import com.gustavosdaniel.myfinance_api.exception.TransactionCanceledException;
 import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
 import com.gustavosdaniel.myfinance_api.domain.enuns.AccountType;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
@@ -21,7 +22,6 @@ import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
 import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
 import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
-import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -75,7 +75,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should create goal with sucesso")
-        void createGoalWithSucesso() throws InvalidAmountException {
+        void createGoalWithSucesso() throws TransactionCanceledException.InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -142,7 +142,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should Find Goal by id with sucesso")
-        void shouldGoalByIdWithSucesso() throws InvalidAmountException {
+        void shouldGoalByIdWithSucesso() throws TransactionCanceledException.InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -195,7 +195,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should search name goal with sucesso")
-        void shouldSearchNameGoalWithSucesso() throws InvalidAmountException {
+        void shouldSearchNameGoalWithSucesso() throws TransactionCanceledException.InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -304,7 +304,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should with sucesso all goals")
-        void shouldWithSucessoAllGoals() throws InvalidAmountException {
+        void shouldWithSucessoAllGoals() throws TransactionCanceledException.InvalidAmountException {
 
             Pageable pageable = PageRequest.of(0, 10);
 
@@ -416,7 +416,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should update Goal with sucesso")
-        void shouldUpdateWithSucesso() throws InvalidAmountException {
+        void shouldUpdateWithSucesso() throws TransactionCanceledException.InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -486,7 +486,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should deposit Goal with sucesso")
-        void shouldDepositGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException {
+        void shouldDepositGoalWithSucesso() throws TransactionCanceledException.InvalidAmountException, com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException {
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -587,7 +587,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Should draw from Goal with sucesso")
-        void shouldDrawGoalWithSucesso() throws InvalidAmountException, com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException {
+        void shouldDrawGoalWithSucesso() throws TransactionCanceledException.InvalidAmountException, com.gustavosdaniel.myfinance_api.exception.InvalidAmountException, InsufficientBalanceException {
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -690,7 +690,7 @@ class GoalServiceImplTest {
 
         @Test
         @DisplayName("Delete Goal with sucesso")
-        void deleteGoalWithSucesso() throws InvalidAmountException {
+        void deleteGoalWithSucesso() throws TransactionCanceledException.InvalidAmountException {
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";

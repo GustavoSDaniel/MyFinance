@@ -6,11 +6,23 @@ import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequestUpdate;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.GoalResponse;
-import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
+import com.gustavosdaniel.myfinance_api.exception.TransactionCanceledException;
 import org.springframework.stereotype.Component;
 
 /**
  * Componente responsável pelo mapeamento e conversão de objetos relacionados à entidade {@link Goal} (Meta).
+ * <p>
+ * Fornece métodos para:
+ * <ul>
+ *   <li>Criar uma entidade {@link Goal} a partir de um DTO de requisição ({@link GoalRequest});</li>
+ *   <li>Converter uma entidade em DTO de resposta ({@link GoalResponse});</li>
+ *   <li>Atualizar uma entidade existente com dados de um DTO de atualização ({@link GoalRequestUpdate}).</li>
+ * </ul>
+ * </p>
+ * <p>
+ * Os métodos aplicam formatação de texto (trim) nos campos de texto e realizam validações
+ * básicas de acordo com as regras de negócio.
+ * </p>
  */
 @Component
 public class GoalMapper {
@@ -22,9 +34,8 @@ public class GoalMapper {
      * @param user     o usuário proprietário da meta
      * @param category a categoria associada à meta
      * @return uma nova instância de {@link Goal}, ou {@code null} se a requisição for nula
-     * @throws InvalidAmountException se o valor alvo (targetAmount) fornecido na requisição for inválido
      */
-    public Goal toGoal(GoalRequest request, User user, Category category) throws InvalidAmountException {
+    public Goal toGoal(GoalRequest request, User user, Category category){
 
         if (request == null){
             return null;
@@ -105,6 +116,5 @@ public class GoalMapper {
             goal.setPriority(requestUpdate.priority());
         }
     }
-
 
 }

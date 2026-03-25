@@ -61,17 +61,22 @@ public interface GoalRepository extends JpaRepository<Goal, UUID> {
      *
      * @param userId   O ID do usuário proprietário.
      * @param pageable Configurações de paginação e ordenação.
-     * @return Uma página contendo as metas do usuário.
+     * @return Uma página contendo as metas do usuário. Pode ser vazia se não houver metas.
      */
     Page<Goal> findByUserId(UUID userId, Pageable pageable);
 
     /**
      * Realiza uma busca por metas de um usuário cujo nome contenha o termo pesquisado,
      * ignorando diferenças entre letras maiúsculas e minúsculas.
+     * <p>
+     * A busca é feita utilizando {@code LIKE} com o padrão {@code %:name%}, retornando
+     * todas as metas que possuem o termo em qualquer parte do nome.
+     * </p>
      *
      * @param name   O termo (ou parte dele) a ser pesquisado no nome da meta.
      * @param userId O ID do usuário proprietário.
      * @return Uma lista de metas que correspondem ao critério de busca.
+     *         Retorna uma lista vazia se nenhuma meta for encontrada.
      */
     @Query("""
             SELECT g FROM Goal g
@@ -86,7 +91,7 @@ public interface GoalRepository extends JpaRepository<Goal, UUID> {
      *
      * @param userId   O ID do usuário proprietário.
      * @param pageable Configurações de paginação e ordenação.
-     * @return Uma página contendo as metas alcançadas.
+     * @return Uma página contendo as metas alcançadas. Pode ser vazia se nenhuma meta foi alcançada.
      */
     @Query("""
             SELECT g FROM Goal g WHERE g.user.id = :userId AND g.currentAmount >= g.targetAmount
@@ -99,12 +104,11 @@ public interface GoalRepository extends JpaRepository<Goal, UUID> {
      *
      * @param userId   O ID do usuário proprietário.
      * @param pageable Configurações de paginação e ordenação.
-     * @return Uma página contendo as metas pendentes.
+     * @return Uma página contendo as metas pendentes. Pode ser vazia se não houver metas pendentes.
      */
     @Query("""
             SELECT g FROM Goal g WHERE g.user.id = :userId AND g.currentAmount < g.targetAmount
             """)
     Page<Goal> findPendingGoals(@Param("userId") UUID userId, Pageable pageable);
-
 
 }

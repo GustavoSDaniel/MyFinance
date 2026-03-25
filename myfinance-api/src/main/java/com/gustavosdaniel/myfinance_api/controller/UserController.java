@@ -26,7 +26,14 @@ import java.util.UUID;
  * Controlador REST responsável por gerenciar as requisições relacionadas aos usuários.
  *
  * <p>Disponibiliza endpoints para consulta de dados do usuário logado, listagem paginada,
- * busca por email ou ID, e deleção de contas de usuários.
+ * busca por email ou ID, e deleção de contas de usuários.</p>
+ *
+ * <p>Os DTOs utilizados são:
+ * <ul>
+ *   <li>{@link UserInfoResponse} – informações resumidas do usuário autenticado</li>
+ *   <li>{@link UserResponse} – dados de usuário para listagens e buscas</li>
+ * </ul>
+ * </p>
  */
 @RestController
 @RequestMapping("/api/v1/users")
@@ -110,6 +117,9 @@ public class UserController implements UserOpenApi {
 
     /**
      * Remove a conta de um usuário do sistema.
+     * <p>
+     * Apenas administradores podem deletar outros usuários; usuários comuns podem deletar apenas sua própria conta.
+     * </p>
      *
      * @param id o identificador único (UUID) do usuário a ser removido
      * @param authentication informações de autenticação e contexto de segurança da requisição atual

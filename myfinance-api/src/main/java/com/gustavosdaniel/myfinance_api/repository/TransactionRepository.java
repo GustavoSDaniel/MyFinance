@@ -51,11 +51,15 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
     /**
      * Calcula a soma total dos valores de transações do tipo {@code RECEITA} de um usuário
      * dentro de um intervalo de datas.
+     * <p>
+     * O intervalo é inclusivo em ambas as extremidades ({@code createdAt BETWEEN startDate AND endDate}).
+     * Caso não existam transações no período, retorna {@link BigDecimal#ZERO}.
+     * </p>
      *
      * @param userId    Identificador do usuário (UUID)
      * @param startDate Data e hora inicial do período (inclusiva)
      * @param endDate   Data e hora final do período (inclusiva)
-     * @return Soma dos valores das receitas no período. Retorna {@link BigDecimal#ZERO} se não houver registros.
+     * @return Soma dos valores das receitas no período, ou zero se não houver registros
      */
     @Query("""
             SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t
@@ -71,11 +75,15 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
     /**
      * Calcula a soma total dos valores de transações do tipo {@code DESPESA} de um usuário
      * dentro de um intervalo de datas.
+     * <p>
+     * O intervalo é inclusivo em ambas as extremidades ({@code createdAt BETWEEN startDate AND endDate}).
+     * Caso não existam transações no período, retorna {@link BigDecimal#ZERO}.
+     * </p>
      *
      * @param userId    Identificador do usuário (UUID)
      * @param startDate Data e hora inicial do período (inclusiva)
      * @param endDate   Data e hora final do período (inclusiva)
-     * @return Soma dos valores das despesas no período. Retorna {@link BigDecimal#ZERO} se não houver registros.
+     * @return Soma dos valores das despesas no período, ou zero se não houver registros
      */
     @Query("""
             SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t
@@ -91,6 +99,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
     /**
      * Agrupa e soma os valores das despesas de um usuário por categoria dentro de um período.
      * <p>
+     * O intervalo é inclusivo em ambas as extremidades ({@code createdAt BETWEEN startDate AND endDate}).
      * O resultado é uma lista de objetos {@link CategorySum}, onde cada elemento contém
      * o nome da categoria, a cor associada e o valor total gasto naquela categoria.
      * </p>

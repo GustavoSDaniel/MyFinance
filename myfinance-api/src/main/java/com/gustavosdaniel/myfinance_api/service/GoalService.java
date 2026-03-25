@@ -2,31 +2,23 @@ package com.gustavosdaniel.myfinance_api.service;
 
 import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequestUpdate;
-import com.gustavosdaniel.myfinance_api.domain.dto.request.TransferRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.GoalResponse;
 import com.gustavosdaniel.myfinance_api.domain.enuns.GoalStatus;
-import com.gustavosdaniel.myfinance_api.domain.enuns.Status;
 import com.gustavosdaniel.myfinance_api.domain.mapping.GoalMapper;
 import com.gustavosdaniel.myfinance_api.domain.mapping.TransactionMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.domain.po.Goal;
-import com.gustavosdaniel.myfinance_api.exception.AccountNotFoundException;
+import com.gustavosdaniel.myfinance_api.exception.*;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalTransferRequest;
 import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
-import com.gustavosdaniel.myfinance_api.exception.CategoryNotFoundException;
 import com.gustavosdaniel.myfinance_api.repository.CategoryRepository;
-import com.gustavosdaniel.myfinance_api.exception.GoalNameDuplicateException;
-import com.gustavosdaniel.myfinance_api.exception.GoalNotFoundException;
-import com.gustavosdaniel.myfinance_api.exception.IdempotencyKeyException;
 import com.gustavosdaniel.myfinance_api.controller.metrics.GoalMetrics;
 import com.gustavosdaniel.myfinance_api.repository.GoalRepository;
 import com.gustavosdaniel.myfinance_api.domain.po.Transaction;
 import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
 import com.gustavosdaniel.myfinance_api.domain.po.User;
-import com.gustavosdaniel.myfinance_api.exception.InsufficientBalanceException;
-import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheConfig;
@@ -38,7 +30,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -77,7 +68,7 @@ public class GoalService {
      * @param user    Entidade do usuário proprietário da meta.
      * @param request DTO com os dados de criação da meta.
      * @return DTO contendo as informações da meta criada.
-     * @throws InvalidAmountException        Caso o valor inicial ou alvo seja inválido.
+     * @throws TransactionCanceledException.InvalidAmountException        Caso o valor inicial ou alvo seja inválido.
      * @throws GoalNameDuplicateException    Caso o usuário já possua uma meta com o mesmo nome.
      * @throws CategoryNotFoundException     Caso a categoria informada não exista.
      */
@@ -250,7 +241,7 @@ public class GoalService {
      * @throws GoalNotFoundException         Caso a meta não seja encontrada.
      * @throws AccountNotFoundException      Caso a conta de origem não seja encontrada.
      * @throws InsufficientBalanceException  Caso a conta não tenha saldo suficiente.
-     * @throws InvalidAmountException        Caso o valor da transferência seja inválido.
+     * @throws TransactionCanceledException.InvalidAmountException        Caso o valor da transferência seja inválido.
      */
     @Transactional
     @CacheEvict(allEntries = true)
@@ -297,7 +288,7 @@ public class GoalService {
      * @throws GoalNotFoundException         Caso a meta não seja encontrada.
      * @throws AccountNotFoundException      Caso a conta de destino não seja encontrada.
      * @throws InsufficientBalanceException  Caso a meta não tenha saldo suficiente para o resgate.
-     * @throws InvalidAmountException        Caso o valor do resgate seja inválido.
+     * @throws TransactionCanceledException.InvalidAmountException        Caso o valor do resgate seja inválido.
      */
     @Transactional
     @CacheEvict(allEntries = true)

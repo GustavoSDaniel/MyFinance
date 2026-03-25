@@ -37,6 +37,14 @@ import java.util.UUID;
  * Todos os endpoints exigem autenticação via JWT, e o usuário autenticado é obtido através
  * de {@link AuthHelper} a partir do token JWT fornecido no cabeçalho de autorização.
  * </p>
+ * <p>Os DTOs utilizados são:
+ * <ul>
+ *   <li>{@link TransactionRequest} – entrada para criação de transação</li>
+ *   <li>{@link TransferRequest} – entrada para transferência entre contas</li>
+ *   <li>{@link TransactionSearchFilter} – critérios para busca</li>
+ *   <li>{@link TransactionResponse} – saída com dados da transação</li>
+ * </ul>
+ * </p>
  */
 @RestController
 @RequestMapping("/api/v1/transactions")
@@ -64,8 +72,8 @@ public class TransactionController implements TransactionOpenApi {
      * @param request Objeto contendo os dados da transação a ser criada (validado via {@link Valid}).
      * @param jwt     Token JWT do usuário autenticado (extraído pelo Spring Security).
      * @return {@link ResponseEntity} com status 201, cabeçalho Location e corpo {@link TransactionResponse}.
-     * @throws InvalidAmountException          Se o valor da transação for inválido (ex.: negativo ou zero).
-     * @throws InsufficientBalanceException    Se for uma despesa e o saldo da conta for insuficiente.
+     * @throws InvalidAmountException       se o valor da transação for inválido (ex.: negativo ou zero)
+     * @throws InsufficientBalanceException se for uma despesa e o saldo da conta for insuficiente
      */
     @PostMapping
     public ResponseEntity<TransactionResponse> createTransaction(
@@ -95,8 +103,8 @@ public class TransactionController implements TransactionOpenApi {
      * @param id  Identificador único da transação a ser confirmada.
      * @param jwt Token JWT do usuário autenticado.
      * @return {@link ResponseEntity} com status 204 No Content em caso de sucesso.
-     * @throws InvalidAmountException       Se houver problema com o valor da transação durante a confirmação.
-     * @throws InsufficientBalanceException Se a confirmação de uma despesa resultar em saldo insuficiente.
+     * @throws InvalidAmountException       se houver problema com o valor da transação durante a confirmação
+     * @throws InsufficientBalanceException se a confirmação de uma despesa resultar em saldo insuficiente
      */
     @PatchMapping("/{id}/confirm")
     public ResponseEntity<Void> confirmTransaction(
@@ -120,8 +128,8 @@ public class TransactionController implements TransactionOpenApi {
      * @param id  Identificador único da transação a ser cancelada.
      * @param jwt Token JWT do usuário autenticado.
      * @return {@link ResponseEntity} com status 204 No Content em caso de sucesso.
-     * @throws InvalidAmountException       Se houver problema com o valor da transação durante o cancelamento.
-     * @throws InsufficientBalanceException Se o cancelamento impactar o saldo de forma inconsistente.
+     * @throws InvalidAmountException       se houver problema com o valor da transação durante o cancelamento
+     * @throws InsufficientBalanceException se o cancelamento impactar o saldo de forma inconsistente
      */
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelTransaction(
@@ -146,6 +154,8 @@ public class TransactionController implements TransactionOpenApi {
      * @param request Objeto contendo os dados da transferência (conta origem, conta destino, valor, etc.).
      * @param jwt     Token JWT do usuário autenticado.
      * @return {@link ResponseEntity} com status 204 No Content em caso de sucesso.
+     * @throws InvalidAmountException            se o valor da transferência for inválido
+     * @throws InsufficientBalanceException      se a conta de origem não tiver saldo suficiente
      */
     @PostMapping("/transfer")
     public ResponseEntity<Void> transfer(
@@ -187,8 +197,12 @@ public class TransactionController implements TransactionOpenApi {
      * Retorna uma página de transações do usuário autenticado, com suporte a filtros e ordenação.
      * <p>
      * Os filtros são fornecidos através do objeto {@link TransactionSearchFilter} como parâmetros de consulta.
+     * Todos os filtros são opcionais. Se nenhum filtro for aplicado, retorna todas as transações do usuário.
      * A paginação e ordenação são controladas pelos parâmetros {@code page}, {@code size}, {@code sort}
      * (padrão: ordenação decrescente por {@code createdAt}).
+     * </p>
+     * <p>
+     * Em caso de nenhuma transação encontrada, retorna uma página vazia (com conteúdo vazio, mas status 200).
      * </p>
      *
      * @param filter   Objeto contendo os critérios de filtragem (conta, categoria, descrição, tipo, status, datas).

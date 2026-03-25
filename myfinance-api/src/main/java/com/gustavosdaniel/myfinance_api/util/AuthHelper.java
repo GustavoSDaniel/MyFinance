@@ -17,7 +17,7 @@ import java.util.List;
  * Componente auxiliar para operações de autenticação e gerenciamento do usuário logado.
  *
  * <p>Responsável por extrair informações do token JWT e recuperar ou registrar
- * o usuário atual no banco de dados de forma automática.
+ * o usuário atual no banco de dados de forma automática (sincronização entre Keycloak e sistema local).</p>
  */
 @Component
 public class AuthHelper {
@@ -70,7 +70,7 @@ public class AuthHelper {
      * <p>O nível de acesso (Role) do usuário é definido de forma dinâmica: se o e-mail extraído
      * do token estiver presente na lista de administradores configurada ({@code adminEmails}),
      * o usuário receberá a role {@link UserRole#ADMIN}; caso contrário,
-     * receberá {@link UserRole#USER}.
+     * receberá {@link UserRole#USER}.</p>
      *
      * @param jwt o token JWT contendo as informações de perfil do usuário (subject, email, name)
      * @return a entidade {@link User} recém-criada e persistida no banco de dados

@@ -34,6 +34,20 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
      */
     boolean existsByNameIgnoreCaseAndUserIdAndType(String categoryName, UUID userId, CategoryType type);
 
+    /**
+     * Verifica se já existe uma categoria com o mesmo nome, tipo e usuário,
+     * ignorando uma categoria específica (utilizado na validação de atualização).
+     * <p>
+     * Ignora diferenças entre letras maiúsculas e minúsculas para o nome.
+     * </p>
+     *
+     * @param categoryName Nome da categoria a ser verificado.
+     * @param userId       ID do usuário proprietário.
+     * @param type         Tipo da categoria (RECEITA ou DESPESA).
+     * @param categoryId   ID da categoria que será ignorada na verificação.
+     * @return {@code true} se existir outra categoria com o mesmo nome, tipo e usuário;
+     *         {@code false} caso contrário.
+     */
     boolean existsByNameIgnoreCaseAndUserIdAndTypeAndIdNot(String categoryName, UUID userId, CategoryType type, UUID categoryId);
 
     /**
@@ -49,10 +63,15 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
     /**
      * Realiza uma busca por categorias de um usuário cujo nome contenha o termo pesquisado,
      * ignorando diferenças entre letras maiúsculas e minúsculas.
+     * <p>
+     * A busca é feita com {@code LIKE %:name%}, retornando todas as categorias que possuem
+     * o termo em qualquer parte do nome.
+     * </p>
      *
      * @param name   O termo (ou parte dele) a ser pesquisado no nome da categoria.
      * @param userId O ID do usuário proprietário.
      * @return Uma lista de categorias que correspondem ao critério de busca.
+     *         Retorna uma lista vazia se nenhuma categoria for encontrada.
      */
     @Query("""
             SELECT c FROM Category c

@@ -1,7 +1,7 @@
 package com.gustavosdaniel.myfinance_api.domain.po;
 
 import com.gustavosdaniel.myfinance_api.domain.enuns.PriorityStatus;
-import com.gustavosdaniel.myfinance_api.util.InvalidAmountException;
+import com.gustavosdaniel.myfinance_api.exception.TransactionCanceledException;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -23,7 +23,7 @@ public class Goal {
         this.currentAmount = BigDecimal.ZERO;
     }
 
-    public Goal(User user, Category category, String name, String description, BigDecimal targetAmount, LocalDate deadline, PriorityStatus priority) throws InvalidAmountException {
+    public Goal(User user, Category category, String name, String description, BigDecimal targetAmount, LocalDate deadline, PriorityStatus priority) throws TransactionCanceledException.InvalidAmountException {
         validateTargetAmount(targetAmount);
         validateDeadLine(deadline);
 
@@ -98,35 +98,35 @@ public class Goal {
         return remaining.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : remaining;
     }
 
-    public void addAmount(BigDecimal amount) throws InvalidAmountException {
+    public void addAmount(BigDecimal amount) throws TransactionCanceledException.InvalidAmountException {
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0){
 
-            throw new InvalidAmountException("Valor invalido");
+            throw new TransactionCanceledException.InvalidAmountException("Valor invalido");
         }
 
         this.currentAmount = this.currentAmount.add(amount);
     }
 
-    public void removeAmount(BigDecimal amount) throws InvalidAmountException {
+    public void removeAmount(BigDecimal amount) throws TransactionCanceledException.InvalidAmountException {
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0){
 
-            throw new InvalidAmountException("Valor invalido");
+            throw new TransactionCanceledException.InvalidAmountException("Valor invalido");
         }
 
         if (this.currentAmount.subtract(amount).compareTo(BigDecimal.ZERO) < 0){
 
-            throw new InvalidAmountException("Saldo na meta insuficiente");
+            throw new TransactionCanceledException.InvalidAmountException("Saldo na meta insuficiente");
         }
 
         this.currentAmount = this.currentAmount.subtract(amount);
     }
 
-    private void validateTargetAmount(BigDecimal targetAmount) throws InvalidAmountException {
+    private void validateTargetAmount(BigDecimal targetAmount) throws TransactionCanceledException.InvalidAmountException {
 
         if (targetAmount == null || targetAmount.compareTo(BigDecimal.ZERO) <= 0){
-            throw new InvalidAmountException("O valor da meta deve ser positivo");
+            throw new TransactionCanceledException.InvalidAmountException("O valor da meta deve ser positivo");
         }
     }
 
@@ -191,7 +191,7 @@ public class Goal {
         return targetAmount;
     }
 
-    public void setTargetAmount(BigDecimal targetAmount) throws InvalidAmountException {
+    public void setTargetAmount(BigDecimal targetAmount) throws TransactionCanceledException.InvalidAmountException {
         validateTargetAmount(targetAmount);
         this.targetAmount = targetAmount;
     }

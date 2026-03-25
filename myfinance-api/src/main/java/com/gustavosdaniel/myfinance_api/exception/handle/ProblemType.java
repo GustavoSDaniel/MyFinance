@@ -2,6 +2,20 @@ package com.gustavosdaniel.myfinance_api.exception.handle;
 
 import java.net.URI;
 
+/**
+ * Enumeração que define os tipos de problemas retornados pela API.
+ * <p>
+ * Cada constante representa um erro específico do sistema e contém:
+ * <ul>
+ *   <li>{@code uri} – URL que aponta para a documentação detalhada do erro.</li>
+ *   <li>{@code title} – Título resumido do problema.</li>
+ * </ul>
+ * </p>
+ * <p>
+ * Utilizado em conjunto com a especificação RFC 7807 (Problem Details for HTTP APIs)
+ * para padronizar as respostas de erro.
+ * </p>
+ */
 public enum ProblemType {
 
     VALIDATE_ERROR(
@@ -100,11 +114,22 @@ public enum ProblemType {
             "Meta com nome duplicado"
     );
 
-    
+    /**
+     * URI que redireciona para a documentação completa do erro.
+     */
     private final URI uri;
+
+    /**
+     * Título que descreve o tipo do problema.
+     */
     private final String title;
 
-
+    /**
+     * Construtor privado do enum.
+     *
+     * @param uri   URI da documentação do erro.
+     * @param title Título descritivo do erro.
+     */
     ProblemType(String uri, String title) {
 
         this.uri = URI.create(uri);
@@ -118,7 +143,6 @@ public enum ProblemType {
     public String getTitle() {
         return title;
     }
-
 
 }
 

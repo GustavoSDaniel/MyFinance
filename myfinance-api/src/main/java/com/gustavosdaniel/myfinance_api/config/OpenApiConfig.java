@@ -8,9 +8,30 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuração da documentação OpenAPI (Swagger) para a API.
+ * <p>
+ * Define as informações gerais da API (título, versão, descrição) e configura
+ * o esquema de autenticação Bearer JWT, utilizado para proteger os endpoints
+ * que exigem autenticação.
+ * </p>
+ * <p>
+ * A documentação gerada estará disponível em:
+ * <ul>
+ *   <li>{@code /v3/api-docs} – especificação OpenAPI em formato JSON</li>
+ *   <li>{@code /swagger-ui.html} – interface interativa Swagger UI</li>
+ * </ul>
+ * </p>
+ */
 @Configuration
 public class OpenApiConfig {
 
+    /**
+     * Cria e configura o bean {@link OpenAPI} com as informações da API
+     * e o esquema de segurança Bearer JWT.
+     *
+     * @return objeto {@link OpenAPI} configurado para documentação
+     */
     @Bean
     public OpenAPI customOpenAPI() {
 

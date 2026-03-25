@@ -18,7 +18,14 @@ import org.springframework.web.bind.annotation.*;
  * Controlador REST responsável por fornecer os dados para o dashboard financeiro.
  *
  * <p>Disponibiliza endpoints para a visualização consolidada de gastos, receitas
- * e saldos do usuário autenticado, baseados em um determinado período de tempo.
+ * e saldos do usuário autenticado, baseados em um determinado período de tempo.</p>
+ *
+ * <p>Os DTOs utilizados são:
+ * <ul>
+ *   <li>{@link BetweenDate} – parâmetro de consulta com as datas de início e fim</li>
+ *   <li>{@link DashboardResponse} – saída com os dados consolidados (receitas, despesas, saldo e despesas por categoria)</li>
+ * </ul>
+ * </p>
  */
 @RestController
 @RequestMapping("/api/v1/dashboards")

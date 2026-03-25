@@ -24,7 +24,16 @@ import java.util.UUID;
  * Controlador REST responsável por gerenciar as requisições relacionadas às categorias financeiras (Categories) dos usuários.
  *
  * <p>Fornece endpoints para criação, listagem, busca, atualização, ativação, desativação
- * e remoção de categorias vinculadas ao usuário autenticado.
+ * e remoção de categorias vinculadas ao usuário autenticado.</p>
+ *
+ * <p>Os DTOs utilizados são:
+ * <ul>
+ *   <li>{@link CategoryRequest} – entrada para criação de categoria</li>
+ *   <li>{@link CategoryRequestUpdate} – entrada para atualização de categoria</li>
+ *   <li>{@link CategoryResponse} – saída para listagens e busca por ID</li>
+ *   <li>{@link CategoryResponseUpdate} – saída detalhada após atualização</li>
+ * </ul>
+ * </p>
  */
 @RestController
 @RequestMapping("/api/v1/categories")
@@ -42,10 +51,14 @@ public class CategoryController implements CategoryOpenApi {
 
     /**
      * Cria uma nova categoria vinculada ao usuário atualmente autenticado.
+     * <p>
+     * Em caso de sucesso, o cabeçalho {@code Location} conterá a URI da nova categoria.
+     * </p>
      *
      * @param request os dados necessários para a criação da categoria
      * @param jwt     o token JWT contendo as credenciais do usuário
-     * @return um {@link ResponseEntity} com status 201 (Created), a URI da nova categoria no cabeçalho Location e os dados criados no corpo
+     * @return um {@link ResponseEntity} com status 201 (Created), a URI da nova categoria no cabeçalho Location
+     *         e os dados criados no corpo
      */
     @PostMapping
     public ResponseEntity<CategoryResponse> createCategory(
@@ -67,9 +80,13 @@ public class CategoryController implements CategoryOpenApi {
 
     /**
      * Retorna uma lista com todas as categorias do usuário autenticado, com a opção de filtrar pelo status.
+     * <p>
+     * O parâmetro {@code status} é tratado de forma case‑insensitive e aceita os valores:
+     * "active", "disabled" ou qualquer outro valor para listar todas as categorias.
+     * </p>
      *
      * @param jwt    o token JWT contendo as credenciais do usuário
-     * @param status filtro opcional pelo status da categoria (ex: ativa, inativa)
+     * @param status filtro opcional pelo status da categoria (ex: "active", "disabled")
      * @return um {@link ResponseEntity} contendo a lista de {@link CategoryResponse} com as categorias encontradas
      */
     @GetMapping
@@ -88,9 +105,12 @@ public class CategoryController implements CategoryOpenApi {
 
     /**
      * Realiza uma busca por categorias do usuário autenticado cujo nome corresponda ao termo informado.
+     * <p>
+     * A busca é case‑insensitive e retorna categorias cujo nome contenha o termo informado.
+     * </p>
      *
      * @param jwt  o token JWT contendo as credenciais do usuário
-     * @param name o termo ou nome a ser pesquisado
+     * @param name o termo ou nome a ser pesquisado (busca parcial)
      * @return um {@link ResponseEntity} contendo a lista de categorias que correspondem à busca
      */
     @GetMapping("/search")
@@ -129,6 +149,9 @@ public class CategoryController implements CategoryOpenApi {
 
     /**
      * Atualiza os dados de uma categoria existente pertencente ao usuário autenticado.
+     * <p>
+     * Apenas os campos enviados no corpo da requisição serão atualizados.
+     * </p>
      *
      * @param id      o identificador único (UUID) da categoria a ser atualizada
      * @param request os novos dados a serem aplicados na categoria
@@ -150,6 +173,9 @@ public class CategoryController implements CategoryOpenApi {
 
     /**
      * Ativa uma categoria previamente inativada pertencente ao usuário autenticado.
+     * <p>
+     * Se a categoria já estiver ativa, a operação é ignorada (idempotente).
+     * </p>
      *
      * @param id  o identificador único (UUID) da categoria a ser ativada
      * @param jwt o token JWT contendo as credenciais do usuário
@@ -172,6 +198,9 @@ public class CategoryController implements CategoryOpenApi {
 
     /**
      * Desativa uma categoria pertencente ao usuário autenticado.
+     * <p>
+     * Se a categoria já estiver inativa, a operação é ignorada (idempotente).
+     * </p>
      *
      * @param id  o identificador único (UUID) da categoria a ser desativada
      * @param jwt o token JWT contendo as credenciais do usuário
@@ -194,10 +223,14 @@ public class CategoryController implements CategoryOpenApi {
 
     /**
      * Remove de forma permanente uma categoria pertencente ao usuário autenticado.
+     * <p>
+     * A exclusão só é permitida se a categoria não possuir transações ou metas vinculadas.
+     * </p>
      *
      * @param jwt o token JWT contendo as credenciais do usuário
      * @param id  o identificador único (UUID) da categoria a ser removida
      * @return um {@link ResponseEntity} com status 204 (No Content) indicando sucesso na deleção
+     * @throws IllegalArgumentException    se a categoria ainda possuir vínculos (transações/metas)
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(

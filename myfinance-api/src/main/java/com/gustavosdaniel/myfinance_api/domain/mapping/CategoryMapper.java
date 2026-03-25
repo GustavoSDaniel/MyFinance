@@ -9,7 +9,15 @@ import com.gustavosdaniel.myfinance_api.domain.po.User;
 import org.springframework.stereotype.Component;
 
 /**
- * Componente responsável pelo mapeamento e conversão de objetos relacionados à entidade Category.
+ * Componente responsável pelo mapeamento e conversão de objetos relacionados à entidade {@link Category}.
+ * <p>
+ * Fornece métodos para:
+ * <ul>
+ *   <li>Criar uma entidade {@link Category} a partir de um DTO de requisição ({@link CategoryRequest});</li>
+ *   <li>Converter uma entidade em DTOs de resposta ({@link CategoryResponse} e {@link CategoryResponseUpdate});</li>
+ *   <li>Atualizar uma entidade existente com dados de um DTO de atualização ({@link CategoryRequestUpdate}).</li>
+ * </ul>
+ * </p>
  */
 @Component
 public class CategoryMapper {
@@ -49,10 +57,9 @@ public class CategoryMapper {
      * Atualiza os dados de uma entidade {@link Category} existente com base nas informações
      * fornecidas em um {@link CategoryRequestUpdate}.
      *
-     * <p>Apenas os campos que não são nulos (e não estão em branco, aplicável a textos)
-     * no objeto de requisição serão atualizados na entidade. Os valores de texto são formatados
-     * (trim)
-     * antes de serem aplicados.
+     * <p>Apenas os campos que não são nulos (e não estão em branco, quando aplicável) serão
+     * atualizados na entidade. Os valores de texto são limpos (trim) antes de serem aplicados.
+     * Os campos opcionais incluem nome, tipo, cor, descrição e ícone.
      *
      * @param category a entidade de categoria que será atualizada
      * @param request  o objeto contendo os novos dados da categoria
@@ -90,8 +97,7 @@ public class CategoryMapper {
      * Converte uma entidade {@link Category} em um DTO detalhado {@link CategoryResponseUpdate}.
      *
      * @param category a entidade de categoria a ser convertida
-     * @return uma nova instância de {@link CategoryResponseUpdate},
-     * ou {@code null} se a categoria for nula
+     * @return uma nova instância de {@link CategoryResponseUpdate}, ou {@code null} se a categoria for nula
      */
     public CategoryResponseUpdate toCategoryResponseUpdate(Category category){
 

@@ -27,6 +27,11 @@ public class MetricsBuilder {
 
     private final MeterRegistry registry;
 
+    /**
+     * Construtor que recebe o {@link MeterRegistry} do Micrometer.
+     *
+     * @param registry O registro de métricas onde os contadores e timers serão armazenados.
+     */
     public MetricsBuilder(MeterRegistry registry){
 
         this.registry = registry;
@@ -36,7 +41,7 @@ public class MetricsBuilder {
      * Cria e registra um contador ({@link Counter}) com o nome e descrição fornecidos.
      * <p>
      * O contador é registrado no {@link MeterRegistry} injetado e pode ser utilizado para medir
-     * eventos que ocorrem de forma incremental (ex.: número de usuarios).
+     * eventos que ocorrem de forma incremental (ex.: número de usuários criados).
      * </p>
      *
      * @param name        Nome do contador. Deve seguir as convenções do Micrometer (ex.: "api.requests.total").
@@ -57,15 +62,13 @@ public class MetricsBuilder {
      * O timer é configurado automaticamente para:
      * <ul>
      *   <li>Publicar histograma percentil ({@code .publishPercentileHistogram()})</li>
-     *   <li>Publicar percentis específicos: 50%, 95% e 99% ({@code .publishPercentiles
-     *   (0.5, 0.95, 0.99)})</li>
+     *   <li>Publicar percentis específicos: 50%, 95% e 99% ({@code .publishPercentiles(0.5, 0.95, 0.99)})</li>
      * </ul>
      * Essas configurações permitem analisar a distribuição dos tempos de execução de operações
      * (ex.: duração de chamadas a APIs, consultas ao banco de dados, etc.).
      * </p>
      *
-     * @param name        Nome do timer. Deve seguir as convenções do Micrometer
-     *                   (ex.: "api.request.duration").
+     * @param name        Nome do timer. Deve seguir as convenções do Micrometer (ex.: "api.request.duration").
      * @param description Descrição textual do timer, explicando o que ele mede.
      * @return Uma instância de {@link Timer} registrada e configurada com as opções padrão.
      */

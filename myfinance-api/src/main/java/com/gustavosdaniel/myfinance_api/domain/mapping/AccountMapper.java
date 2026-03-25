@@ -9,7 +9,15 @@ import com.gustavosdaniel.myfinance_api.domain.po.User;
 import org.springframework.stereotype.Component;
 
 /**
- * Componente responsável pelo mapeamento e conversão de objetos relacionados à entidade Account.
+ * Componente responsável pelo mapeamento e conversão de objetos relacionados à entidade {@link Account}.
+ * <p>
+ * Fornece métodos para:
+ * <ul>
+ *   <li>Criar uma entidade {@link Account} a partir de um DTO de requisição ({@link AccountRequest});</li>
+ *   <li>Converter uma entidade em DTOs de resposta ({@link AccountResponse} e {@link AccountResponseInfo});</li>
+ *   <li>Atualizar uma entidade existente com dados de um DTO de atualização ({@link AccountUpdateRequest}).</li>
+ * </ul>
+ * </p>
  */
 @Component
 public class AccountMapper {
@@ -68,8 +76,7 @@ public class AccountMapper {
      * em vez do saldo inicial.
      *
      * @param account a entidade de conta a ser convertida
-     * @return uma nova instância de {@link AccountResponseInfo},
-     * ou {@code null} se a conta for nula
+     * @return uma nova instância de {@link AccountResponseInfo}, ou {@code null} se a conta for nula
      */
     public AccountResponseInfo toAccountResponseInfo(Account account){
 
