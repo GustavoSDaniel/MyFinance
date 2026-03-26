@@ -16,13 +16,36 @@ Desenvolvimento de uma API RESTful em Java com Spring Boot para gerenciar finanÃ
 
 ```mermaid
 flowchart LR
-    Client -->|Auth| Keycloak
-    Client -->|JWT| API
-    API -->|Validate Token| Keycloak
-    API --> PostgreSQL
-    API --> DragonflyDB
-    API --> Prometheus
-    Prometheus --> Grafana
+    subgraph Client
+        C[Frontend / Client]
+    end
+
+    subgraph Auth
+        K[Keycloak]
+    end
+
+    subgraph Backend
+        A[MyFinance API]
+    end
+
+    subgraph Data
+        DB[(PostgreSQL)]
+        Cache[(DragonflyDB)]
+    end
+
+    subgraph Observability
+        P[Prometheus]
+        G[Grafana]
+    end
+
+    C -->|Login| K
+    C -->|JWT| A
+    A -->|Validate Token| K
+    A --> DB
+    A --> Cache
+    A --> P
+    P --> G
+```
 
 ## âœ¨ Funcionalidades
 
