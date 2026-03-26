@@ -13,16 +13,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configurando o Java 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: 'maven'
 
       - name: Compilando o Spring Boot (Maven)
         working-directory: ./myfinance-api
         run: mvn clean package -DskipTests
 
-      - name: Preparando emulador ARM (Vital para a Oracle Cloud!)
+      - name: Preparando emulador ARM
         uses: docker/setup-qemu-action@v3
 
       - name: Configurando Docker Buildx
@@ -35,12 +36,16 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Criando Imagem e Mandando pro Docker Hub
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./myfinance-api
           platforms: linux/arm64
           push: true
-          tags: gustavosdaniel/my-finance-app:latest
+          tags: |
+            gustavosdaniel/my-finance-app:latest
+            gustavosdaniel/my-finance-app:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Deploy na Máquina 2 (Oracle Cloud)
         uses: appleboy/ssh-action@v1.0.3
@@ -52,3 +57,6 @@ jobs:
             cd /home/ubuntu/myfinance-app
             docker compose pull
             docker compose up -d
+            docker compose ps
+            sleep 30
+            curl -f http://localhost:5050/actuator/health || exit 1
