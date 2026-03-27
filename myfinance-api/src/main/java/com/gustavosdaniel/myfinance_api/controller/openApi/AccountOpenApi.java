@@ -1,7 +1,7 @@
 package com.gustavosdaniel.myfinance_api.controller.openApi;
 
-import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
-import com.gustavosdaniel.myfinance_api.domain.dto.AccountUpdateRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.AccountResponseInfo;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.AccountUpdateRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

@@ -1,14 +1,14 @@
 package com.gustavosdaniel.myfinance_api.domain.mapping;
 
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalTransferRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.TransferRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalTransferRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransferRequest;
 import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.domain.po.Transaction;
 import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
-import com.gustavosdaniel.myfinance_api.domain.dto.TransactionRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.TransactionResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransactionRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionResponse;
 import com.gustavosdaniel.myfinance_api.domain.po.User;
 import org.springframework.stereotype.Component;
 

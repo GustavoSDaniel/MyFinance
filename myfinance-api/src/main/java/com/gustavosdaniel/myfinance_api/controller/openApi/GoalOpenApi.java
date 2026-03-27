@@ -1,9 +1,9 @@
 package com.gustavosdaniel.myfinance_api.controller.openApi;
 
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequestUpdate;
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalTransfer;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.GoalResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.GoalTransferRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -169,9 +169,9 @@ public interface GoalOpenApi {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Valor para depósito na meta",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = GoalTransfer.class))
+                    content = @Content(schema = @Schema(implementation = GoalTransferRequest.class))
             )
-            @RequestBody @Valid GoalTransfer transfer
+            @RequestBody @Valid GoalTransferRequest transfer
     );
 
 
@@ -197,9 +197,9 @@ public interface GoalOpenApi {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Valor para saque da meta",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = GoalTransfer.class))
+                    content = @Content(schema = @Schema(implementation = GoalTransferRequest.class))
             )
-            @RequestBody @Valid GoalTransfer transfer
+            @RequestBody @Valid GoalTransferRequest transfer
     );
 
 

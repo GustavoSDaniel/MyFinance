@@ -1,9 +1,9 @@
 package com.gustavosdaniel.myfinance_api.categories;
 
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequestUpdate;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponseUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponseUpdate;
 import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 import com.gustavosdaniel.myfinance_api.domain.mapping.CategoryMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;

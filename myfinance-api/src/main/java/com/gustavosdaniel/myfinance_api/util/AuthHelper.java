@@ -1,7 +1,7 @@
 package com.gustavosdaniel.myfinance_api.util;
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.UserMetrics;
-import com.gustavosdaniel.myfinance_api.domain.dto.UserRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.UserRequest;
 import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
 import com.gustavosdaniel.myfinance_api.domain.mapping.UserMapper;
 import com.gustavosdaniel.myfinance_api.exception.UnauthorizedException;

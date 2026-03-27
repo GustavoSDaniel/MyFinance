@@ -1,10 +1,10 @@
 package com.gustavosdaniel.myfinance_api.service;
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.CategoryMetrics;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequestUpdate;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponseUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponseUpdate;
 import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 import com.gustavosdaniel.myfinance_api.domain.enuns.Status;
 import com.gustavosdaniel.myfinance_api.domain.mapping.CategoryMapper;
@@ -20,7 +20,6 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

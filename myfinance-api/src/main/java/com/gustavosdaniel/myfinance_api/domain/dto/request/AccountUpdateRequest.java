@@ -1,4 +1,4 @@
-package com.gustavosdaniel.myfinance_api.domain.dto;
+package com.gustavosdaniel.myfinance_api.domain.dto.request;
 
 import com.gustavosdaniel.myfinance_api.domain.enuns.AccountType;
 

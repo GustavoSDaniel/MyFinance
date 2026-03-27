@@ -1,15 +1,14 @@
 package com.gustavosdaniel.myfinance_api.service;
 
-import com.gustavosdaniel.myfinance_api.domain.dto.BetweenDateDashboard;
-import com.gustavosdaniel.myfinance_api.domain.dto.DashboardCategorySum;
-import com.gustavosdaniel.myfinance_api.domain.dto.DashboardResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.BetweenDateDashboard;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.DashboardCategorySum;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.DashboardResponse;
 import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

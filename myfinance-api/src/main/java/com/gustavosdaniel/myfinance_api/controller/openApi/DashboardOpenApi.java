@@ -1,7 +1,7 @@
 package com.gustavosdaniel.myfinance_api.controller.openApi;
 
-import com.gustavosdaniel.myfinance_api.domain.dto.BetweenDateDashboard;
-import com.gustavosdaniel.myfinance_api.domain.dto.DashboardResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.BetweenDateDashboard;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.DashboardResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

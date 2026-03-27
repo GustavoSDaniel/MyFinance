@@ -2,8 +2,8 @@ package com.gustavosdaniel.myfinance_api.service;
 
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.UserMetrics;
-import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.UserInfoResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.UserResponse;
 import com.gustavosdaniel.myfinance_api.domain.mapping.UserMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.exception.AccessDeniedException;
@@ -17,7 +17,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

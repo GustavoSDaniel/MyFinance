@@ -1,7 +1,10 @@
 package com.gustavosdaniel.myfinance_api.service;
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.GoalMetrics;
-import com.gustavosdaniel.myfinance_api.domain.dto.*;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalTransferRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.GoalResponse;
 import com.gustavosdaniel.myfinance_api.domain.enuns.GoalStatus;
 import com.gustavosdaniel.myfinance_api.domain.mapping.GoalMapper;
 import com.gustavosdaniel.myfinance_api.domain.mapping.TransactionMapper;
@@ -29,7 +32,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +39,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 

@@ -1,10 +1,10 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.GoalMetrics;
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequestUpdate;
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalTransfer;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.GoalResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.GoalTransferRequest;
 import com.gustavosdaniel.myfinance_api.service.GoalService;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
@@ -85,7 +85,7 @@ public class GoalController{
     public ResponseEntity<GoalResponse> deposit(
             @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody @Valid GoalTransfer transfer
+            @RequestBody @Valid GoalTransferRequest transfer
     ){
 
         return goalService.depositToGoal(id,transfer,jwt);
@@ -95,7 +95,7 @@ public class GoalController{
     public ResponseEntity<GoalResponse> withdraw(
             @PathVariable UUID id,
             @AuthenticationPrincipal Jwt jwt,
-            @RequestBody @Valid GoalTransfer transfer
+            @RequestBody @Valid GoalTransferRequest transfer
     ) {
 
         return goalService.withdrawFromGoal(id, transfer, jwt);

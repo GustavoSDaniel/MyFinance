@@ -2,10 +2,10 @@ package com.gustavosdaniel.myfinance_api.controller;
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.CategoryMetrics;
 import com.gustavosdaniel.myfinance_api.service.CategoryService;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryRequestUpdate;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.CategoryResponseUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponseUpdate;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

@@ -1,10 +1,10 @@
 package com.gustavosdaniel.myfinance_api.service;
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.AccountMetrics;
-import com.gustavosdaniel.myfinance_api.domain.dto.AccountRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
-import com.gustavosdaniel.myfinance_api.domain.dto.AccountUpdateRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.AccountRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.AccountResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.AccountResponseInfo;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.AccountUpdateRequest;
 import com.gustavosdaniel.myfinance_api.domain.enuns.Status;
 import com.gustavosdaniel.myfinance_api.domain.mapping.AccountMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
@@ -22,7 +22,6 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

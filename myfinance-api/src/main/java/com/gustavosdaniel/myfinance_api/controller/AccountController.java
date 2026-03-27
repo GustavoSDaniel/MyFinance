@@ -1,10 +1,10 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.AccountMetrics;
-import com.gustavosdaniel.myfinance_api.domain.dto.AccountRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
-import com.gustavosdaniel.myfinance_api.domain.dto.AccountUpdateRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.AccountRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.AccountResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.AccountResponseInfo;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.AccountUpdateRequest;
 import com.gustavosdaniel.myfinance_api.service.AccountService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

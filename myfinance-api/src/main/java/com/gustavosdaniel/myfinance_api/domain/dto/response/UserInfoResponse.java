@@ -1,4 +1,4 @@
-package com.gustavosdaniel.myfinance_api.domain.dto;
+package com.gustavosdaniel.myfinance_api.domain.dto.response;
 
 public record UserInfoResponse(
 

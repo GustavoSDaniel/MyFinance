@@ -1,8 +1,8 @@
 package com.gustavosdaniel.myfinance_api.domain.mapping;
 
-import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.UserRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.UserInfoResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.UserRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.UserResponse;
 import com.gustavosdaniel.myfinance_api.domain.enuns.UserRole;
 import com.gustavosdaniel.myfinance_api.domain.po.User;
 import org.springframework.stereotype.Component;

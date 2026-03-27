@@ -2,11 +2,9 @@ package com.gustavosdaniel.myfinance_api.controller;
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.UserMetrics;
 import com.gustavosdaniel.myfinance_api.controller.openApi.UserOpenApi;
-import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
-import com.gustavosdaniel.myfinance_api.domain.po.User;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.UserInfoResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.UserResponse;
 import com.gustavosdaniel.myfinance_api.service.UserService;
-import com.gustavosdaniel.myfinance_api.util.AuthHelper;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

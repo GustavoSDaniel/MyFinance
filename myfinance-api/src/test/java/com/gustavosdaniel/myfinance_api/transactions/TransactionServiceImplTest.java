@@ -1,6 +1,10 @@
 package com.gustavosdaniel.myfinance_api.transactions;
 
-import com.gustavosdaniel.myfinance_api.domain.dto.*;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransactionRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransferRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionSearchFilter;
 import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionStatus;
 import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
 import com.gustavosdaniel.myfinance_api.domain.mapping.TransactionMapper;

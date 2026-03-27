@@ -1,10 +1,10 @@
 package com.gustavosdaniel.myfinance_api.service;
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.TransactionMetrics;
-import com.gustavosdaniel.myfinance_api.domain.dto.TransactionRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.TransactionResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.TransactionSearchFilter;
-import com.gustavosdaniel.myfinance_api.domain.dto.TransferRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransactionRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionSearchFilter;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransferRequest;
 import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionStatus;
 import com.gustavosdaniel.myfinance_api.domain.enuns.TransactionType;
 import com.gustavosdaniel.myfinance_api.domain.mapping.TransactionMapper;
@@ -27,14 +27,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 

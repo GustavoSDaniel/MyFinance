@@ -1,8 +1,8 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.DashboardMetrics;
-import com.gustavosdaniel.myfinance_api.domain.dto.BetweenDateDashboard;
-import com.gustavosdaniel.myfinance_api.domain.dto.DashboardResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.BetweenDateDashboard;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.DashboardResponse;
 import com.gustavosdaniel.myfinance_api.service.DashboardService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

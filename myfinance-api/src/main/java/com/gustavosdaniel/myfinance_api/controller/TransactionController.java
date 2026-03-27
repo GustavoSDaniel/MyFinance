@@ -1,10 +1,10 @@
 package com.gustavosdaniel.myfinance_api.controller;
 
 import com.gustavosdaniel.myfinance_api.controller.metrics.TransactionMetrics;
-import com.gustavosdaniel.myfinance_api.domain.dto.TransactionRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.TransactionResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.TransactionSearchFilter;
-import com.gustavosdaniel.myfinance_api.domain.dto.TransferRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransactionRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionSearchFilter;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.TransferRequest;
 import com.gustavosdaniel.myfinance_api.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;

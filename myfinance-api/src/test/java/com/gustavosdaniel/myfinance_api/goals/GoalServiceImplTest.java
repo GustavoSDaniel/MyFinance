@@ -1,9 +1,9 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequest;
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalRequestUpdate;
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalResponse;
-import com.gustavosdaniel.myfinance_api.domain.dto.GoalTransfer;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequest;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequestUpdate;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.GoalResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.GoalTransferRequest;
 import com.gustavosdaniel.myfinance_api.domain.enuns.PriorityStatus;
 import com.gustavosdaniel.myfinance_api.domain.mapping.GoalMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
@@ -544,7 +544,7 @@ class GoalServiceImplTest {
             ReflectionTestUtils.setField(transaction, "id", transactionId);
             ReflectionTestUtils.setField(transaction, "idempotencyKey", idempotencyKey);
 
-            GoalTransfer transfer = new GoalTransfer(
+            GoalTransferRequest transfer = new GoalTransferRequest(
                     transaction.getIdempotencyKey(),
                     account.getId(),
                     transaction.getAmount(),
@@ -643,7 +643,7 @@ class GoalServiceImplTest {
             ReflectionTestUtils.setField(transaction, "id", transactionId);
             ReflectionTestUtils.setField(transaction, "idempotencyKey", idempotencyKey);
 
-            GoalTransfer transfer = new GoalTransfer(
+            GoalTransferRequest transfer = new GoalTransferRequest(
                     transaction.getIdempotencyKey(),
                     account.getId(),
                     transaction.getAmount(),

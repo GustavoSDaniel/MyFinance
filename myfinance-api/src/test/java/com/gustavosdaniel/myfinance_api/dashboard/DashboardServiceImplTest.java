@@ -1,8 +1,8 @@
 package com.gustavosdaniel.myfinance_api.dashboard;
 
-import com.gustavosdaniel.myfinance_api.domain.dto.BetweenDateDashboard;
-import com.gustavosdaniel.myfinance_api.domain.dto.DashboardCategorySum;
-import com.gustavosdaniel.myfinance_api.domain.dto.DashboardResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.BetweenDateDashboard;
+import com.gustavosdaniel.myfinance_api.domain.dto.request.DashboardCategorySum;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.DashboardResponse;
 import com.gustavosdaniel.myfinance_api.repository.TransactionRepository;
 import com.gustavosdaniel.myfinance_api.service.DashboardService;
 import com.gustavosdaniel.myfinance_api.domain.po.User;

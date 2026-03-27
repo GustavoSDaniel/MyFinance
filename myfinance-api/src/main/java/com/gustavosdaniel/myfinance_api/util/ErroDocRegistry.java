@@ -1,6 +1,6 @@
 package com.gustavosdaniel.myfinance_api.util;
 
-import com.gustavosdaniel.myfinance_api.domain.dto.ErroDocResponse;
+import com.gustavosdaniel.myfinance_api.domain.dto.response.ErroDocResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;

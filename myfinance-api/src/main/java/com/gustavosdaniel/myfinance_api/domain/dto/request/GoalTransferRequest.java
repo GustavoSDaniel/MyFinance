@@ -1,12 +1,14 @@
-package com.gustavosdaniel.myfinance_api.domain.dto;
+package com.gustavosdaniel.myfinance_api.domain.dto.request;
 
+import com.gustavosdaniel.myfinance_api.domain.enuns.RecurrenceType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
-public record GoalTransfer(
+public record GoalTransferRequest(
 
         @NotNull(message = "Chave de idempotência é obrigatória")
         UUID idempotencyKey,
@@ -18,7 +20,13 @@ public record GoalTransfer(
         @NotNull(message = "O valor é obrigatório")
         BigDecimal amount,
 
+        @NotNull(message = "Data da transação é obrigatória")
+        LocalDate date,
+
+        Boolean isRecurring,
+
+        RecurrenceType recurrenceType,
+
         String description
 ) {
 }
-
