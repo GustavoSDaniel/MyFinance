@@ -8,9 +8,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Registro centralizado de documentação de erros da API.
+ * <p>
+ * Esta classe mantém um mapa estático que associa uma chave identificadora do erro
+ * (ex: "conta-nao-encontrado") a um objeto {@link ErroDocResponse} contendo informações
+ * detalhadas sobre o erro, como título, descrição, causa, solução e código HTTP.
+ * </p>
+ * <p>
+ * É utilizada para gerar documentação automática dos possíveis erros retornados pela API,
+ * facilitando a compreensão por parte dos clientes.
+ * </p>
+ */
 @Component
 public class ErroDocRegistry {
 
+    /**
+     * Mapa estático que armazena a documentação dos erros.
+     * A chave é um identificador textual único (ex: "validacao") e o valor é o DTO de resposta do erro.
+     */
     private static final Map<String, ErroDocResponse> documentation = new HashMap<>();
 
     static {
@@ -48,6 +64,14 @@ public class ErroDocRegistry {
                 "O ID do usuário fornecido não existe no banco de dados.",
                 "Verifique se o ID do usuário está correto.",
                 404
+        ));
+
+        documentation.put("usuario-sem-autoriacao-para-apagar-conta", new ErroDocResponse(
+                "Acesso negado",
+                "Não é permitido apagar a conta de outro usuário.",
+                "O usuário autenticado tentou realizar uma ação destrutiva em um recurso que pertence a um ID diferente.",
+                "Verifique se você está logado com o usuário correto ou se o ID do recurso passado na URL está correto.",
+                403
         ));
 
         // --- ACCOUNT ---
@@ -135,11 +159,21 @@ public class ErroDocRegistry {
         ));
     }
 
+    /**
+     * Retorna uma visão não modificável de todos os erros registrados.
+     *
+     * @return Mapa imutável contendo toda a documentação de erros.
+     */
     public static Optional<ErroDocResponse> find(String errorKey){
 
         return Optional.ofNullable(documentation.get(errorKey));
     }
 
+    /**
+     * Busca a documentação de um erro específico pela sua chave identificadora.
+     *
+     * @return Um {@link Optional} contendo o DTO de erro se encontrado, ou vazio caso contrário.
+     */
     public static  Map<String, ErroDocResponse> findAll() {
         return Collections.unmodifiableMap(documentation);
     }

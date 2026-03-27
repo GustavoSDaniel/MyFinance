@@ -72,10 +72,7 @@ public class DashboardService {
         log.info("Gerando Dashboard para usuário {} entre {} á {}",
                 user.getName(), betweenDate.startDate(), betweenDate.endDate());
 
-        if (betweenDate.endDate().isBefore(betweenDate.startDate()) ){
-
-            throw  new IllegalArgumentException("A data final não pode ser antes da data inicial");
-        }
+        assertValidDateRange(betweenDate);
 
         BigDecimal incomes = transactionRepository.
                 sumIncomesByPeriod(user.getId(),
@@ -104,6 +101,21 @@ public class DashboardService {
                 balance,
                 expensesByCategory
         ));
+
+    }
+
+    /**
+     * Valida se o período informado é coerente, verificando se a data final é posterior
+     * ou igual à data inicial.
+     *
+     * @param betweenDate Objeto contendo as datas de início e fim do período.
+     * @throws IllegalArgumentException Se a data final for anterior à data inicial.
+     */
+    private void assertValidDateRange(BetweenDateDashboard betweenDate){
+
+        if (betweenDate.endDate().isBefore(betweenDate.startDate()) )
+
+            throw  new IllegalArgumentException("A data final não pode ser antes da data inicial");
 
     }
 }

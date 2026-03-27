@@ -6,6 +6,7 @@ import com.gustavosdaniel.myfinance_api.domain.dto.UserInfoResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.UserResponse;
 import com.gustavosdaniel.myfinance_api.domain.mapping.UserMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.User;
+import com.gustavosdaniel.myfinance_api.exception.AccessDeniedException;
 import com.gustavosdaniel.myfinance_api.exception.UserNotFoundException;
 import com.gustavosdaniel.myfinance_api.repository.UserRepository;
 import com.gustavosdaniel.myfinance_api.util.AuthHelper;
@@ -186,14 +187,7 @@ public class UserService {
             return ResponseEntity.noContent().build();
         }
 
-        String emailLogado = authentication.getName();
-
-        if (!isAdmin && !user.getEmail().equals(emailLogado)) {
-
-            log.warn("Usuário {} tentou deletar a conta de {}", emailLogado, user.getEmail());
-
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        assertUserCanDelete(user, authentication);
 
         userRepository.delete(user);
 
@@ -203,5 +197,35 @@ public class UserService {
 
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Verifica se o usuário autenticado tem permissão para deletar o usuário alvo.
+     * A regra é:
+     * <ul>
+     * <li>Administradores (ROLE_ADMIN) podem deletar qualquer usuário.</li>
+     * <li>Usuários comuns só podem deletar sua própria conta.</li>
+     * </ul>
+     *
+     * @param user           usuário que será deletado
+     * @param authentication contexto de segurança do usuário logado
+     * @throws AccessDeniedException se o usuário logado não tiver permissão para deletar o alvo
+     */
+    private void  assertUserCanDelete(User user, Authentication authentication){
+
+        boolean isAdmin = authentication.getAuthorities()
+                .contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+
+        String loggedInKeycloakId = authentication.getName();
+
+        if (!isAdmin && !user.getKeycloakId().equals(loggedInKeycloakId)){
+
+            log.warn("Usuário {} tentou deletar a conta do usuário de ID {}",
+                    loggedInKeycloakId, user.getId());
+
+            throw new AccessDeniedException();
+        }
+
+    }
+
 
 }

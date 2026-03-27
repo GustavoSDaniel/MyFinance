@@ -25,6 +25,12 @@ public enum ProblemType {
 
     ),
 
+    ACCESS_DENIED(
+
+            "https://localhost:5050/erro/usuario-sem-autoriacao-para-apagar-conta",
+            "Usuário sem autorização para apagar conta"
+    ),
+
     //ACCOUNT
     ACCOUNT_NAME_DUPLICATE(
 

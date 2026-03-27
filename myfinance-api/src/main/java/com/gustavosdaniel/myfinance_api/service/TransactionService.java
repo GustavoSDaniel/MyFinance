@@ -107,14 +107,7 @@ public class TransactionService {
 
         User user = authHelper.getCurrentUser(jwt);
 
-        if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(),
-                user.getId())){
-
-            log.warn("Transação já processada anteriormente. idempotencyKey = {}",
-                    request.idempotencyKey());
-
-            throw new IdempotencyKeyException();
-        }
+        assertIdempotencyKeyIsUnique(request, user.getId());
 
         Account account = accountRepository
                 .findByIdAndUserId(request.accountId(), user.getId())
@@ -131,6 +124,8 @@ public class TransactionService {
 
         Transaction transactionSave = transactionRepository.save(transaction);
         accountRepository.save(transaction.getAccount());
+
+        transactionMetrics.incrementCreated();
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -251,67 +246,38 @@ public class TransactionService {
 
         User user = authHelper.getCurrentUser(jwt);
 
-        if (transactionRepository.existsByIdempotencyKeyAndUserId(
-                transferRequest.idempotencyKey(), user.getId())){
-
-            log.warn("Transferência já processada anteriormente. idempotencyKey = {}",
-                    transferRequest.idempotencyKey());
-
-            throw  new IdempotencyKeyException();
-        }
+        assertIdempotencyKeyIsUnique(transferRequest, user.getId());
 
         Account fromAccount = accountRepository.findByIdAndUserId(
-                transferRequest.fromAccountId(), user.getId())
+                        transferRequest.fromAccountId(), user.getId())
                 .orElseThrow(AccountNotFoundException::new);
 
         Account toAccount = accountRepository.findByIdAndUserId(
-                transferRequest.toAccountId(), user.getId())
+                        transferRequest.toAccountId(), user.getId())
                 .orElseThrow(AccountNotFoundException::new);
 
+        assertDifferentAccounts(fromAccount.getId(), toAccount.getId());
+
         Category category = categoryRepository.findByIdAndUserId
-                (transferRequest.categoryId(), user.getId())
+                        (transferRequest.categoryId(), user.getId())
                 .orElseThrow(CategoryNotFoundException::new);
 
-        if (fromAccount.equals(toAccount)){
 
-            throw new TransactionEqualsAccountException();
-        }
+        Transaction from = transactionMapper
+                .toTransfer(transferRequest,
+                        user, fromAccount, category, TransactionType.DESPESA);
 
-        LocalDateTime transactionDate = transferRequest.date() != null
-                ? transferRequest.date().atStartOfDay()
-                : LocalDateTime.now();
-
-
-        Transaction from = new Transaction(
-                transferRequest.idempotencyKey(),
-                user,
-                fromAccount,
-                category,
-                transferRequest.description(),
-                transferRequest.amount(),
-                TransactionType.DESPESA,
-                transactionDate,
-                null,
-                null
-                );
-
-        Transaction to = new Transaction(transferRequest.idempotencyKey(),
-                user,
-                toAccount,
-                category,
-                transferRequest.description(),
-                transferRequest.amount(),
-                TransactionType.RECEITA,
-                transactionDate,
-                null,
-                null
-        );
+        Transaction to = transactionMapper
+                .toTransfer(transferRequest,
+                        user, toAccount, category, TransactionType.RECEITA);
 
         from.process();
         to.process();
 
         transactionRepository.saveAll(List.of(from,to));
         accountRepository.saveAll(List.of(fromAccount, toAccount));
+
+        transactionMetrics.incrementTransfer();
 
         log.info("Transferência realizada com sucesso: {} -> {} valor: {}",
                 fromAccount.getName(), toAccount.getName(), transferRequest.amount());
@@ -414,9 +380,9 @@ public class TransactionService {
                 .findByIdAndUserId(id, user.getId())
                 .orElseThrow(TransactionNotFoundException::new);
 
-        if (transaction.getStatus() == TransactionStatus.CONFIRMADA){
+        if (transaction.getStatus() == TransactionStatus.CONFIRMADA)
             throw new BusinessRuleException();
-        }
+
 
         transactionRepository.delete(transaction);
 
@@ -425,6 +391,62 @@ public class TransactionService {
         transactionMetrics.incrementDeleted();
 
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Verifica se a chave de idempotência já foi utilizada em uma transação do tipo {@link TransactionRequest}.
+     * Utilizada na criação de transações comuns.
+     *
+     * @param request DTO contendo a chave de idempotência.
+     * @param userId  ID do usuário.
+     * @throws IdempotencyKeyException Se a chave já existir.
+     */
+    private void assertIdempotencyKeyIsUnique(TransactionRequest request, UUID userId){
+
+        if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(),
+                userId)){
+
+            log.warn("Transação já processada anteriormente. idempotencyKey = {}",
+                    request.idempotencyKey());
+
+            throw new IdempotencyKeyException();
+        }
+
+    }
+
+    /**
+     * Verifica se a chave de idempotência já foi utilizada em uma transferência ({@link TransferRequest}).
+     * Utilizada na criação de transferências entre contas.
+     *
+     * @param request DTO contendo a chave de idempotência.
+     * @param userId  ID do usuário.
+     * @throws IdempotencyKeyException Se a chave já existir.
+     */
+    private void assertIdempotencyKeyIsUnique(TransferRequest request, UUID userId){
+
+        if (transactionRepository.existsByIdempotencyKeyAndUserId(request.idempotencyKey(),
+                userId)){
+
+            log.warn("Transação já processada anteriormente. idempotencyKey = {}",
+                    request.idempotencyKey());
+
+            throw new IdempotencyKeyException();
+        }
+
+    }
+
+    /**
+     * Verifica se as contas de origem e destino são diferentes.
+     * Utilizada em transferências para evitar movimentação para a mesma conta.
+     *
+     * @param fromAccountId ID da conta de origem.
+     * @param toAccountId   ID da conta de destino.
+     * @throws TransactionEqualsAccountException Se os IDs forem iguais.
+     */
+    private void assertDifferentAccounts(UUID fromAccountId, UUID toAccountId){
+
+        if (fromAccountId.equals(toAccountId))
+            throw new TransactionEqualsAccountException();
     }
 
 }

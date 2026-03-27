@@ -75,6 +75,19 @@ public class GlobalExceptionHandle {
 
     }
 
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDeniedException(AccessDeniedException ex){
+
+        log.warn("Usuário sem autorização para deletar a conta {}", ex.getMessage());
+
+        return buildProblem(
+                HttpStatus.FORBIDDEN,
+                ProblemType.ACCESS_DENIED,
+                "Não é permitido apagar a conta de outro usuário"
+        );
+    }
+
+
     // ACCOUNT
     @ExceptionHandler(AccountNameDuplicateException.class)
     public ProblemDetail handleAccountNameDuplicate(AccountNameDuplicateException ex){

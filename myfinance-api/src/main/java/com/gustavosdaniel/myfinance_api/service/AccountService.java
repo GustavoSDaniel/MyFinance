@@ -5,6 +5,7 @@ import com.gustavosdaniel.myfinance_api.domain.dto.AccountRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountResponseInfo;
 import com.gustavosdaniel.myfinance_api.domain.dto.AccountUpdateRequest;
+import com.gustavosdaniel.myfinance_api.domain.enuns.Status;
 import com.gustavosdaniel.myfinance_api.domain.mapping.AccountMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.exception.AccountAlreadyActiveException;
@@ -91,11 +92,7 @@ public class AccountService {
 
         User user = authHelper.getCurrentUser(jwt);
 
-        if (accountRepository.existsByNameIgnoreCaseAndUserId(accountRequest.name().trim(),
-                user.getId())){
-
-            throw new AccountNameDuplicateException();
-        }
+        assertAccountNameIsUnique(accountRequest.name(), user.getId());
 
         log.info("Criando uma nova conta para o usuário: {}", user.getName());
 
@@ -140,14 +137,19 @@ public class AccountService {
 
         log.info("Buscando todas as contas do usuário: {} com status: {}", user.getName(), status);
 
-        List<Account> accounts;
+        List<Account> accounts = List.of();
 
-        if ("active".equalsIgnoreCase(status))
-            accounts = accountRepository.findByUserIdAndIsActiveTrue(user.getId());
-         else if ("disabled".equalsIgnoreCase(status))
-            accounts = accountRepository.findByUserIdAndIsActiveFalse(user.getId());
-         else
-            accounts = accountRepository.findByUserId(user.getId());
+        Status accountStatus = Status.fromString(status);
+
+        switch (accountStatus) {
+
+            case ACTIVE -> accounts = accountRepository.findByUserIdAndIsActiveTrue(user.getId());
+
+            case DISABLED -> accounts = accountRepository.findByUserIdAndIsActiveFalse(user.getId());
+
+            case ALL -> accounts = accountRepository.findByUserId(user.getId());
+
+        }
 
         log.info("Total de contas encontradas: {}", accounts.size());
 
@@ -233,14 +235,7 @@ public class AccountService {
 
         log.info("Atualizando informações da conta: {}", account.getName());
 
-        if (nameChanged.test(account, request)){
-
-            if (accountRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(request.name(),
-                    user.getId(), id)){
-
-                    throw new AccountNameDuplicateException();
-            }
-        }
+        assertAccountNameIsUnique(request.name(), account, user.getId());
 
         accountMapper.updateAccountFromRequest(request, account);
 
@@ -357,5 +352,43 @@ public class AccountService {
 
         return ResponseEntity.noContent().build();
 
+    }
+
+    /**
+     * Verifica se já existe uma conta ativa com o mesmo nome para o usuário.
+     * Utilizada na criação de uma nova conta.
+     *
+     * @param name   Nome da conta a ser validado.
+     * @param userId ID do usuário dono da conta.
+     * @throws AccountNameDuplicateException Se o nome já estiver em uso.
+     */
+    private void assertAccountNameIsUnique(String name, UUID userId){
+
+
+        if (accountRepository.existsByNameIgnoreCaseAndUserId(name, userId))
+
+            throw new AccountNameDuplicateException();
+
+    }
+
+    /**
+     * Verifica se o novo nome informado é único, ignorando a própria conta que está sendo atualizada.
+     * Utilizada na atualização de conta.
+     *
+     * @param name    Novo nome proposto (pode ser null, indicando que não será alterado).
+     * @param account Conta que está sendo atualizada.
+     * @param userId  ID do usuário dono da conta.
+     * @throws AccountNameDuplicateException Se o novo nome (não nulo e diferente do atual) já estiver em uso.
+     */
+    private void assertAccountNameIsUnique(String name, Account account, UUID userId){
+
+        if (name != null && !account.getName().equalsIgnoreCase(name)){
+
+            if (accountRepository.existsByNameIgnoreCaseAndUserIdAndIdNot(
+                    name, userId, account.getId()))
+
+                throw new AccountNameDuplicateException();
+
+        }
     }
 }

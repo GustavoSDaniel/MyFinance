@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.domain.dto;
 
+import com.gustavosdaniel.myfinance_api.domain.enuns.RecurrenceType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -27,7 +28,11 @@ public record TransferRequest(
 
         String description,
 
-        LocalDate date
+        LocalDate date,
+
+        Boolean isRecurring,
+
+        RecurrenceType recurrenceType
 ) {
 }
 
