@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.accounts;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.AccountMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.AccountRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.AccountResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.AccountResponseInfo;
@@ -36,10 +37,10 @@ class AccountServiceImplTest {
     private AccountRepository accountRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private AccountMapper accountMapper;
 
     @Mock
-    private AccountMapper accountMapper;
+    private AccountMetrics accountMetrics;
 
     @InjectMocks
     private AccountService accountService;
@@ -49,7 +50,7 @@ class AccountServiceImplTest {
 
         @Test
         @DisplayName("Should create account with sucesso")
-        void shouldCreateAccount() throws AccountNameDuplicateException {
+        void shouldCreateAccount(){
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -74,6 +75,8 @@ class AccountServiceImplTest {
             when(accountMapper.toAccount(user, request)).thenReturn(newAccount);
             when(accountRepository.save(any(Account.class))).thenReturn(newAccount);
             when(accountMapper.toAccountResponse(newAccount)).thenReturn(response);
+
+            accountMetrics.incrementCreate();
 
             AccountResponse output = accountService.createAccount(request, user);
 
@@ -245,7 +248,7 @@ class AccountServiceImplTest {
 
         @Test
         @DisplayName("Should updated a information account with sucesso")
-        void updateAccount() throws AccountNameDuplicateException {
+        void updateAccount(){
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -263,6 +266,8 @@ class AccountServiceImplTest {
             accountMapper.updateAccountFromRequest(request, account);
             when(accountRepository.save(any(Account.class))).thenReturn(account);
             when(accountMapper.toAccountResponseInfo(account)).thenReturn(response);
+
+            accountMetrics.incrementUpdate();
 
             AccountResponseInfo output = accountService.updateAccount(accountId, userId, request);
 
@@ -344,9 +349,12 @@ class AccountServiceImplTest {
             Account account = new Account(user, "Cartáo de credito", AccountType.CREDIT_CARD,"Apagando conta", null );
             ReflectionTestUtils.setField(account, "id", accountId);
 
-            when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
+            when(accountRepository.findByIdAndUserId(accountId, userId))
+                    .thenReturn(Optional.of(account));
 
             accountService.deleteAccount(accountId, user);
+
+            accountMetrics.incrementDelete();
 
             verify(accountRepository).findByIdAndUserId(accountId, userId);
         }

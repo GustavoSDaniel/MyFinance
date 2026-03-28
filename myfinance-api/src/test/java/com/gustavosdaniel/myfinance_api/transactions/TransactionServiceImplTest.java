@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.transactions;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.TransactionMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.TransactionRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.TransferRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionResponse;
@@ -8,6 +9,7 @@ import com.gustavosdaniel.myfinance_api.domain.enuns.*;
 import com.gustavosdaniel.myfinance_api.domain.mapping.TransactionMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.domain.po.Transaction;
+import com.gustavosdaniel.myfinance_api.exception.TransactionEqualsAccountException;
 import com.gustavosdaniel.myfinance_api.repository.AccountRepository;
 import com.gustavosdaniel.myfinance_api.exception.InvalidAmountException;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
@@ -59,6 +61,9 @@ class TransactionServiceImplTest {
     @Mock
     private  AccountRepository accountRepository;
 
+    @Mock
+    private TransactionMetrics transactionMetrics;
+
     @InjectMocks
     private TransactionService transactionService;
 
@@ -67,7 +72,7 @@ class TransactionServiceImplTest {
 
         @Test
         @DisplayName("Should created with sucesso transaction")
-        void shouldCreateTransaction() throws InvalidAmountException, InsufficientBalanceException {
+        void shouldCreateTransaction(){
 
             String keycloakId = "idDoKeycloak";
             UUID transactionId = UUID.randomUUID();
@@ -135,6 +140,8 @@ class TransactionServiceImplTest {
 
             when(accountRepository.save(any(Account.class))).thenReturn(account);
 
+            transactionMetrics.incrementCreated();
+
             TransactionResponse output = transactionService.createTransaction(user, request);
 
             assertNotNull(output);
@@ -152,7 +159,7 @@ class TransactionServiceImplTest {
 
         @Test
         @DisplayName("Transaction confirmed with sucesso")
-        void shouldConfirmedWithSucesso() throws InvalidAmountException, InsufficientBalanceException {
+        void shouldConfirmedWithSucesso(){
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -201,7 +208,7 @@ class TransactionServiceImplTest {
 
         @Test
         @DisplayName("Should cancel transaction with sucesso")
-        void shouldCancelWithSucesso() throws InvalidAmountException, InsufficientBalanceException {
+        void shouldCancelWithSucesso(){
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -255,7 +262,7 @@ class TransactionServiceImplTest {
 
         @Test
         @DisplayName("should transferaction value with sucesso")
-        void shouldTransferWithSucesso() throws InvalidAmountException, InsufficientBalanceException {
+        void shouldTransferWithSucesso(){
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -276,8 +283,10 @@ class TransactionServiceImplTest {
 
             Account fromAccount = new Account(user, "Viajem", AccountType.CORRENTE, "Conta de investimento", null);
             ReflectionTestUtils.setField(fromAccount, "currentBalance", toCurrentBalance);
+            ReflectionTestUtils.setField(fromAccount, "id", fromAccountId);
             Account toAccount = new Account(user, "Praia", AccountType.CORRENTE, "Conta de investimento", null);
             ReflectionTestUtils.setField(toAccount, "currentBalance", fromCurrentBalance);
+            ReflectionTestUtils.setField(toAccount, "id", toAccountId);
 
             Category category = new Category(user, "Descanso", CategoryType.TRANSFERENCIA, "#008000");
             ReflectionTestUtils.setField(category, "id", categoryId);
@@ -315,9 +324,21 @@ class TransactionServiceImplTest {
 
             when(transactionRepository.existsByIdempotencyKeyAndUserId(idempotencyKey,userId)).thenReturn(false);
 
+            when(transactionMapper.toTransfer(
+                    eq(request),
+                    eq(user),
+                    eq(toAccount),
+                    any(Category.class),
+                    eq(TransactionType.RECEITA)
+            )).thenReturn(to);
+
             when(accountRepository.findByIdAndUserId(fromAccountId, userId)).thenReturn(Optional.of(fromAccount));
             when(accountRepository.findByIdAndUserId(toAccountId, userId)).thenReturn(Optional.of(toAccount));
-            when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
+            when(transactionMapper.toTransfer(eq(request), eq(user), eq(fromAccount), any(Category.class), eq(TransactionType.DESPESA)))
+                    .thenReturn(from);
+
+            when(categoryRepository.findByNameAndUserId(eq("Transferência"), eq(userId)))
+                    .thenReturn(Optional.of(category));
 
             when(transactionRepository.saveAll(anyList())).thenReturn(transactions);
             when(accountRepository.saveAll(anyList())).thenReturn(accounts);
@@ -327,7 +348,7 @@ class TransactionServiceImplTest {
             verify(transactionRepository).existsByIdempotencyKeyAndUserId(idempotencyKey, userId);
             verify(accountRepository).findByIdAndUserId(fromAccountId, userId);
             verify(accountRepository).findByIdAndUserId(toAccountId, userId);
-            verify(categoryRepository).findByIdAndUserId(categoryId, userId);
+            verify(categoryRepository).findByNameAndUserId("Transferência", userId);
             verify(transactionRepository).saveAll(anyList());
             verify(accountRepository).saveAll(anyList());
 

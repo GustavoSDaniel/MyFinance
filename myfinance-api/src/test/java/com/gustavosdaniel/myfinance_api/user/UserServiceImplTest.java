@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.user;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.UserMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.UserRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.UserInfoResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.UserResponse;
@@ -37,6 +38,9 @@ class UserServiceImplTest {
 
     @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private UserMetrics userMetrics;
 
     @InjectMocks
     UserService userService;
@@ -153,17 +157,20 @@ class UserServiceImplTest {
 
             Authentication authentication = mock(Authentication.class);
 
-            when(authentication.getAuthorities())
-                    .thenReturn((Collection) List.of(new SimpleGrantedAuthority("ADMIN")));
+            when(authentication.getName()).thenReturn("Admin_Gustavo");
 
+            when(authentication.getAuthorities())
+                    .thenReturn((Collection) List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
 
             when(userRepository.findById(userId))
                     .thenReturn(Optional.of(user));
 
             userService.deleteUser(userId, authentication);
 
+            userMetrics.incrementDeleted();
+
             verify(userRepository).findById(userId);
-            verify(userRepository).deleteById(userId);
+            verify( userRepository).delete(user);
 
         }
     }

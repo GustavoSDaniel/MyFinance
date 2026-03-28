@@ -1,5 +1,6 @@
 package com.gustavosdaniel.myfinance_api.categories;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.CategoryMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.CategoryRequestUpdate;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.CategoryResponse;
@@ -38,6 +39,9 @@ class CategoryServiceImplTest {
     @Mock
     private CategoryMapper categoryMapper;
 
+    @Mock
+    private CategoryMetrics categoryMetrics;
+
     @InjectMocks
     private CategoryService categoryService;
 
@@ -46,7 +50,7 @@ class CategoryServiceImplTest {
 
         @Test
         @DisplayName("Should created category with sucesso")
-        void shouldCreateCategory() throws CategoryNameDuplicateException {
+        void shouldCreateCategory(){
 
             UUID userId = UUID.randomUUID();
             String keycloakId = "idDoKeycloak";
@@ -69,6 +73,8 @@ class CategoryServiceImplTest {
             when(categoryMapper.toCategory(user, request)).thenReturn(category);
             when(categoryRepository.save(any(Category.class))).thenReturn(category);
             when(categoryMapper.toCategoryResponse(category)).thenReturn(response);
+
+            categoryMetrics.incrementCreated();
 
             CategoryResponse output = categoryService.createCategory(user, request);
 
@@ -323,6 +329,8 @@ class CategoryServiceImplTest {
             when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
 
             categoryService.deleteCategory(categoryId, user);
+
+            categoryMetrics.incrementDelete();
 
             verify(categoryRepository).findByIdAndUserId(categoryId, userId);
         }

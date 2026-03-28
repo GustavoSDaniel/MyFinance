@@ -263,7 +263,7 @@ public class AccountService {
         user.removeAccount(account);
 
         log.warn("Deletando conta permanentemente: {} do usuário {}",
-                account.getName(), account.getUser().getName());
+                account.getName(), user.getId());
 
         accountRepository.delete(account);
 

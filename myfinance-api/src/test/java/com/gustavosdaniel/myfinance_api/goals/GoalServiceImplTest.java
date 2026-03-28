@@ -1,11 +1,13 @@
 package com.gustavosdaniel.myfinance_api.goals;
 
+import com.gustavosdaniel.myfinance_api.controller.metrics.GoalMetrics;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalRequestUpdate;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.GoalTransferRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.GoalResponse;
 import com.gustavosdaniel.myfinance_api.domain.enuns.PriorityStatus;
 import com.gustavosdaniel.myfinance_api.domain.mapping.GoalMapper;
+import com.gustavosdaniel.myfinance_api.domain.mapping.TransactionMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
 import com.gustavosdaniel.myfinance_api.domain.po.Goal;
 import com.gustavosdaniel.myfinance_api.exception.TransactionCanceledException;
@@ -66,6 +68,12 @@ class GoalServiceImplTest {
     @Mock
     private TransactionRepository transactionRepository;
 
+    @Mock
+    TransactionMapper transactionMapper;
+
+    @Mock
+    private GoalMetrics goalMetrics;
+
     @InjectMocks
     private GoalService goalService;
 
@@ -122,6 +130,8 @@ class GoalServiceImplTest {
             when(goalMapper.toGoal(request, user, category)).thenReturn(goal);
             when(goalRepository.save(any(Goal.class))).thenReturn(goal);
             when(goalMapper.toGoalResponse(goal)).thenReturn(response);
+
+            goalMetrics.incrementCreated();
 
             GoalResponse output = goalService.createGoal(user, request);
 
@@ -564,6 +574,12 @@ class GoalServiceImplTest {
             when(goalRepository.save(any(Goal.class))).thenReturn(goal);
             when(accountRepository.save(any(Account.class))).thenReturn(account);
             when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+            when(transactionMapper.toTransactionGoal(
+                    transfer,
+                    user,
+                    account,
+                    goal.getCategory(),
+                    TransactionType.DESPESA)).thenReturn(transaction);
             when(goalMapper.toGoalResponse(goal)).thenReturn(response);
 
             GoalResponse output = goalService.depositToGoal(goalId, transfer, user);
@@ -574,6 +590,11 @@ class GoalServiceImplTest {
             verify(transactionRepository).existsByIdempotencyKeyAndUserId(idempotencyKey, userId);
             verify(goalRepository).findByIdAndUserId(goalId, userId);
             verify(accountRepository).findByIdAndUserId(accountId, userId);
+            verify(transactionMapper).toTransactionGoal(transfer,
+                    user,
+                    account,
+                    goal.getCategory(),
+                    TransactionType.DESPESA);
             verify(goalRepository).save(goal);
             verify(accountRepository).save(account);
             verify(transactionRepository).save(any(Transaction.class));
@@ -666,6 +687,11 @@ class GoalServiceImplTest {
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
             when(goalRepository.save(any(Goal.class))).thenReturn(goal);
             when(accountRepository.save(any(Account.class))).thenReturn(account);
+            when(transactionMapper.toTransactionGoal(transfer,
+                    user,
+                    account,
+                    goal.getCategory(),
+                    TransactionType.RECEITA)).thenReturn(transaction);
             when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
             when(goalMapper.toGoalResponse(goal)).thenReturn(response);
 
@@ -677,6 +703,11 @@ class GoalServiceImplTest {
             verify(transactionRepository).existsByIdempotencyKeyAndUserId(idempotencyKey, userId);
             verify(goalRepository).findByIdAndUserId(goalId, userId);
             verify(accountRepository).findByIdAndUserId(accountId, userId);
+            verify(transactionMapper).toTransactionGoal(transfer,
+                    user,
+                    account,
+                    goal.getCategory(),
+                    TransactionType.RECEITA);
             verify(goalRepository).save(goal);
             verify(accountRepository).save(account);
             verify(transactionRepository).save(any(Transaction.class));
