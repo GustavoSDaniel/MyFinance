@@ -83,7 +83,6 @@ class AccountServiceImplTest {
             verify(accountRepository).save(newAccount);
             verify(accountMapper).toAccountResponse(newAccount);
 
-
         }
     }
 

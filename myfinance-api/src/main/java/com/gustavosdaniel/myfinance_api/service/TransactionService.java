@@ -3,6 +3,7 @@ package com.gustavosdaniel.myfinance_api.service;
 import com.gustavosdaniel.myfinance_api.domain.dto.request.TransactionRequest;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionResponse;
 import com.gustavosdaniel.myfinance_api.domain.dto.response.TransactionSearchFilter;
+import com.gustavosdaniel.myfinance_api.domain.enuns.CategoryType;
 import com.gustavosdaniel.myfinance_api.domain.mapping.TransactionMapper;
 import com.gustavosdaniel.myfinance_api.domain.po.Category;
 import com.gustavosdaniel.myfinance_api.domain.po.Account;
@@ -175,13 +176,18 @@ public class TransactionService {
      * Realiza uma transferência de valores entre duas contas do mesmo usuário.
      * O processo cria automaticamente duas transações: uma DESPESA na conta de origem e
      * uma RECEITA na conta de destino.
+     * <p>
+     * A categoria utilizada para as transações é a categoria com o nome "Transferência".
+     * Caso essa categoria não exista para o usuário, uma categoria padrão é criada
+     * automaticamente (nome "Transferência", tipo {@link CategoryType#TRANSFERENCIA},
+     * cor "#8E44AD").
+     * </p>
      * Limpa o cache de transações.
      *
      * @param user            Entidade do usuário que está realizando a transferência.
      * @param transferRequest DTO contendo contas de origem/destino, valor, categoria e chave de idempotência.
      * @throws IdempotencyKeyException           Caso a transferência já tenha sido executada.
      * @throws AccountNotFoundException          Caso a conta de origem ou destino não seja encontrada.
-     * @throws CategoryNotFoundException         Caso a categoria informada não seja encontrada.
      * @throws TransactionEqualsAccountException Caso a conta de origem seja a mesma de destino.
      * @throws InvalidAmountException            Caso o valor a ser transferido seja inválido.
      * @throws InsufficientBalanceException      Caso a conta de origem não tenha saldo suficiente.
@@ -205,9 +211,9 @@ public class TransactionService {
 
         assertDifferentAccounts(fromAccount.getId(), toAccount.getId());
 
-        Category category = categoryRepository.findByIdAndUserId
-                (transferRequest.categoryId(), user.getId())
-                .orElseThrow(CategoryNotFoundException::new);
+        Category category = categoryRepository.findByNameAndUserId
+                ("Transferência", user.getId())
+                .orElseGet(() -> createDefaultTransferCategory(user));
 
 
         Transaction from = transactionMapper
@@ -366,6 +372,36 @@ public class TransactionService {
 
         if (fromAccountId.equals(toAccountId))
             throw new TransactionEqualsAccountException();
+    }
+
+    /**
+     * Cria e persiste uma categoria padrão para transferências entre contas.
+     * <p>
+     * Esta categoria é utilizada automaticamente quando uma transferência é realizada
+     * e nenhuma categoria com o nome "Transferência" existe para o usuário.
+     * </p>
+     * <p>
+     * A categoria criada possui:
+     * <ul>
+     *   <li>Nome: "Transferência"</li>
+     *   <li>Tipo: {@link CategoryType#TRANSFERENCIA}</li>
+     *   <li>Cor: "#8E44AD" (roxo)</li>
+     * </ul>
+     * </p>
+     *
+     * @param user o usuário proprietário da categoria
+     * @return a entidade {@link Category} recém-criada e persistida
+     */
+    private Category createDefaultTransferCategory(User user){
+
+        Category category = new Category();
+
+        category.setUser(user);
+        category.setName("Transferência");
+        category.setType(CategoryType.TRANSFERENCIA);
+        category.setColor("#8E44AD");
+
+        return categoryRepository.save(category);
     }
 
 }

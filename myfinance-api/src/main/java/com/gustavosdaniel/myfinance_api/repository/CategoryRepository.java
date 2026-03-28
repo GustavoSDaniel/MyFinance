@@ -105,4 +105,6 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
      */
     List<Category> findByUserIdAndIsActiveFalse(UUID userId);
 
+    Optional<Category> findByNameAndUserId(String name, UUID userId);
+
 }
