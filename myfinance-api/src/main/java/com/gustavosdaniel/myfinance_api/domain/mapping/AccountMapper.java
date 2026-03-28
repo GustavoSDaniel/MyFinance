@@ -85,6 +85,7 @@ public class AccountMapper {
         }
 
         return new AccountResponseInfo(
+                account.getId(),
                 account.getUser() != null ? account.getUser().getName() : null,
                 account.getName(),
                 account.getType(),

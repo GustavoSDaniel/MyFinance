@@ -107,12 +107,14 @@ class AccountServiceImplTest {
             List<Account> accounts = Arrays.asList(account1, account2, account3);
 
             AccountResponseInfo response1 = new AccountResponseInfo(
+                    userId,
                     user.getName(), "Investimento",
                     AccountType.INVESTMENT,
                     "Tesouro direto",
                     BigDecimal.valueOf(10000));
 
             AccountResponseInfo response2 = new AccountResponseInfo(
+                    userId,
                     user.getName(),
                     "Gasto mensal",
                     AccountType.WALLET,
@@ -120,6 +122,7 @@ class AccountServiceImplTest {
                     new BigDecimal("1500.47"));
 
             AccountResponseInfo response3 = new AccountResponseInfo(
+                    userId,
                     user.getName(),
                     "Contas dio cartao",
                     AccountType.CREDIT_CARD,
@@ -159,6 +162,7 @@ class AccountServiceImplTest {
             ReflectionTestUtils.setField(account, "id", accountId);
 
             AccountResponseInfo response = new AccountResponseInfo(
+                    userId,
                     user.getName(),
                     "Poupança",
                     AccountType.POUPANCA,
@@ -198,6 +202,7 @@ class AccountServiceImplTest {
             List<Account> accounts = Arrays.asList(account, account2, account3);
 
             AccountResponseInfo response = new AccountResponseInfo(
+                    userId,
                     user.getName(),
                     "Constas fixa",
                     AccountType.WALLET,
@@ -205,6 +210,7 @@ class AccountServiceImplTest {
                     BigDecimal.valueOf(5000));
 
             AccountResponseInfo response2 = new AccountResponseInfo(
+                    userId,
                     user.getName(),
                     "Poupança",
                     AccountType.POUPANCA,
@@ -212,6 +218,7 @@ class AccountServiceImplTest {
                     new BigDecimal("10300.58"));
 
             AccountResponseInfo response3 = new AccountResponseInfo(
+                    userId,
                     user.getName(),
                     "Cartao",
                     AccountType.CREDIT_CARD,
@@ -251,7 +258,7 @@ class AccountServiceImplTest {
             ReflectionTestUtils.setField(account, "id", accountId);
 
             AccountUpdateRequest request = new AccountUpdateRequest("Conta de test update","Conta de teste para atualizar", AccountType.WALLET);
-            AccountResponseInfo response = new AccountResponseInfo(user.getName(), "Conta de test update",AccountType.WALLET, "Conta de teste para atualizar", new BigDecimal("3325.69"));
+            AccountResponseInfo response = new AccountResponseInfo(userId,user.getName(), "Conta de test update",AccountType.WALLET, "Conta de teste para atualizar", new BigDecimal("3325.69"));
 
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
             accountMapper.updateAccountFromRequest(request, account);

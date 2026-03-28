@@ -59,6 +59,7 @@ public class UserMapper {
         }
 
         return new UserInfoResponse(
+                user.getId(),
                 user.getName(),
                 user.getEmail(),
                 user.getPicture()
