@@ -7,8 +7,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -40,66 +42,47 @@ public class CacheConfig {
 
     @Value("${app.cache.ttl.accounts}")
     private long accountsTtl;
-
     @Value("${app.cache.ttl.categories}")
     private long categoriesTtl;
-
     @Value("${app.cache.ttl.users}")
     private long usersTtl;
-
     @Value("${app.cache.ttl.dashboards}")
     private long dashboardsTtl;
-
     @Value("${app.cache.ttl.goals}")
     private long goalsTtl;
-
     @Value("${app.cache.ttl.transactions}")
     private long transactionsTtl;
 
-    /**
-     * Configura e disponibiliza um {@link RedisCacheManager} com as configurações de cache.
-     * <p>
-     * A configuração padrão inclui:
-     * <ul>
-     *   <li>Serialização de chaves como String</li>
-     *   <li>Serialização de valores como JSON</li>
-     *   <li>Não armazenar valores nulos</li>
-     *   <li>TTL padrão de 45 minutos</li>
-     * </ul>
-     * </p>
-     * <p>
-     * Para cada região de cache listada, o TTL padrão é substituído pelo valor específico
-     * definido nas propriedades da aplicação, garantindo tempos de expiração customizados.
-     * </p>
-     *
-     * @param redisConnectionFactory fábrica de conexão com Redis
-     * @return {@link RedisCacheManager} configurado
-     */
     @Bean
-    public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+    public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory,
+                                          ObjectMapper objectMapper) {
+
+        GenericJacksonJsonRedisSerializer jsonSerializer =
+                new GenericJacksonJsonRedisSerializer(objectMapper);
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(45))
                 .disableCachingNullValues()
                 .serializeKeysWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.string())
-
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(RedisSerializer.string())
                 )
                 .serializeValuesWith(
-                        RedisSerializationContext.SerializationPair.fromSerializer(RedisSerializer.json())
+                        RedisSerializationContext.SerializationPair
+                                .fromSerializer(jsonSerializer)
                 );
 
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
 
-        cacheConfigurations.put("accounts", config.entryTtl(Duration.ofSeconds(accountsTtl)));
+        cacheConfigurations.put("accounts",     config.entryTtl(Duration.ofSeconds(accountsTtl)));
 
-        cacheConfigurations.put("categories", config.entryTtl(Duration.ofSeconds(categoriesTtl)));
+        cacheConfigurations.put("categories",   config.entryTtl(Duration.ofSeconds(categoriesTtl)));
 
-        cacheConfigurations.put("users", config.entryTtl(Duration.ofSeconds(usersTtl)));
+        cacheConfigurations.put("users",        config.entryTtl(Duration.ofSeconds(usersTtl)));
 
-        cacheConfigurations.put("dashboards", config.entryTtl(Duration.ofSeconds(dashboardsTtl)));
+        cacheConfigurations.put("dashboards",   config.entryTtl(Duration.ofSeconds(dashboardsTtl)));
 
-        cacheConfigurations.put("goals", config.entryTtl(Duration.ofSeconds(goalsTtl)));
+        cacheConfigurations.put("goals",        config.entryTtl(Duration.ofSeconds(goalsTtl)));
 
         cacheConfigurations.put("transactions", config.entryTtl(Duration.ofSeconds(transactionsTtl)));
 
@@ -108,5 +91,4 @@ public class CacheConfig {
                 .withInitialCacheConfigurations(cacheConfigurations)
                 .build();
     }
-
 }
