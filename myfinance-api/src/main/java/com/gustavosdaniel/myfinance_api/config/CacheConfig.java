@@ -17,24 +17,45 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Configuração do cache da aplicação utilizando DragonFlyDb.
+ * Configuração centralizada de cache da aplicação utilizando Redis (DragonFlyDb) como armazenamento.
  * <p>
- * Define as configurações padrão de cache, como serialização JSON, desativação de armazenamento
- * de valores nulos e tempo de vida (TTL) padrão de 45 minutos. Permite configurações específicas
- * para cada região de cache (accounts, categories, users, dashboards, goals, transactions)
- * através das propriedades do application.yml/application.properties.
+ * Esta classe configura o gerenciamento de cache do Spring, habilitando o suporte a anotações
+ * como {@code @Cacheable}, {@code @CacheEvict} e {@code @CachePut}. Define um cache manager
+ * baseado em Redis com serialização JSON customizada e políticas de expiração específicas
+ * para cada região de cache.
  * </p>
  * <p>
- * Os tempos de vida (TTL) para cada região são configuráveis via:
+ * As configurações padrão incluem:
  * <ul>
- *   <li>{@code app.cache.ttl.accounts}</li>
- *   <li>{@code app.cache.ttl.categories}</li>
- *   <li>{@code app.cache.ttl.users}</li>
- *   <li>{@code app.cache.ttl.dashboards}</li>
- *   <li>{@code app.cache.ttl.goals}</li>
- *   <li>{@code app.cache.ttl.transactions}</li>
+ *   <li>Tempo de vida (TTL) padrão de 45 minutos</li>
+ *   <li>Desativação de armazenamento de valores nulos</li>
+ *   <li>Serialização de chaves como strings (padrão)</li>
+ *   <li>Serialização de valores usando {@link GenericJacksonJsonRedisSerializer} com um
+ *   {@link ObjectMapper} customizado</li>
  * </ul>
  * </p>
+ * <p>
+ * Para cada região de cache, é possível sobrescrever o TTL via propriedades no
+ * {@code application.yml} ou {@code application.properties}:
+ * <pre>
+ * app:
+ *   cache:
+ *     ttl:
+ *       accounts: 3600          # 1 hora em segundos
+ *       categories: 1800        # 30 minutos
+ *       users: 7200             # 2 horas
+ *       dashboards: 300         # 5 minutos
+ *       goals: 3600             # 1 hora
+ *       transactions: 1800      # 30 minutos
+ * </pre>
+ * </p>
+ *
+ * @author Gustavo Daniel
+ * @version 1.0
+ * @see EnableCaching
+ * @see RedisCacheManager
+ * @see GenericJacksonJsonRedisSerializer
+ * @see RedisSerializer
  */
 @Configuration
 @EnableCaching
@@ -53,6 +74,19 @@ public class CacheConfig {
     @Value("${app.cache.ttl.transactions}")
     private long transactionsTtl;
 
+    /**
+     * Cria e configura o {@link RedisCacheManager} responsável por gerenciar os caches da aplicação.
+     * <p>
+     * O cache manager é construído com uma configuração base ({@link RedisCacheConfiguration}) que
+     * define o comportamento padrão. Para cada região de cache (accounts, categories, users, etc.),
+     * é aplicado um TTL específico obtido das propriedades configuradas.
+     * </p>
+     *
+     * @param redisConnectionFactory fábrica de conexões com o Redis (DragonFlyDb) injetada pelo Spring
+     * @param objectMapper           {@link ObjectMapper} customizado para serialização JSON,
+     *                               geralmente configurado para suportar local dates, UUIDs, etc.
+     * @return uma instância configurada de {@link RedisCacheManager}
+     */
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory,
                                           ObjectMapper objectMapper) {
@@ -75,15 +109,10 @@ public class CacheConfig {
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
 
         cacheConfigurations.put("accounts",     config.entryTtl(Duration.ofSeconds(accountsTtl)));
-
         cacheConfigurations.put("categories",   config.entryTtl(Duration.ofSeconds(categoriesTtl)));
-
         cacheConfigurations.put("users",        config.entryTtl(Duration.ofSeconds(usersTtl)));
-
         cacheConfigurations.put("dashboards",   config.entryTtl(Duration.ofSeconds(dashboardsTtl)));
-
         cacheConfigurations.put("goals",        config.entryTtl(Duration.ofSeconds(goalsTtl)));
-
         cacheConfigurations.put("transactions", config.entryTtl(Duration.ofSeconds(transactionsTtl)));
 
         return RedisCacheManager.builder(redisConnectionFactory)
