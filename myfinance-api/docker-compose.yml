@@ -5,6 +5,8 @@
         dockerfile: Dockerfile
       container_name: my-finance-app
       restart: unless-stopped
+      env_file:
+        - .env
       environment:
         SPRING_PROFILES_ACTIVE: docker
       ports:
