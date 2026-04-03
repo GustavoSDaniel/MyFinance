@@ -1,6 +1,7 @@
 package com.gustavosdaniel.myfinance_api.config;
 
 import jakarta.servlet.DispatcherType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,6 +13,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +38,23 @@ import java.util.stream.Collectors;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    /**
+     * Lista de origens permitidas para as requisições CORS.
+     * <p>
+     * Os valores são carregados a partir da propriedade {@code app.cors.allowed-origins}
+     * definida no {@code application.yml}, que por sua vez lê a variável de ambiente
+     * {@code CORS_ALLOWED_ORIGINS}.
+     * </p>
+     * <p>
+     * Múltiplas origens devem ser separadas por vírgula na variável de ambiente:
+     * <pre>
+     *   CORS_ALLOWED_ORIGINS=https://meu-frontend.com,https://admin.meu-frontend.com
+     * </pre>
+     * </p>
+     */
+    @Value("${app.cors.allowed-origins}")
+    private List<String> allowedOrigins;
 
     /**
      * URLs públicas que não exigem autenticação.
@@ -73,6 +94,7 @@ public class SecurityConfig {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -115,6 +137,52 @@ public class SecurityConfig {
 
         return http.build();
 
+    }
+
+    /**
+     * Configura as permissões de CORS para integração com o frontend.
+     * <p>
+     * Define:
+     * <ul>
+     *   <li><b>Origins permitidas</b> – ajuste para a URL real do seu frontend</li>
+     *   <li><b>Métodos permitidos</b> – GET, POST, PUT, PATCH, DELETE, OPTIONS</li>
+     *   <li><b>Headers permitidos</b> – todos (necessário para envio do Authorization/JWT)</li>
+     *   <li><b>Expose headers</b> – expõe o header Authorization para o frontend</li>
+     *   <li><b>Allow credentials</b> – permite envio de cookies/credenciais</li>
+     *   <li><b>Max age</b> – tempo de cache do preflight (OPTIONS) em segundos</li>
+     * </ul>
+     * </p>
+     *
+     * @return a fonte de configuração de CORS
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Substitua pela URL do seu frontend
+        configuration.setAllowedOrigins(allowedOrigins);
+
+        configuration.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
+
+        // Permite todos os headers, incluindo Authorization (JWT)
+        configuration.setAllowedHeaders(List.of("*"));
+
+        // Expõe o header Authorization para que o frontend possa lê-lo
+        configuration.setExposedHeaders(List.of("Authorization"));
+
+        // Necessário para envio de cookies ou tokens via header
+        configuration.setAllowCredentials(true);
+
+        // Tempo (em segundos) que o browser pode cachear a resposta do preflight (OPTIONS)
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 
     /**

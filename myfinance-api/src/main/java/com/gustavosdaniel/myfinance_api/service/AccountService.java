@@ -90,19 +90,17 @@ public class AccountService {
 
         log.info("Buscando todas as contas do usuário: {} com status: {}", userId, status);
 
-        List<Account> accounts = List.of();
-
         Status accountStatus = Status.fromString(status);
 
-        switch (accountStatus) {
+        List<Account> accounts =  switch (accountStatus) {
 
-            case ACTIVE -> accounts = accountRepository.findByUserIdAndIsActiveTrue(userId);
+            case ACTIVE -> accountRepository.findByUserIdAndIsActiveTrue(userId);
 
-            case DISABLED -> accounts = accountRepository.findByUserIdAndIsActiveFalse(userId);
+            case DISABLED -> accountRepository.findByUserIdAndIsActiveFalse(userId);
 
-            case ALL -> accounts = accountRepository.findByUserId(userId);
+            case ALL -> accountRepository.findByUserId(userId);
 
-        }
+        };
 
         log.info("Total de contas encontradas: {}", accounts.size());
 

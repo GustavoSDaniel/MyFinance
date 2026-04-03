@@ -160,20 +160,16 @@ public class GoalService {
     @Transactional(readOnly = true)
     public Page<GoalResponse> getAllGoals(User user, String status,  Pageable pageable) {
 
-        Page<Goal> goals = null;
-
         GoalStatus goalStatus = GoalStatus.fromString(status);
 
+        Page<Goal> goals = switch (goalStatus){
 
-        switch (goalStatus){
+            case ACHIEVED -> goalRepository.findAchievedGoals(user.getId(), pageable);
 
-            case ACHIEVED -> goals = goalRepository.findAchievedGoals(user.getId(), pageable);
+            case PROGRESS -> goalRepository.findPendingGoals(user.getId(), pageable);
 
-            case PROGRESS -> goals = goalRepository.findPendingGoals(user.getId(), pageable);
-
-            case ALL -> goals = goalRepository.findByUserId(user.getId(), pageable);
-        }
-        
+            case ALL -> goalRepository.findByUserId(user.getId(), pageable);
+        };
 
         if (goals.isEmpty()){
 

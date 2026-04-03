@@ -85,18 +85,16 @@ public class CategoryService {
     @Cacheable(key = "#userId + '_' + #status")
     public List<CategoryResponse> getAllCategories(UUID userId, String status) {
 
-        List<Category> categories = List.of();
-
         Status categoryStatus = Status.fromString(status);
 
-        switch (categoryStatus){
+        List<Category> categories = switch (categoryStatus){
 
-            case ACTIVE -> categories = categoryRepository.findByUserIdAndIsActiveTrue(userId);
+            case ACTIVE -> categoryRepository.findByUserIdAndIsActiveTrue(userId);
 
-            case DISABLED -> categories = categoryRepository.findByUserIdAndIsActiveFalse(userId);
+            case DISABLED -> categoryRepository.findByUserIdAndIsActiveFalse(userId);
 
-            case ALL -> categories = categoryRepository.findByUserId(userId);
-        }
+            case ALL -> categoryRepository.findByUserId(userId);
+        };
 
         log.info("Total de categorias encontrados: {}", categories.size());
 
