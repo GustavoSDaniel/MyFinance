@@ -17,6 +17,9 @@ public record GoalTransferRequest(
         @NotNull(message = "O id da account é obrigatório")
         UUID accountId,
 
+        @NotNull(message = "O id da categoria é obrigatório")
+        UUID categoryId,
+
         @Positive(message = "O valor não pode ser negativo")
         @NotNull(message = "O valor é obrigatório")
         BigDecimal amount,

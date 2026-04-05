@@ -83,7 +83,7 @@ public class UserService {
      * @return {@code Optional} contendo o DTO do usuário se encontrado, ou vazio caso contrário
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "#email", unless = "#result == null")
+    @Cacheable(value = "users", key = "#email", unless = "#result == null")
     public Optional<UserResponse> getUserByEmail(String email) {
 
         Optional<User> user = userRepository.findByEmail(email);
@@ -114,7 +114,7 @@ public class UserService {
      * @throws UserNotFoundException caso o usuário não exista
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "#id")
+    @Cacheable(value = "users", key = "#id")
     public UserResponse getUserById(UUID id) {
 
         User user = userRepository.findById(id).orElseThrow(UserNotFoundException::new);

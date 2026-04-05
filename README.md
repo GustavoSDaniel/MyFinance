@@ -200,6 +200,8 @@ Ideal para desenvolvimento e depuração.
 * ☁️ Deploy em **Oracle Cloud**
 * 📋 Catálogo de erros padronizados para integração com Front-end
 * 🔀 AOP para separação de responsabilidades transversais
+* 🧵 Virtual Threads (Project Loom) para alta concorrência com baixo consumo de recursos
+
 
 ---
 

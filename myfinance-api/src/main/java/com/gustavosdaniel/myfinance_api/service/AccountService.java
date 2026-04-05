@@ -85,7 +85,6 @@ public class AccountService {
      * @return Lista de DTOs com as informações das contas encontradas.
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "#userId + '_' + #status")
     public List<AccountResponseInfo> getAllAccounts(UUID userId, String status) {
 
         log.info("Buscando todas as contas do usuário: {} com status: {}", userId, status);
@@ -117,7 +116,7 @@ public class AccountService {
      * @throws AccountNotFoundException Caso a conta não exista ou não pertença ao usuário.
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "#id + '_' + #userId")
+    @Cacheable(value = "accounts", key = "#id + '_' + #userId")
     public AccountResponseInfo getById(UUID id, UUID userId){
 
         log.info("Buscando conta {} para o usuário {}", id, userId);

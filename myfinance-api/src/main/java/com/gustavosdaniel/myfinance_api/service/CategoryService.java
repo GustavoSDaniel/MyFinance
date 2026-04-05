@@ -82,7 +82,6 @@ public class CategoryService {
      * @return Lista de DTOs com as informações das categorias encontradas.
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "#userId + '_' + #status")
     public List<CategoryResponse> getAllCategories(UUID userId, String status) {
 
         Status categoryStatus = Status.fromString(status);
@@ -134,7 +133,7 @@ public class CategoryService {
      * @throws CategoryNotFoundException Caso a categoria não exista ou não pertença ao usuário.
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "{#id, #userId}")
+    @Cacheable(value = "categories", key = "{#id, #userId}")
     public CategoryResponse getById(UUID id, UUID userId) {
 
         log.info("Buscando categoria através do id: {}", id);

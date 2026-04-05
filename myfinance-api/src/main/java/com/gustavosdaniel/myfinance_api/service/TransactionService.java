@@ -30,7 +30,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -246,7 +245,7 @@ public class TransactionService {
      * @throws TransactionNotFoundException Caso a transação não seja encontrada.
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "{#id, #userId}")
+    @Cacheable(value = "transactions", key = "{#id, #userId}")
     public TransactionResponse getTransactionById(UUID id, UUID userId) {
 
         log.info("Buscando transação pelo id: {}", id);

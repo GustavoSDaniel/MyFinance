@@ -542,6 +542,7 @@ class GoalServiceImplTest {
             GoalTransferRequest transfer = new GoalTransferRequest(
                     transaction.getIdempotencyKey(),
                     account.getId(),
+                    categoryId,
                     transaction.getAmount(),
                     data,
                     null,
@@ -655,6 +656,7 @@ class GoalServiceImplTest {
             GoalTransferRequest transfer = new GoalTransferRequest(
                     transaction.getIdempotencyKey(),
                     account.getId(),
+                    categoryId,
                     transaction.getAmount(),
                     date,
                     null,

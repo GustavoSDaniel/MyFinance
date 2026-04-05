@@ -20,9 +20,6 @@ public record TransferRequest(
         @Positive(message = "O valor deve ser positivo")
         BigDecimal amount,
 
-        @NotNull(message = "A categoria é obrigatória")
-        UUID categoryId,
-
         @NotNull(message = "Chave de idempotência é obrigatória")
         UUID idempotencyKey,
 

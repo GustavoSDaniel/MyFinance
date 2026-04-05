@@ -106,7 +106,7 @@ public class GoalService {
      * @throws GoalNotFoundException Caso a meta não exista ou não pertença ao usuário.
      */
     @Transactional(readOnly = true)
-    @Cacheable(key = "{#id, #user.id}")
+    @Cacheable(value = "goals", key = "{#id, #user.id}")
     public GoalResponse getGoalById(UUID id, User user) {
 
         log.info("Buscando Meta pelo id {}", id);
@@ -254,8 +254,12 @@ public class GoalService {
                 .findByIdAndUserId(request.accountId(), user.getId())
                 .orElseThrow(AccountNotFoundException::new);
 
+        Category transactionCategory = categoryRepository
+                .findByIdAndUserId(request.categoryId(), user.getId())
+                .orElseThrow(CategoryNotFoundException::new);
+
         Transaction transaction = transactionMapper
-                .toTransactionGoal(request, user, account, goal.getCategory(),
+                .toTransactionGoal(request, user, account, transactionCategory,
                         TransactionType.DESPESA);
 
 
@@ -301,8 +305,12 @@ public class GoalService {
                 .findByIdAndUserId(request.accountId(), user.getId())
                 .orElseThrow(AccountNotFoundException::new);
 
+        Category transactionCategory = categoryRepository
+                .findByIdAndUserId(request.categoryId(), user.getId())
+                .orElseThrow(CategoryNotFoundException::new);
+
         Transaction transaction = transactionMapper
-                .toTransactionGoal(request, user, account, goal.getCategory(),
+                .toTransactionGoal(request, user, account, transactionCategory,
                         TransactionType.RECEITA);
 
         goal.removeAmount(request.amount());
