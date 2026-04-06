@@ -1,100 +1,95 @@
 name: Deploy Automático para Oracle Cloud
 
 on:
-push:
-branches:
-  - main
+  push:
+    branches:
+      - main
 
 concurrency:
-group: deploy-production
-cancel-in-progress: true
+  group: deploy-production
+  cancel-in-progress: true
 
 jobs:
-build-and-deploy:
-runs-on: ubuntu-latest
-timeout-minutes: 20
-  
-  ```
-steps:
-  - name: Baixando o Código do GitHub
-    uses: actions/checkout@v4
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Baixando o Código do GitHub
+        uses: actions/checkout@v4
 
-  - name: Configurando o Java 21
-    uses: actions/setup-java@v4
-    with:
-      java-version: '21'
-      distribution: 'temurin'
-      cache: 'maven'
+      - name: Configurando o Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
 
-  - name: Compilando o Spring Boot (Maven)
-    working-directory: ./myfinance-api
-    run: mvn clean package -DskipTests
+      - name: Compilando o Spring Boot (Maven)
+        working-directory: ./myfinance-api
+        run: mvn clean package -DskipTests
 
-  - name: Preparando emulador ARM
-    uses: docker/setup-qemu-action@v3
+      - name: Preparando emulador ARM
+        uses: docker/setup-qemu-action@v3
 
-  - name: Configurando Docker Buildx
-    uses: docker/setup-buildx-action@v3
+      - name: Configurando Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-  - name: Login no Docker Hub
-    uses: docker/login-action@v3
-    with:
-      username: ${{ secrets.DOCKER_USERNAME }}
-      password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-  - name: Criando Imagem e Mandando pro Docker Hub
-    uses: docker/build-push-action@v6
-    with:
-      context: ./myfinance-api
-      platforms: linux/arm64
-      push: true
-      tags: |
-        gustavosdaniel/my-finance-app:latest
-        gustavosdaniel/my-finance-app:${{ github.sha }}
-      cache-from: type=gha
-      cache-to: type=gha,mode=max
+      - name: Criando Imagem e Mandando pro Docker Hub
+        uses: docker/build-push-action@v6
+        with:
+          context: ./myfinance-api
+          platforms: linux/arm64
+          push: true
+          tags: |
+            gustavosdaniel/my-finance-app:latest
+            gustavosdaniel/my-finance-app:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-  - name: Deploy na Oracle Cloud
-    uses: appleboy/ssh-action@v1.0.3
-    with:
-      host: ${{ secrets.ORACLE_HOST }}
-      username: ${{ secrets.ORACLE_USER }}
-      key: ${{ secrets.ORACLE_SSH_KEY }}
-      script: |
-        set -e
+      - name: Deploy na Oracle Cloud
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USER }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            set -e
 
-        cd /home/ubuntu/myfinance-app
+            cd /home/ubuntu/myfinance-app
 
-        echo "📦 Atualizando imagens..."
-        docker compose pull
+            echo "📦 Atualizando imagens..."
+            docker compose pull
 
-        echo "🚀 Subindo containers..."
-        docker compose up -d --remove-orphans
+            echo "🚀 Subindo containers..."
+            docker compose up -d --remove-orphans
 
-        echo "📊 Status dos containers:"
-        docker compose ps
+            echo "📊 Status dos containers:"
+            docker compose ps
 
-        echo "⏳ Aguardando API (my-finance-app) ficar saudável..."
+            echo "⏳ Aguardando API (my-finance-app) ficar saudável..."
 
-        for i in {1..12}; do
-          if curl -sf --max-time 5 http://localhost:5050/actuator/health; then
-            echo "✅ API está pronta!"
-            exit 0
-          fi
+            for i in {1..12}; do
+              if curl -sf --max-time 5 http://localhost:5050/actuator/health; then
+                echo "✅ API está pronta!"
+                exit 0
+              fi
 
-          echo "⏱️ Tentativa $i/12 - aguardando 10s..."
-          sleep 10
-        done
+              echo "⏱️ Tentativa $i/12 - aguardando 10s..."
+              sleep 10
+            done
 
-        echo "❌ Erro: API não respondeu a tempo"
+            echo "❌ Erro: API não respondeu a tempo"
 
-        echo "📄 Últimos logs do container my-finance-app:"
-        docker logs my-finance-app --tail=100
+            echo "📄 Últimos logs do container my-finance-app:"
+            docker logs my-finance-app --tail=100
 
-        echo "📄 Logs gerais do docker compose:"
-        docker compose logs --tail=50
+            echo "📄 Logs gerais do docker compose:"
+            docker compose logs --tail=50
 
-        exit 1
-  
-
-
+            exit 1
