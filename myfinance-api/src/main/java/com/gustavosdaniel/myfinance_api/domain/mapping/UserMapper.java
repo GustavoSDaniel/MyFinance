@@ -62,6 +62,7 @@ public class UserMapper {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
+                user.getRole(),
                 user.getPicture()
         );
     }
@@ -77,6 +78,6 @@ public class UserMapper {
             return null;
         }
 
-        return new UserResponse(user.getId(),user.getName(), user.getEmail());
+        return new UserResponse(user.getId(),user.getName(), user.getEmail(), user.getRole());
     }
 }

@@ -67,9 +67,9 @@ class UserServiceImplTest {
 
             Page<User> userPage = new PageImpl<>(users, pageable, users.size());
 
-            UserResponse userResponse1 = new UserResponse(userId,"Gustavo", "gustavosdaniel@gmail.com");
-            UserResponse userResponse2 = new UserResponse(userId,"Silva", "silva@gmail.com");
-            UserResponse userResponse3 = new UserResponse(userId,"Daniel", "daniel@gmail.com");
+            UserResponse userResponse1 = new UserResponse(userId,"Gustavo", "gustavosdaniel@gmail.com", UserRole.ADMIN);
+            UserResponse userResponse2 = new UserResponse(userId,"Silva", "silva@gmail.com", UserRole.USER);
+            UserResponse userResponse3 = new UserResponse(userId,"Daniel", "daniel@gmail.com", UserRole.USER);
 
             when(userRepository.findAll(pageable)).thenReturn(userPage);
 
@@ -100,7 +100,8 @@ class UserServiceImplTest {
 
             User user = new User(keycloakId,email,"Gustavo", UserRole.USER);
 
-            UserResponse userResponse = new UserResponse(userId, "Gustavo", "gustavosdaniel@gmail.com");
+            UserResponse userResponse =
+                    new UserResponse(userId, "Gustavo", "gustavosdaniel@gmail.com", UserRole.ADMIN);
 
             when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
             when(userMapper.toUserResponse(user)).thenReturn(userResponse);
@@ -127,7 +128,8 @@ class UserServiceImplTest {
             User user = new User(keycloakId,"gustavosdaniel@gmail.com", "Gustavo", UserRole.USER);
             ReflectionTestUtils.setField(user, "id", userId);
 
-            UserResponse userResponse = new UserResponse(userId,"Gustavo", "gustavosdaniel@gmail.com");
+            UserResponse userResponse =
+                    new UserResponse(userId,"Gustavo", "gustavosdaniel@gmail.com", UserRole.ADMIN);
 
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
             when(userMapper.toUserResponse(user)).thenReturn(userResponse);

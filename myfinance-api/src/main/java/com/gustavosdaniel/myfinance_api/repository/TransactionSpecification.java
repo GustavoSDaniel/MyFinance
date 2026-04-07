@@ -9,6 +9,10 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.data.jpa.domain.Specification;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 /**
  * Classe utilitária responsável por fornecer especificações (Specifications) JPA
  * para consultas dinâmicas à entidade {@link Transaction}.
@@ -48,7 +52,7 @@ public class TransactionSpecification {
 
         return (root, query, criteriaBuilder) ->
 
-             criteriaBuilder.equal(root.get("user").get("id"), userId);
+                criteriaBuilder.equal(root.get("user").get("id"), userId);
 
     }
 
@@ -57,7 +61,7 @@ public class TransactionSpecification {
      *
      * @param accountId Identificador da conta (UUID). Se for {@code null}, retorna {@code null}.
      * @return Uma Specification que adiciona a condição {@code account.id = :accountId},
-     *         ou {@code null} se o parâmetro for {@code null}.
+     * ou {@code null} se o parâmetro for {@code null}.
      */
     public static Specification<Transaction> byAccount(UUID accountId){
 
@@ -67,7 +71,7 @@ public class TransactionSpecification {
 
         return (root, query, criteriaBuilder) ->
 
-             criteriaBuilder.equal(root.get("account").get("id"), accountId);
+                criteriaBuilder.equal(root.get("account").get("id"), accountId);
 
     }
 
@@ -76,7 +80,7 @@ public class TransactionSpecification {
      *
      * @param categoryId Identificador da categoria (UUID). Se for {@code null}, retorna {@code null}.
      * @return Uma Specification que adiciona a condição {@code category.id = :categoryId},
-     *         ou {@code null} se o parâmetro for {@code null}.
+     * ou {@code null} se o parâmetro for {@code null}.
      */
     public static Specification<Transaction> byCategoryId(UUID categoryId){
 
@@ -96,7 +100,7 @@ public class TransactionSpecification {
      *
      * @param description Texto a ser buscado na descrição da transação. Se for {@code null}, retorna {@code null}.
      * @return Uma Specification que adiciona a condição {@code LOWER(description) LIKE %:desc%},
-     *         ou {@code null} se o parâmetro for {@code null}.
+     * ou {@code null} se o parâmetro for {@code null}.
      */
     public static Specification<Transaction> byDescription(String description){
 
@@ -106,10 +110,10 @@ public class TransactionSpecification {
 
         return (root, query, criteriaBuilder) ->
 
-             criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("description")),
-                    "%" + description.toLowerCase().trim() + "%"
-            );
+                criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("description")),
+                        "%" + description.toLowerCase().trim() + "%"
+                );
 
 
     }
@@ -119,7 +123,7 @@ public class TransactionSpecification {
      *
      * @param type Tipo da transação ({@link TransactionType}). Se for {@code null}, retorna {@code null}.
      * @return Uma Specification que adiciona a condição {@code type = :type},
-     *         ou {@code null} se o parâmetro for {@code null}.
+     * ou {@code null} se o parâmetro for {@code null}.
      */
     public static Specification<Transaction> byTransactionType(TransactionType type){
 
@@ -129,7 +133,7 @@ public class TransactionSpecification {
 
         return (root, query, criteriaBuilder) ->
 
-             criteriaBuilder.equal(root.get("type"),type);
+                criteriaBuilder.equal(root.get("type"),type);
 
     }
 
@@ -138,7 +142,7 @@ public class TransactionSpecification {
      *
      * @param status Status da transação ({@link TransactionStatus}). Se for {@code null}, retorna {@code null}.
      * @return Uma Specification que adiciona a condição {@code status = :status},
-     *         ou {@code null} se o parâmetro for {@code null}.
+     * ou {@code null} se o parâmetro for {@code null}.
      */
     public static Specification<Transaction> byTransactionStatus(TransactionStatus status){
 
@@ -148,26 +152,26 @@ public class TransactionSpecification {
 
         return (root, query, criteriaBuilder) ->
 
-             criteriaBuilder.equal(root.get("status"), status);
+                criteriaBuilder.equal(root.get("status"), status);
 
     }
 
     /**
-     * Cria uma especificação para filtrar transações por intervalo de datas (campo {@code time}).
+     * Cria uma especificação para filtrar transações por intervalo de datas (campo {@code createdAt}).
      * <p>
      * O intervalo é tratado de forma inclusiva em ambas as extremidades:
      * <ul>
-     *   <li>Se apenas {@code startDate} for fornecido: {@code time >= startDate}</li>
-     *   <li>Se apenas {@code endDate} for fornecido: {@code time <= endDate}</li>
-     *   <li>Se ambos forem fornecidos: {@code time BETWEEN startDate AND endDate}</li>
-     *   <li>Se ambos forem nulos: retorna {@code null}</li>
+     * <li>Se apenas {@code startDate} for fornecido: {@code createdAt >= startDate}</li>
+     * <li>Se apenas {@code endDate} for fornecido: {@code createdAt <= endDate}</li>
+     * <li>Se ambos forem fornecidos: {@code createdAt BETWEEN startDate AND endDate}</li>
+     * <li>Se ambos forem nulos: retorna {@code null}</li>
      * </ul>
      * </p>
      *
      * @param startDate Data/hora inicial (pode ser {@code null}, inclusive).
      * @param endDate   Data/hora final (pode ser {@code null}, inclusive).
      * @return Uma Specification com a condição de data apropriada,
-     *         ou {@code null} se ambos os parâmetros forem {@code null}.
+     * ou {@code null} se ambos os parâmetros forem {@code null}.
      */
     public static Specification<Transaction> byDateRange (LocalDateTime startDate, LocalDateTime endDate) {
 
@@ -179,15 +183,15 @@ public class TransactionSpecification {
 
             if (startDate != null && endDate == null){
 
-                return criteriaBuilder.greaterThanOrEqualTo(root.get("time"), startDate);
+                return criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), startDate);
             }
 
             if (startDate == null && endDate != null){
 
-                return criteriaBuilder.lessThanOrEqualTo(root.get("time"), endDate);
+                return criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), endDate);
             }
 
-            return criteriaBuilder.between(root.get("time"), startDate, endDate);
+            return criteriaBuilder.between(root.get("createdAt"), startDate, endDate);
 
         };
     }
@@ -211,31 +215,27 @@ public class TransactionSpecification {
         Specification<Transaction> specification = Specification.where(byUserId(userId));
 
         if (filter.accountId() != null){
-
-            specification.and(byAccount(filter.accountId()));
+            specification = specification.and(byAccount(filter.accountId()));
         }
 
         if (filter.categoryId() != null){
-            specification.and(byCategoryId(filter.categoryId()));
+            specification = specification.and(byCategoryId(filter.categoryId()));
         }
 
         if (filter.description() != null){
-            specification.and(byDescription(filter.description()));
+            specification = specification.and(byDescription(filter.description()));
         }
 
         if (filter.type() != null){
-
-            specification.and(byTransactionType(filter.type()));
+            specification = specification.and(byTransactionType(filter.type()));
         }
 
         if (filter.status() != null){
-
-            specification.and(byTransactionStatus(filter.status()));
+            specification = specification.and(byTransactionStatus(filter.status()));
         }
 
         if (filter.startDate() != null || filter.endDate() != null ){
-
-            specification.and(byDateRange(filter.startDate(), filter.endDate()));
+            specification = specification.and(byDateRange(filter.startDate(), filter.endDate()));
         }
 
         return specification;
