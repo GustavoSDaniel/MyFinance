@@ -65,7 +65,7 @@ class CategoryServiceImplTest {
             ReflectionTestUtils.setField(category, "id", categoryId);
 
             CategoryResponse response =
-                    new CategoryResponse(categoryId,"Lazer", CategoryType.DESPESA, "#008000");
+                    new CategoryResponse(categoryId,"Lazer", CategoryType.DESPESA, "#008000", true);
 
 
             when(categoryRepository.existsByNameIgnoreCaseAndUserIdAndType(
@@ -108,11 +108,11 @@ class CategoryServiceImplTest {
             List<Category> categories = List.of(category, category2, category3);
 
             CategoryResponse response =
-                    new CategoryResponse(categoryId,"Viajem", CategoryType.DESPESA, "#ffffff");
+                    new CategoryResponse(categoryId,"Viajem", CategoryType.DESPESA, "#ffffff",true);
             CategoryResponse response2 =
-                    new CategoryResponse(categoryId,"Lazer", CategoryType.DESPESA, "#008000");
+                    new CategoryResponse(categoryId,"Lazer", CategoryType.DESPESA, "#008000",true);
             CategoryResponse response3 =
-                    new CategoryResponse(categoryId,"Porquinho", CategoryType.RECEITA, "#000000");
+                    new CategoryResponse(categoryId,"Porquinho", CategoryType.RECEITA, "#000000",true);
 
             when(categoryMapper.toCategoryResponse(category)).thenReturn(response);
             when(categoryMapper.toCategoryResponse(category2)).thenReturn(response2);
@@ -148,11 +148,11 @@ class CategoryServiceImplTest {
             List<Category> categories = List.of(category, category2, category3);
 
             CategoryResponse response =
-                    new CategoryResponse(categoryId,"Viajem", CategoryType.DESPESA, "#ffffff");
+                    new CategoryResponse(categoryId,"Viajem", CategoryType.DESPESA, "#ffffff",true);
             CategoryResponse response2 =
-                    new CategoryResponse(categoryId,"Lazer", CategoryType.DESPESA, "#008000");
+                    new CategoryResponse(categoryId,"Lazer", CategoryType.DESPESA, "#008000",true);
             CategoryResponse response3 =
-                    new CategoryResponse(categoryId,"Porquinho", CategoryType.RECEITA, "#000000");
+                    new CategoryResponse(categoryId,"Porquinho", CategoryType.RECEITA, "#000000",true);
 
             when(categoryMapper.toCategoryResponse(category)).thenReturn(response);
             when(categoryMapper.toCategoryResponse(category2)).thenReturn(response2);
@@ -186,7 +186,7 @@ class CategoryServiceImplTest {
             ReflectionTestUtils.setField(category, "id", categoryId);
 
             CategoryResponse response =
-                    new CategoryResponse(categoryId, "Lazer", CategoryType.DESPESA, "000000");
+                    new CategoryResponse(categoryId, "Lazer", CategoryType.DESPESA, "000000",true);
 
             when(categoryRepository.findByIdAndUserId(categoryId, userId)).thenReturn(Optional.of(category));
             when(categoryMapper.toCategoryResponse(category)).thenReturn(response);

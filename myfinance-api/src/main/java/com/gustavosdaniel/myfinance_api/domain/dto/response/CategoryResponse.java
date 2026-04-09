@@ -9,7 +9,8 @@ public record CategoryResponse(
         UUID id,
         String name,
         CategoryType type,
-        String color
+        String color,
+        Boolean active
 
 ) {
 }

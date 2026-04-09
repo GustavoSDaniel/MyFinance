@@ -13,6 +13,7 @@ public record AccountResponseInfo(
         String name,
         AccountType type,
         String description,
-        BigDecimal currentBalance
+        BigDecimal currentBalance,
+        Boolean active
         ) {
 }

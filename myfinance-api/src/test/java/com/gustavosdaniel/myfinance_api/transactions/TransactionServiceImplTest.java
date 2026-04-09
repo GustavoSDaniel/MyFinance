@@ -91,7 +91,7 @@ class TransactionServiceImplTest {
             ReflectionTestUtils.setField(category, "id", categoryID);
 
             CategoryResponse categoryResponse =
-                    new CategoryResponse(categoryID,"Descanso", CategoryType.DESPESA, "#008000");
+                    new CategoryResponse(categoryID,"Descanso", CategoryType.DESPESA, "#008000", true);
 
 
             TransactionRequest request = new TransactionRequest(
@@ -378,7 +378,7 @@ class TransactionServiceImplTest {
             Category category = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
 
             CategoryResponse categoryResponse =
-                    new CategoryResponse(categoryID,"Descanso", CategoryType.DESPESA, "#008000");
+                    new CategoryResponse(categoryID,"Descanso", CategoryType.DESPESA, "#008000", true);
 
             Transaction transaction = new Transaction(
                     idempotencyKey,
@@ -470,13 +470,13 @@ class TransactionServiceImplTest {
             Category category3 = new Category(user, "Descanso", CategoryType.DESPESA, "#008000");
 
             CategoryResponse categoryResponse =
-                    new CategoryResponse(categogryId,"Descanso", CategoryType.DESPESA, "#008000");
+                    new CategoryResponse(categogryId,"Descanso", CategoryType.DESPESA, "#008000", true);
 
             CategoryResponse categoryResponse2 =
-                    new CategoryResponse(categoryId2,"Descanso", CategoryType.DESPESA, "#008000");
+                    new CategoryResponse(categoryId2,"Descanso", CategoryType.DESPESA, "#008000", true);
 
             CategoryResponse categoryResponse3 =
-                    new CategoryResponse(categoryId3,"Descanso", CategoryType.DESPESA, "#008000");
+                    new CategoryResponse(categoryId3,"Descanso", CategoryType.DESPESA, "#008000", true);
 
             Transaction transaction = new Transaction(
                     idempotencyKey,

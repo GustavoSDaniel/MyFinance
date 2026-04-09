@@ -90,7 +90,8 @@ public class AccountMapper {
                 account.getName(),
                 account.getType(),
                 account.getDescription(),
-                account.getCurrentBalance()
+                account.getCurrentBalance(),
+                account.getActive()
         );
     }
 

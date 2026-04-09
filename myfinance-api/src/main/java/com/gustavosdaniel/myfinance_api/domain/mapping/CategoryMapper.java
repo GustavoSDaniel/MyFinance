@@ -50,7 +50,13 @@ public class CategoryMapper {
             return null;
         }
 
-        return new CategoryResponse(category.getId(), category.getName(), category.getType(), category.getColor());
+        return new CategoryResponse(
+                category.getId(),
+                category.getName(),
+                category.getType(),
+                category.getColor(),
+                category.getIsActive()
+        );
     }
 
     /**

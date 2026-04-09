@@ -113,7 +113,8 @@ class AccountServiceImplTest {
                     user.getName(), "Investimento",
                     AccountType.INVESTMENT,
                     "Tesouro direto",
-                    BigDecimal.valueOf(10000));
+                    BigDecimal.valueOf(10000),
+                    true);
 
             AccountResponseInfo response2 = new AccountResponseInfo(
                     userId,
@@ -121,7 +122,8 @@ class AccountServiceImplTest {
                     "Gasto mensal",
                     AccountType.WALLET,
                     "Para gastar no mes",
-                    new BigDecimal("1500.47"));
+                    new BigDecimal("1500.47"),
+                    true);
 
             AccountResponseInfo response3 = new AccountResponseInfo(
                     userId,
@@ -129,7 +131,8 @@ class AccountServiceImplTest {
                     "Contas dio cartao",
                     AccountType.CREDIT_CARD,
                     "Constas do cartão",
-                    new BigDecimal("869.69"));
+                    new BigDecimal("869.69"),
+                    true);
 
             when(accountRepository.findByUserId(userId)).thenReturn(accounts);
             when(accountMapper.toAccountResponseInfo(account1)).thenReturn(response1);
@@ -169,7 +172,8 @@ class AccountServiceImplTest {
                     "Poupança",
                     AccountType.POUPANCA,
                     "Fundo de emergencia",
-                    new BigDecimal("10800.63"));
+                    new BigDecimal("10800.63"),
+                    true);
 
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
             when(accountMapper.toAccountResponseInfo(account)).thenReturn(response);
@@ -209,7 +213,8 @@ class AccountServiceImplTest {
                     "Constas fixa",
                     AccountType.WALLET,
                     "Constas do mes",
-                    BigDecimal.valueOf(5000));
+                    BigDecimal.valueOf(5000),
+                    true);
 
             AccountResponseInfo response2 = new AccountResponseInfo(
                     userId,
@@ -217,7 +222,8 @@ class AccountServiceImplTest {
                     "Poupança",
                     AccountType.POUPANCA,
                     "Fundo de emergencia",
-                    new BigDecimal("10300.58"));
+                    new BigDecimal("10300.58"),
+                    true);
 
             AccountResponseInfo response3 = new AccountResponseInfo(
                     userId,
@@ -225,7 +231,8 @@ class AccountServiceImplTest {
                     "Cartao",
                     AccountType.CREDIT_CARD,
                     "Fatura do cartão",
-                    new BigDecimal("7834.57"));
+                    new BigDecimal("7834.57"),
+                    true);
 
             when(accountRepository.searchByName(anyString(), eq(userId))).thenReturn(accounts);
             when(accountMapper.toAccountResponseInfo(account)).thenReturn(response);
@@ -260,7 +267,13 @@ class AccountServiceImplTest {
             ReflectionTestUtils.setField(account, "id", accountId);
 
             AccountUpdateRequest request = new AccountUpdateRequest("Conta de test update","Conta de teste para atualizar", AccountType.WALLET);
-            AccountResponseInfo response = new AccountResponseInfo(userId,user.getName(), "Conta de test update",AccountType.WALLET, "Conta de teste para atualizar", new BigDecimal("3325.69"));
+            AccountResponseInfo response = new AccountResponseInfo(
+                    userId,user.getName(),
+                    "Conta de test update",
+                    AccountType.WALLET,
+                    "Conta de teste para atualizar",
+                    new BigDecimal("3325.69"),
+                    true);
 
             when(accountRepository.findByIdAndUserId(accountId, userId)).thenReturn(Optional.of(account));
             accountMapper.updateAccountFromRequest(request, account);
