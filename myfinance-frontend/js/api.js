@@ -1,6 +1,6 @@
-const API_BASE = 'http://localhost:5050/api/v1';
-
 const Api = (() => {
+  const API_BASE = ENV.API_BASE;
+
   const _getHeaders = () => {
     const token = localStorage.getItem('myfinance_token'); 
     const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };

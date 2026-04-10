@@ -1,11 +1,10 @@
 const Auth = (() => {
-  const KEYCLOAK_BASE = 'http://localhost:5053/realms/my-finance-app/protocol/openid-connect';
-  const CLIENT_ID = 'my-finance-app';
-  const CLIENT_SECRET = '2s08ho5l7WetTF6ZLmNASYiHCH8UpPdL'; 
+  const KEYCLOAK_BASE = ENV.KEYCLOAK_BASE;
+  const CLIENT_ID = ENV.CLIENT_ID;
   const REDIRECT_URI = window.location.origin + window.location.pathname;
 
   const STORAGE_KEYS = {
-    TOKEN: 'myfinance_token', // Sincronizado com API_BASE
+    TOKEN: 'myfinance_token', 
     REFRESH: 'mf_refresh_token',
     EXPIRES: 'mf_token_expires',
     CODE_VER: 'mf_code_verifier',
@@ -44,6 +43,7 @@ const Auth = (() => {
     const verifier = _crypto.generateRandomString();
     const state = _crypto.generateRandomString(16);
     const challenge = _crypto.base64urlEncode(await _crypto.sha256(verifier));
+    
     localStorage.setItem(STORAGE_KEYS.CODE_VER, verifier);
     localStorage.setItem(STORAGE_KEYS.STATE, state);
 
@@ -56,7 +56,6 @@ const Auth = (() => {
     const body = new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
       redirect_uri: REDIRECT_URI,
       code: code,
       code_verifier: localStorage.getItem(STORAGE_KEYS.CODE_VER),
@@ -70,6 +69,11 @@ const Auth = (() => {
 
     if (!res.ok) throw new Error('Falha na troca do token');
     saveTokens(await res.json());
+    
+    // Limpeza de segurança
+    localStorage.removeItem(STORAGE_KEYS.CODE_VER);
+    localStorage.removeItem(STORAGE_KEYS.STATE);
+
     window.history.replaceState({}, document.title, REDIRECT_URI);
   };
 
@@ -77,7 +81,7 @@ const Auth = (() => {
     const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
     if (!token) return null;
     const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    return { name: payload.name, email: payload.email, sub: payload.sub };
+    return { name: payload.name, email: payload.email, sub: payload.sub, isAdmin: payload.realm_access?.roles?.includes('admin') };
   };
 
   const logout = () => {
