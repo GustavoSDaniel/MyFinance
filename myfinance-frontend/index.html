@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyFinance | Controle Financeiro Inteligente</title>
+  
+  <link rel="stylesheet" href="css/style.css" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <div id="page-home" class="page active">
+    <div class="home-bg" aria-hidden="true">
+      <div class="home-orb orb-1"></div>
+      <div class="home-orb orb-2"></div>
+      <div class="home-orb orb-3"></div>
+    </div>
+    
+    <main class="home-container">
+      <header class="home-brand">
+        <div class="brand-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <h1 class="brand-name">MyFinance</h1>
+        <p class="brand-tagline">Controle financeiro com inteligência</p>
+      </header>
+      
+      <section class="home-card">
+        <h2>Organize suas finanças de forma simples</h2>
+        <p class="home-description">
+          Gerencie contas, categorias, transações e metas em um só lugar.<br />
+          Segurança OAuth2 com Keycloak, gráficos em tempo real e muito mais.
+        </p>
+        <button class="btn-keycloak" id="btn-login-home">
+          <i class="fa-solid fa-shield-halved"></i>
+          Acessar minha conta
+        </button>
+        
+        <div class="home-features">
+          <div class="feat"><i class="fa-solid fa-lock"></i><span>JWT seguro</span></div>
+          <div class="feat"><i class="fa-solid fa-bolt"></i><span>Tempo real</span></div>
+          <div class="feat"><i class="fa-solid fa-chart-simple"></i><span>Dashboards</span></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="page-app" class="page">
+    
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-icon sm"><i class="fa-solid fa-chart-line"></i></div>
+        <span class="sidebar-brand">MyFinance</span>
+        <button class="sidebar-close" id="sidebar-close" aria-label="Fechar menu">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-avatar-initial">G</div>
+        <div class="user-info">
+          <span class="user-name" id="user-name-sidebar">Carregando...</span>
+          <span class="user-role" id="user-role-sidebar">Usuário</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-section="dashboard"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></button>
+        <button class="nav-item" data-section="accounts"><i class="fa-solid fa-wallet"></i><span>Contas</span></button>
+        <button class="nav-item" data-section="transactions"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>Transações</span></button>
+        <button class="nav-item" data-section="categories"><i class="fa-solid fa-tags"></i><span>Categorias</span></button>
+        <button class="nav-item" data-section="goals"><i class="fa-solid fa-bullseye"></i><span>Metas</span></button>
+        <button class="nav-item" data-section="users" id="nav-users">
+          <i class="fa-solid fa-user-shield"></i><span>Perfil / Admin</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-logout" id="btn-logout">
+          <i class="fa-solid fa-right-from-bracket"></i><span>Sair</span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-wrapper">
+      <header class="topbar">
+        <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <h2 class="topbar-title" id="topbar-title">Dashboard</h2>
+        <div class="topbar-right">
+          <div class="topbar-greeting" id="topbar-greeting">Olá, Gustavo</div>
+        </div>
+      </header>
+
+      <main class="content" id="content-area">
+        <section id="section-dashboard" class="content-section active"> 
+            <div class="cards-grid">
+                <div class="kpi-card income">
+                    <div class="kpi-icon"><i class="fa-solid fa-arrow-up"></i></div>
+                    <div>
+                        <span class="kpi-label">Receitas</span>
+                        <span class="kpi-value" id="kpi-income">R$ 0,00</span>
+                    </div>
+                </div>
+                <div class="kpi-card expense">
+                    <div class="kpi-icon"><i class="fa-solid fa-arrow-down"></i></div>
+                    <div>
+                        <span class="kpi-label">Despesas</span>
+                        <span class="kpi-value" id="kpi-expense">R$ 0,00</span>
+                    </div>
+                </div>
+                <div class="kpi-card balance">
+                    <div class="kpi-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                    <div>
+                        <span class="kpi-label">Saldo Total</span>
+                        <span class="kpi-value" id="kpi-balance">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header-row">
+                    <h3>Gastos por Categoria</h3>
+                    <div class="date-filter-row">
+                        <input type="date" id="dash-from" class="filter-input">
+                        <input type="date" id="dash-to" class="filter-input">
+                        <button class="btn-primary" id="btn-load-dash">Filtrar</button>
+                    </div>
+                </div>
+                <div id="category-bars" class="category-bars"></div>
+            </div>
+        </section>
+
+        <section id="section-accounts" class="content-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Minhas Contas</h2>
+                    <p class="section-sub">Gerencie seus bancos e carteiras</p>
+                </div>
+                <button class="btn-primary" id="btn-new-account"><i class="fa-solid fa-plus"></i> Nova Conta</button>
+            </div>
+
+            <div class="card" style="margin-bottom: 1rem; padding: 1rem;">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <div style="display: flex; flex: 1; gap: 0.2rem;">
+                        <input type="text" id="acc-search-name" class="filter-input" placeholder="Buscar conta pelo nome..." style="flex: 1;">
+                        <button class="btn-primary" id="btn-search-acc"><i class="fa-solid fa-magnifying-glass"></i> Buscar</button>
+                    </div>
+                    <button class="btn-secondary" id="btn-reset-acc"><i class="fa-solid fa-rotate-right"></i> Limpar</button>
+                </div>
+            </div>
+
+            <div id="accounts-list" class="cards-list"></div>
+        </section>
+
+        <section id="section-transactions" class="content-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Transações</h2>
+                    <p class="section-sub">Histórico de movimentações</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-secondary" id="btn-new-transfer">
+                      <i class="fa-solid fa-right-left"></i> Transferência
+                    </button>
+                    <button class="btn-primary" id="btn-new-transaction">
+                      <i class="fa-solid fa-plus"></i> Nova Movimentação
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card" style="margin-bottom: 1rem; padding: 1rem;">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                    <input type="date" id="tx-from" class="filter-input" title="Data Inicial">
+                    <input type="date" id="tx-to" class="filter-input" title="Data Final">
+                    <select id="tx-type-filter" class="filter-input" style="flex: 1; min-width: 120px;">
+                        <option value="">Todos os Tipos</option>
+                        <option value="RECEITA">Receita</option>
+                        <option value="DESPESA">Despesa</option>
+                    </select>
+                    <select id="tx-status-filter" class="filter-input" style="flex: 1; min-width: 120px;">
+                        <option value="">Status</option>
+                        <option value="PENDENTE">Pendente</option>
+                        <option value="CONFIRMADA">Confirmada</option>
+                        <option value="CANCELADA">Cancelada</option>
+                    </select>
+                    <select id="tx-account-filter" class="filter-input" style="flex: 1; min-width: 120px;"><option value="">Contas...</option></select>
+                    <select id="tx-category-filter" class="filter-input" style="flex: 1; min-width: 120px;"><option value="">Categorias...</option></select>
+                    <button class="btn-primary" id="btn-filter-tx"><i class="fa-solid fa-filter"></i> Buscar</button>
+                </div>
+            </div>
+            
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Conta</th>
+                            <th>Status</th>
+                            <th class="text-right">Valor</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tx-tbody"></tbody>
+                </table>
+                <div id="tx-pagination" class="pagination" style="margin-top: 1rem; text-align: center;"></div>
+            </div>
+        </section>
+
+        <section id="section-categories" class="content-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Categorias</h2>
+                    <p class="section-sub">Organize suas receitas e despesas</p>
+                </div>
+                <button class="btn-primary" id="btn-new-category"><i class="fa-solid fa-plus"></i> Nova Categoria</button>
+            </div>
+
+            <div class="card" style="margin-bottom: 1rem; padding: 1rem;">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                    <div style="display: flex; flex: 1; gap: 0.2rem; min-width: 200px;">
+                        <input type="text" id="cat-search-name" class="filter-input" placeholder="Buscar categoria pelo nome..." style="flex: 1;">
+                        <button class="btn-primary" id="btn-search-cat"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </div>
+                    <select id="cat-status-filter" class="filter-input" style="width: auto;">
+                        <option value="all">Todas</option>
+                        <option value="active">Ativas</option>
+                        <option value="disabled">Inativas</option>
+                    </select>
+                    <button class="btn-secondary" id="btn-reset-cat"><i class="fa-solid fa-rotate-right"></i> Limpar</button>
+                </div>
+            </div>
+
+            <div id="categories-list" class="cards-list"></div>
+        </section>
+
+        <section id="section-goals" class="content-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Metas</h2>
+                    <p class="section-sub">Seus objetivos financeiros</p>
+                </div>
+                <button class="btn-primary" id="btn-new-goal"><i class="fa-solid fa-plus"></i> Nova Meta</button>
+            </div>
+
+            <div class="card" style="margin-bottom: 1rem; padding: 1rem;">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                    <div style="display: flex; flex: 1; gap: 0.2rem; min-width: 200px;">
+                        <input type="text" id="goal-search-name" class="filter-input" placeholder="Buscar meta pelo nome..." style="flex: 1;">
+                        <button class="btn-primary" id="btn-search-goal"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </div>
+                    <select id="goal-status-filter" class="filter-input" style="width: auto;">
+                        <option value="all">Todas</option>
+                        <option value="active">Ativas</option>
+                        <option value="disabled">Concluídas / Inativas</option>
+                    </select>
+                    <button class="btn-secondary" id="btn-reset-goal"><i class="fa-solid fa-rotate-right"></i> Limpar</button>
+                </div>
+            </div>
+
+            <div id="goals-list" class="cards-list"></div>
+        </section>
+
+        <section id="section-users" class="content-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Administração</h2>
+                    <p class="section-sub">Gestão de usuários do sistema</p>
+                </div>
+            </div>
+            
+            <div class="card" style="margin-bottom: 1rem; padding: 1rem;">
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <div style="display: flex; flex: 1; gap: 0.2rem;">
+                        <input type="text" id="user-search-email" class="filter-input" placeholder="Buscar por E-mail..." style="flex: 1;">
+                        <button class="btn-primary" id="btn-search-email"><i class="fa-solid fa-envelope"></i></button>
+                    </div>
+                    <div style="display: flex; flex: 1; gap: 0.2rem;">
+                        <input type="text" id="user-search-id" class="filter-input" placeholder="Buscar por ID (UUID)..." style="flex: 1;">
+                        <button class="btn-primary" id="btn-search-id"><i class="fa-solid fa-id-badge"></i></button>
+                    </div>
+                    <button class="btn-secondary" id="btn-reset-users"><i class="fa-solid fa-rotate-right"></i> Limpar</button>
+                </div>
+            </div>
+
+            <div id="section-users-list" class="cards-list"></div>
+            <div id="users-pagination" class="pagination" style="margin-top: 1rem; text-align: center;"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay hidden">
+      <div class="modal" id="modal">
+          <div class="modal-header">
+              <h3 id="modal-title">Título</h3>
+              <button class="modal-close" id="modal-close"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="modal-body" id="modal-body"></div>
+          <div class="modal-footer" id="modal-footer"></div>
+      </div>
+  </div>
+  
+  <div id="toast-container"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  
+  <script src="js/pages/dashboard.js"></script>
+  <script src="js/pages/accounts.js"></script>
+  <script src="js/pages/transactions.js"></script>
+  <script src="js/pages/categories.js"></script>
+  <script src="js/pages/goals.js"></script>
+  <script src="js/pages/users.js"></script>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
