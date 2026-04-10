@@ -1,0 +1,110 @@
+/* Importação do FontAwesome garantida pelo CSS */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+:root {
+  --bg-body: #0f1115; /* Ajuste para o fundo real do seu app */
+  --bg-card: #1a1d24;
+  --gold: #d4af37;
+  --text-main: #f8f9fa;
+  --text-muted: #8b949e;
+  --primary-btn: var(--gold);
+  --primary-btn-hover: #b5952f;
+  --input-bg: #22262e;
+  --input-border: #30363d;
+}
+
+body {
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  font-family: 'Inter', system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* O Card de Login (Inspirado no seu item-card) */
+.kc-login-card {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--input-border);
+}
+
+.kc-logo {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--text-main);
+  margin-bottom: 2rem;
+}
+
+.kc-logo i {
+  color: var(--gold);
+  margin-right: 10px;
+}
+
+/* Formulários (Inspirado no seu form-row) */
+.form-row {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-row label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.form-row input {
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-main);
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-row input:focus {
+  border-color: var(--gold);
+}
+
+/* Botão (Inspirado no seu btn-primary) */
+.btn-primary {
+  width: 100%;
+  background-color: var(--primary-btn);
+  color: #000; /* Texto escuro no botão dourado */
+  border: none;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-btn-hover);
+}
+
+/* Alertas de erro do Keycloak */
+.kc-alert-error {
+  background-color: rgba(220, 53, 69, 0.1); /* crimson com transparência */
+  color: #ff6b6b;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  border-left: 4px solid #ff6b6b;
+}
