@@ -270,7 +270,7 @@ async function _openGoalForm(id = null) {
         </div>
         <div class="form-row">
           <label>Valor Alvo (R$)</label>
-          <input type="text" id="goal-target" value="${goal.targetAmount || ''}" placeholder="0,00" required />
+          <input type="text" id="goal-target" value="${goal.targetAmount || ''}" placeholder="0,00" ${isEdit ? 'disabled title="O valor alvo não pode ser editado após a criação"' : 'required'} />
         </div>
         <div class="form-row">
           <label>Prioridade</label>
@@ -298,30 +298,40 @@ async function _openGoalForm(id = null) {
 
 async function _saveGoal(id) {
   const isEdit = !!id;
-  const targetRaw = document.getElementById('goal-target').value.replace(',', '.');
 
-  // O payload agora bate as chaves exatas com o GoalRequest do Java
-  const payload = {
+  // O payload base bate exatamente com o GoalRequestUpdate do Java
+  const basePayload = {
     categoryId:   document.getElementById('goal-category').value,
     name:         document.getElementById('goal-name').value.trim(),
     description:  document.getElementById('goal-desc').value.trim(),
-    targetAmount: parseFloat(targetRaw) || 0,
     deadLine:     document.getElementById('goal-deadline').value, // <--- C maiúsculo na key!
     priority:     document.getElementById('goal-priority').value
   };
 
-  // Validações locais antes de enviar ao servidor
-  if (!payload.name)           return UI.toast('O nome da meta é obrigatório.', 'warning');
-  if (!payload.categoryId)     return UI.toast('Selecione uma categoria.', 'warning');
-  if (payload.targetAmount <= 0) return UI.toast('Informe um valor alvo maior que zero.', 'warning');
-  if (!payload.deadLine)       return UI.toast('O prazo da meta é obrigatório.', 'warning');
+  // Validações locais referentes ao GoalRequestUpdate
+  if (!basePayload.name)       return UI.toast('O nome da meta é obrigatório.', 'warning');
+  if (!basePayload.categoryId) return UI.toast('Selecione uma categoria.', 'warning');
+  if (!basePayload.deadLine)   return UI.toast('O prazo da meta é obrigatório.', 'warning');
+
+  // Lógica separada para criação (que exige o targetAmount)
+  let createPayload = { ...basePayload };
+  if (!isEdit) {
+    const targetRaw = document.getElementById('goal-target').value.replace(',', '.');
+    createPayload.targetAmount = parseFloat(targetRaw) || 0;
+    
+    if (createPayload.targetAmount <= 0) {
+      return UI.toast('Informe um valor alvo maior que zero.', 'warning');
+    }
+  }
 
   UI.modal.setLoading(true);
   try {
     if (isEdit) {
-      await Api.Goals.update(id, payload);
+      // Envia apenas os dados compatíveis com GoalRequestUpdate
+      await Api.Goals.update(id, basePayload);
     } else {
-      await Api.Goals.create(payload);
+      // Envia o payload completo, incluindo targetAmount
+      await Api.Goals.create(createPayload);
     }
     UI.toast(isEdit ? 'Meta atualizada!' : 'Meta criada!', 'success');
     UI.modal.close();
