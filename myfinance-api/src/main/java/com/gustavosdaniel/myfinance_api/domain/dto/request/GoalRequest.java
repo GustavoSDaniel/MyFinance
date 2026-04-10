@@ -1,6 +1,5 @@
 package com.gustavosdaniel.myfinance_api.domain.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.gustavosdaniel.myfinance_api.domain.enuns.PriorityStatus;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;

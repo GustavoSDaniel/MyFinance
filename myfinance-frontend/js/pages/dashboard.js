@@ -32,7 +32,7 @@ async function fetchDashboard(force = false) {
   if (!from || !to) return UI.toast('Selecione o período inicial e final.', 'warning');
 
   const currentParams = `${from}_${to}`;
-  
+
   // Cache Local: Evita chamadas desnecessárias se as datas não mudaram
   if (!force && _dashState.lastParams === currentParams && _dashState.data) {
     _renderDashboardUI(_dashState.data);
@@ -42,7 +42,7 @@ async function fetchDashboard(force = false) {
   if (_dashState.isFetching) return;
   _dashState.isFetching = true;
 
-  // Feedback visual de carregamento (Customizado para não sobrescrever com "Salvar")
+  // Feedback visual de carregamento
   const btn = document.getElementById('btn-load-dash');
   let originalBtnHtml = '';
   if (btn) {
@@ -52,19 +52,17 @@ async function fetchDashboard(force = false) {
   }
 
   try {
-    // Chama Api.Dashboard.get(from, to) que envia via Query Params
     const data = await Api.Dashboard.get(from, to);
-    
+
     _dashState.data = data;
     _dashState.lastParams = currentParams;
-    
+
     _renderDashboardUI(data);
   } catch (error) {
     UI.toast('Erro ao carregar dashboard: ' + error.message, 'error');
     _renderEmptyState();
   } finally {
     _dashState.isFetching = false;
-    // Restaura o botão "Filtrar"
     if (btn) {
       btn.disabled = false;
       btn.innerHTML = originalBtnHtml || 'Filtrar';
@@ -74,27 +72,24 @@ async function fetchDashboard(force = false) {
 
 /** ── RENDERIZAÇÃO DA INTERFACE ── */
 function _renderDashboardUI(data) {
-  // 1. Atualizar KPIs Principais (Sincronizado com DashboardResponse do Java)
   const incomeEl = document.getElementById('kpi-income');
   const expenseEl = document.getElementById('kpi-expense');
   const balanceEl = document.getElementById('kpi-balance');
 
-  // No Java: DashboardResponse(totalIncomes, totalExpenses, balance, expensesByCategory)
   if (incomeEl) incomeEl.textContent = UI.format.money(data.totalIncomes || 0);
   if (expenseEl) expenseEl.textContent = UI.format.money(data.totalExpenses || 0);
-  
+
   if (balanceEl) {
     const balance = data.balance || 0;
     balanceEl.textContent = UI.format.money(balance);
-    
-    // Aplica cor dinâmica (Verde para positivo, Vermelho para negativo)
     balanceEl.className = `kpi-value ${UI.format.moneyClass(balance)}`;
   }
 
-  // 2. Renderizar Barras de Categorias (Sincronizado com List<CategorySum>)
+  // Chama a nova função do gráfico redondo
   _renderCategoryAnalytics(data.expensesByCategory || []);
 }
 
+/** ── NOVO GRÁFICO REDONDO (DONUT CHART) ── */
 function _renderCategoryAnalytics(categories) {
   const container = document.getElementById('category-bars');
   if (!container) return;
@@ -108,32 +103,55 @@ function _renderCategoryAnalytics(categories) {
     return;
   }
 
-  // Ordenação: Maior gasto primeiro (Análise de Pareto)
+  // Ordenação: Maior gasto primeiro
   const sorted = [...categories].sort((a, b) => (b.totalAmount || 0) - (a.totalAmount || 0));
-  
-  // Valor máximo para calcular a largura proporcional das barras
-  const maxAmount = Math.max(...sorted.map(c => c.totalAmount || 0), 1);
 
-  container.innerHTML = sorted.map(c => {
-    const total = c.totalAmount || 0;
-    const percentage = (total / maxAmount) * 100;
-    
-    // c.color e c.name vêm da CategorySum/Category do Java
-    return `
-      <div class="cat-bar-item" title="${UI.escapeHtml(c.name)}: ${UI.format.money(total)}">
-        <div class="cat-bar-top">
-          <span class="cat-bar-name">
-            <i class="fa-solid fa-circle" style="color: ${c.color || 'var(--gold)'}; font-size: 8px; margin-right: 5px;"></i>
-            ${UI.escapeHtml(c.name)}
-          </span>
-          <span class="cat-bar-val">${UI.format.money(total)}</span>
-        </div>
-        <div class="cat-bar-track">
-          <div class="cat-bar-fill" style="width: ${percentage.toFixed(1)}%; background-color: ${c.color || 'var(--gold)'}"></div>
+  // Soma total para calcular as porcentagens
+  const totalExpenses = sorted.reduce((acc, cat) => acc + (cat.totalAmount || 0), 0);
+
+  let gradientStops = [];
+  let currentPercentage = 0;
+  let legendHtml = '';
+
+  // Cores de fallback caso a categoria não tenha cor vinda do backend
+  const fallbackColors = ['#1e88e5', '#00acc1', '#e81e63', '#f4511e', '#ffb300', '#43a047', '#8e24aa'];
+
+  sorted.forEach((c, index) => {
+    const amount = c.totalAmount || 0;
+    const percentage = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
+    const color = c.color || fallbackColors[index % fallbackColors.length];
+
+    // Adiciona a fatia no degradê cônico (ex: "#1e88e5 0% 20%")
+    gradientStops.push(`${color} ${currentPercentage}% ${currentPercentage + percentage}%`);
+
+    // Adiciona o item na legenda lateral
+    legendHtml += `
+      <div class="donut-legend-item">
+        <span class="donut-legend-color" style="background-color: ${color};"></span>
+        <div class="donut-legend-text">
+          <span class="donut-legend-name">${UI.escapeHtml(c.name)}</span>
+          <span class="donut-legend-pct">${percentage.toFixed(2)}%</span>
         </div>
       </div>
     `;
-  }).join('');
+
+    currentPercentage += percentage;
+  });
+
+  // Monta o CSS do gráfico
+  const conicGradient = `conic-gradient(${gradientStops.join(', ')})`;
+
+  // Injeta o HTML do container flex (Gráfico na esquerda, Legenda na direita)
+  container.innerHTML = `
+    <div class="donut-container">
+      <div class="donut-chart-wrapper">
+        <div class="donut-chart" style="background: ${conicGradient};"></div>
+      </div>
+      <div class="donut-legend-container">
+        ${legendHtml}
+      </div>
+    </div>
+  `;
 }
 
 function _renderEmptyState() {
@@ -148,6 +166,6 @@ function _renderEmptyState() {
 document.addEventListener('click', e => {
   const target = e.target.closest('#btn-load-dash');
   if (target) {
-    fetchDashboard(true); // Força atualização ignorando cache local
+    fetchDashboard(true);
   }
 });

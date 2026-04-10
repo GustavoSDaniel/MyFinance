@@ -39,7 +39,7 @@ async function _ensureMetadata() {
     _txState.accounts = accs?.content || (Array.isArray(accs) ? accs : []);
     _txState.categories = cats?.content || (Array.isArray(cats) ? cats : []);
     _txState.lastFetch = now;
-    _updateFilterBar(); 
+    _updateFilterBar();
   } catch (e) { console.error('[TX] Erro metadados:', e); }
 }
 
@@ -84,11 +84,14 @@ function _renderTable(items) {
     const typeCfg = TX_UI.types[tx.type] || TX_UI.types.DESPESA;
     const statusCfg = TX_UI.status[tx.status] || { label: tx.status, class: '' };
 
+    // Correção AQUI: Acessando o objeto "category" aninhado que vem do Java (CategoryResponse)
+    const categoryLabel = tx.category?.name || 'Transferência';
+
     return `
       <tr class="tx-row" data-id="${tx.id}">
         <td class="text-muted">${UI.format.date(tx.dateTime)}</td>
         <td class="fw-bold">${UI.escapeHtml(tx.description)}</td>
-        <td><span class="badge-cat">${UI.escapeHtml(tx.categoryName || 'Transferência')}</span></td>
+        <td><span class="badge-cat">${UI.escapeHtml(categoryLabel)}</span></td>
         <td><i class="fa-solid fa-wallet sm"></i> ${UI.escapeHtml(tx.accountName)}</td>
         <td><span class="badge-status ${statusCfg.class}">${statusCfg.label}</span></td>
         <td class="text-right ${typeCfg.class}">
@@ -173,7 +176,7 @@ async function _processSave(isTransfer) {
   };
 
   if (payload.amount <= 0 || !payload.description) {
-      return UI.toast('Preencha os campos obrigatórios com valores válidos.', 'warning');
+    return UI.toast('Preencha os campos obrigatórios com valores válidos.', 'warning');
   }
 
   UI.modal.setLoading(true);
@@ -182,24 +185,24 @@ async function _processSave(isTransfer) {
       // Sincronizado com TransferRequest.java
       payload.fromAccountId = document.getElementById('f-from-acc').value;
       payload.toAccountId = document.getElementById('f-to-acc').value;
-      
+
       if (payload.fromAccountId === payload.toAccountId) throw new Error("A conta de origem e destino não podem ser a mesma!");
-      
+
       await Api.Transactions.transfer(payload); // Chama @PostMapping("/transfer")
     } else {
       // Sincronizado com TransactionRequest.java
       payload.type = document.getElementById('f-type').value;
       payload.accountId = document.getElementById('f-acc').value;
       payload.categoryId = document.getElementById('f-cat').value;
-      
+
       await Api.Transactions.create(payload); // Chama @PostMapping
     }
-    UI.toast('Transação salva!', 'success'); 
-    UI.modal.close(); 
+    UI.toast('Transação salva!', 'success');
+    UI.modal.close();
     loadTransactions(0);
-  } catch (e) { 
-      UI.modal.setLoading(false); 
-      UI.toast(e.message, 'error'); 
+  } catch (e) {
+    UI.modal.setLoading(false);
+    UI.toast(e.message, 'error');
   }
 }
 
@@ -207,18 +210,18 @@ async function _updateStatus(id, action) {
   try {
     // Chama @PatchMapping("/{id}/confirm") ou /cancel
     await Api.Transactions[action](id);
-    UI.toast('Status atualizado!'); 
+    UI.toast('Status atualizado!');
     loadTransactions(_txState.page);
   } catch (e) { UI.toast(e.message, 'error'); }
 }
 
 async function _deleteTx(id) {
-    if(!confirm("Deseja excluir esta transação? Apenas transações pendentes podem ser excluídas.")) return;
-    try {
-        await Api.Transactions.delete(id);
-        UI.toast('Removida!'); 
-        loadTransactions(_txState.page);
-    } catch (e) { UI.toast(e.message, 'error'); }
+  if(!confirm("Deseja excluir esta transação? Apenas transações pendentes podem ser excluídas.")) return;
+  try {
+    await Api.Transactions.delete(id);
+    UI.toast('Removida!');
+    loadTransactions(_txState.page);
+  } catch (e) { UI.toast(e.message, 'error'); }
 }
 
 function _updateFilterBar() {
@@ -232,7 +235,7 @@ function _updateFilterBar() {
 document.addEventListener('click', e => {
   const btn = e.target.closest('#btn-new-transaction, #btn-new-transfer, #btn-filter-tx');
   if (!btn) return;
-  
+
   if (btn.id === 'btn-filter-tx') loadTransactions(0);
   if (btn.id === 'btn-new-transaction') openTransactionModal('COMMON');
   if (btn.id === 'btn-new-transfer') openTransactionModal('TRANSFER');

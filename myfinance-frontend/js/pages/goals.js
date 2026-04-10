@@ -33,16 +33,16 @@ async function loadGoals() {
     const currentStatus = document.getElementById('goal-status-filter')?.value || _goalState.status;
 
     if (_goalState.searchTerm) {
-        data = await Api.Goals.search(_goalState.searchTerm);
+      data = await Api.Goals.search(_goalState.searchTerm);
     } else {
-        data = await Api.Goals.all({ size: 50, sort: 'createdAt,desc', status: currentStatus });
+      data = await Api.Goals.all({ size: 50, sort: 'createdAt,desc', status: currentStatus });
     }
 
     const goals = data?.content || (Array.isArray(data) ? data : []);
     _renderGoalsGrid(goals);
-  } catch (error) { 
-    UI.toast(error.message, 'error'); 
-    UI.setEmpty(containerId, 'fa-bullseye', 'Erro ao carregar metas.'); 
+  } catch (error) {
+    UI.toast(error.message, 'error');
+    UI.setEmpty(containerId, 'fa-bullseye', 'Erro ao carregar metas.');
   }
 }
 
@@ -50,18 +50,18 @@ async function loadGoals() {
 function _renderGoalsGrid(goals) {
   const container = document.getElementById('goals-list');
   if (!container) return;
-  if (!goals.length) { 
-      const msg = _goalState.searchTerm ? `Nenhuma meta com o nome "${_goalState.searchTerm}".` : 'Defina seu primeiro objetivo!';
-      UI.setEmpty('goals-list', 'fa-bullseye', msg); 
-      return; 
+  if (!goals.length) {
+    const msg = _goalState.searchTerm ? `Nenhuma meta com o nome "${_goalState.searchTerm}".` : 'Defina seu primeiro objetivo!';
+    UI.setEmpty('goals-list', 'fa-bullseye', msg);
+    return;
   }
 
   container.innerHTML = goals.map(g => {
     const current = g.currentAmount || 0;
-    const target = g.targetAmount || 1; 
+    const target = g.targetAmount || 1;
     const pct = Math.min((current / target) * 100, 100);
     const priority = GOAL_PRIORITIES[g.priority] || GOAL_PRIORITIES.MEDIUM;
-    
+
     return `
       <div class="item-card goal-card" data-id="${g.id}">
         <div class="item-card-header">
@@ -93,7 +93,7 @@ function _renderGoalsGrid(goals) {
     const card = btn.closest('.item-card');
     const id = card.dataset.id;
     const name = card.querySelector('.item-card-title').textContent.trim();
-    
+
     if (btn.classList.contains('btn-deposit')) _openMovementModal(id, name, 'DEPOSIT');
     if (btn.classList.contains('btn-withdraw')) _openMovementModal(id, name, 'WITHDRAW');
     if (btn.classList.contains('btn-edit-goal')) _openGoalForm(id);
@@ -117,6 +117,28 @@ function _resetGoalSearch() {
 /** ── MODAL DE APORTE / RESGATE ── */
 async function _openMovementModal(id, name, type) {
   const isDeposit = type === 'DEPOSIT';
+
+  // Busca Contas e Categorias para o modal
+  let accounts = [];
+  let categories = [];
+  try {
+    const accData = await Api.Accounts.all(); // Certifique-se de que Api.Accounts.all() existe
+    const catData = await Api.Categories.all();
+    accounts = Array.isArray(accData) ? accData : (accData?.content || []);
+    categories = Array.isArray(catData) ? catData : (catData?.content || []);
+  } catch (e) {
+    console.error("Erro ao buscar dados auxiliares", e);
+  }
+
+  const accountOptions = `<option value="">Selecione uma conta...</option>` +
+      accounts.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+
+  const categoryOptions = `<option value="">Selecione a categoria...</option>` +
+      categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+  // Pega a data de hoje para o padrão do input
+  const today = new Date().toISOString().split('T')[0];
+
   UI.modal.open({
     title: isDeposit ? `Aportar em: ${name}` : `Resgatar de: ${name}`,
     body: `
@@ -124,40 +146,74 @@ async function _openMovementModal(id, name, type) {
         <i class="fa-solid ${isDeposit ? 'fa-circle-plus' : 'fa-circle-minus'}"
            style="font-size: 2rem; color: ${isDeposit ? 'var(--emerald)' : 'var(--amber)'}; margin-bottom: 0.5rem; display: block;"></i>
       </div>
-      <div class="form-row">
-        <label>Valor (R$)</label>
-        <input type="text" id="mov-amount" placeholder="0,00" autofocus />
-      </div>
+      
+      <form id="form-movement">
+        <div class="form-row">
+          <label>Valor (R$)</label>
+          <input type="text" id="mov-amount" placeholder="0,00" required autofocus />
+        </div>
+        <div class="form-row">
+          <label>Data</label>
+          <input type="date" id="mov-date" value="${today}" required />
+        </div>
+        <div class="form-row">
+          <label>Conta de Origem/Destino</label>
+          <select id="mov-account" required>${accountOptions}</select>
+        </div>
+        <div class="form-row">
+          <label>Categoria da Transação</label>
+          <select id="mov-category" required>${categoryOptions}</select>
+        </div>
+        <div class="form-row">
+          <label>Descrição (Opcional)</label>
+          <input type="text" id="mov-desc" placeholder="Ex: Aporte mensal..." />
+        </div>
+      </form>
     `,
     footer: `
-      <button class="btn-secondary" onclick="UI.modal.close()">Cancelar</button>
-      <button class="btn-primary" id="btn-save-mov">
+      <button class="btn-secondary" type="button" onclick="UI.modal.close()">Cancelar</button>
+      <button class="btn-primary" type="button" id="btn-save-mov">
         <i class="fa-solid ${isDeposit ? 'fa-plus' : 'fa-minus'}"></i>
-        ${isDeposit ? 'Aportar' : 'Resgatar'}
+        ${isDeposit ? 'Confirmar Aporte' : 'Confirmar Resgate'}
       </button>
     `,
     onOpen: () => {
       document.getElementById('btn-save-mov').onclick = () => _executeMovement(id, type);
-      document.getElementById('mov-amount').focus();
     }
   });
 }
 
 async function _executeMovement(id, type) {
-  const raw    = document.getElementById('mov-amount').value.replace(',', '.');
-  const amount = parseFloat(raw) || 0;
-  if (amount <= 0) return UI.toast('Informe um valor válido maior que zero.', 'warning');
+  const rawAmount = document.getElementById('mov-amount').value.replace(',', '.');
+
+  // Montando o payload exatamente como o GoalTransferRequest do Java
+  const payload = {
+    idempotencyKey: crypto.randomUUID(), // Gera um UUID único no navegador
+    accountId:      document.getElementById('mov-account').value,
+    categoryId:     document.getElementById('mov-category').value,
+    amount:         parseFloat(rawAmount) || 0,
+    date:           document.getElementById('mov-date').value,
+    description:    document.getElementById('mov-desc').value.trim(),
+    isRecurring:    false, // Padrão
+    recurrenceType: null   // Padrão
+  };
+
+  // Validações locais
+  if (payload.amount <= 0)  return UI.toast('Informe um valor válido maior que zero.', 'warning');
+  if (!payload.accountId)   return UI.toast('Selecione uma conta.', 'warning');
+  if (!payload.categoryId)  return UI.toast('Selecione uma categoria.', 'warning');
+  if (!payload.date)        return UI.toast('A data é obrigatória.', 'warning');
 
   UI.modal.setLoading(true);
   try {
     if (type === 'DEPOSIT') {
-      await Api.Goals.deposit(id, { amount });
+      await Api.Goals.deposit(id, payload);
     } else {
-      await Api.Goals.withdraw(id, { amount });
+      await Api.Goals.withdraw(id, payload);
     }
     UI.toast(type === 'DEPOSIT' ? 'Aporte realizado!' : 'Resgate realizado!', 'success');
     UI.modal.close();
-    loadGoals();
+    loadGoals(); // Recarrega a tela para atualizar a barra de progresso
   } catch (error) {
     UI.modal.setLoading(false);
     UI.toast(error.message, 'error');
@@ -166,8 +222,17 @@ async function _executeMovement(id, type) {
 
 /** ── MODAL DE CRIAÇÃO / EDIÇÃO DE META ── */
 async function _openGoalForm(id = null) {
-  let goal = { name: '', targetAmount: '', priority: 'MEDIUM', deadline: '', description: '' };
+  let goal = { name: '', targetAmount: '', priority: 'MEDIUM', deadLine: '', description: '', categoryId: '' };
   const isEdit = !!id;
+
+  // Busca Categorias para preencher o select de categoryId
+  let categories = [];
+  try {
+    const catData = await Api.Categories.all(); // Usando a API de categorias
+    categories = Array.isArray(catData) ? catData : (catData?.content || []);
+  } catch (e) {
+    console.error("Erro ao buscar categorias", e);
+  }
 
   if (isEdit) {
     UI.toast('Buscando dados...', 'info');
@@ -184,7 +249,12 @@ async function _openGoalForm(id = null) {
     { value: 'LOW',    label: '🍃 Baixa' }
   ].map(p => `<option value="${p.value}" ${goal.priority === p.value ? 'selected' : ''}>${p.label}</option>`).join('');
 
-  const deadlineVal = goal.deadline ? goal.deadline.split('T')[0] : '';
+  // Monta as opções de categoria
+  const categoryOptions = `<option value="">Selecione uma categoria...</option>` +
+      categories.map(c => `<option value="${c.id}" ${goal.categoryId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+
+  // Extrai data formato YYYY-MM-DD
+  const deadlineVal = goal.deadLine ? goal.deadLine.split('T')[0] : '';
 
   UI.modal.open({
     title: isEdit ? 'Editar Meta' : 'Nova Meta',
@@ -195,6 +265,10 @@ async function _openGoalForm(id = null) {
           <input type="text" id="goal-name" value="${UI.escapeHtml(goal.name || '')}" placeholder="Ex: Viagem, Reserva de emergência..." required />
         </div>
         <div class="form-row">
+          <label>Categoria</label>
+          <select id="goal-category" required>${categoryOptions}</select>
+        </div>
+        <div class="form-row">
           <label>Valor Alvo (R$)</label>
           <input type="text" id="goal-target" value="${goal.targetAmount || ''}" placeholder="0,00" required />
         </div>
@@ -203,18 +277,18 @@ async function _openGoalForm(id = null) {
           <select id="goal-priority">${priorityOptions}</select>
         </div>
         <div class="form-row">
-          <label>Prazo (opcional)</label>
-          <input type="date" id="goal-deadline" value="${deadlineVal}" />
+          <label>Prazo</label>
+          <input type="date" id="goal-deadline" value="${deadlineVal}" required />
         </div>
         <div class="form-row">
-          <label>Descrição (opcional)</label>
+          <label>Descrição</label>
           <textarea id="goal-desc" placeholder="Detalhes da sua meta...">${UI.escapeHtml(goal.description || '')}</textarea>
         </div>
       </form>
     `,
     footer: `
-      <button class="btn-secondary" onclick="UI.modal.close()">Cancelar</button>
-      <button class="btn-primary" id="btn-save-goal"><i class="fa-solid fa-check"></i> Salvar Meta</button>
+      <button class="btn-secondary" type="button" onclick="UI.modal.close()">Cancelar</button>
+      <button class="btn-primary" type="button" id="btn-save-goal"><i class="fa-solid fa-check"></i> Salvar Meta</button>
     `,
     onOpen: () => {
       document.getElementById('btn-save-goal').onclick = () => _saveGoal(id);
@@ -225,18 +299,22 @@ async function _openGoalForm(id = null) {
 async function _saveGoal(id) {
   const isEdit = !!id;
   const targetRaw = document.getElementById('goal-target').value.replace(',', '.');
-  const deadline  = document.getElementById('goal-deadline').value;
 
+  // O payload agora bate as chaves exatas com o GoalRequest do Java
   const payload = {
+    categoryId:   document.getElementById('goal-category').value,
     name:         document.getElementById('goal-name').value.trim(),
+    description:  document.getElementById('goal-desc').value.trim(),
     targetAmount: parseFloat(targetRaw) || 0,
-    priority:     document.getElementById('goal-priority').value,
-    description:  document.getElementById('goal-desc').value.trim()
+    deadLine:     document.getElementById('goal-deadline').value, // <--- C maiúsculo na key!
+    priority:     document.getElementById('goal-priority').value
   };
-  if (deadline) payload.deadline = deadline;
 
-  if (!payload.name)              return UI.toast('O nome da meta é obrigatório.', 'warning');
-  if (payload.targetAmount <= 0)  return UI.toast('Informe um valor alvo maior que zero.', 'warning');
+  // Validações locais antes de enviar ao servidor
+  if (!payload.name)           return UI.toast('O nome da meta é obrigatório.', 'warning');
+  if (!payload.categoryId)     return UI.toast('Selecione uma categoria.', 'warning');
+  if (payload.targetAmount <= 0) return UI.toast('Informe um valor alvo maior que zero.', 'warning');
+  if (!payload.deadLine)       return UI.toast('O prazo da meta é obrigatório.', 'warning');
 
   UI.modal.setLoading(true);
   try {
@@ -292,7 +370,7 @@ function _handleDeleteGoal(id, name) {
 document.addEventListener('click', e => {
   const btn = e.target.closest('button');
   if (!btn) return;
-  
+
   if (btn.id === 'btn-new-goal') _openGoalForm();
   if (btn.id === 'btn-search-goal') _handleGoalSearch();
   if (btn.id === 'btn-reset-goal') _resetGoalSearch();
