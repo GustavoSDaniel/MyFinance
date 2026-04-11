@@ -5,11 +5,11 @@ const isLocalhost = window.location.hostname === 'localhost' || window.location.
 const ENV = {
   KEYCLOAK_BASE: isLocalhost 
     ? 'http://localhost:5053/realms/my-finance-app/protocol/openid-connect'
-    : 'https://URL_DO_SEU_KEYCLOAK_EM_PRODUCAO/realms/my-finance-app/protocol/openid-connect',
+    : 'https://myfinance.gustavosdaniel.com/auth/realms/my-finance-app/protocol/openid-connect',
   
   API_BASE: isLocalhost
     ? 'http://localhost:5050/api/v1'
-    : 'https://URL_DA_SUA_API_SPRING_EM_PRODUCAO/api/v1',
+    : 'https://api.myfinance.gustavosdaniel.com/api/v1',
   
   CLIENT_ID: 'my-finance-app'
 };
