@@ -16,6 +16,12 @@ const UI = (() => {
     };
     document.getElementById('topbar-title').textContent = titleMap[sectionId] || 'MyFinance';
 
+    // NOVO: Fecha a sidebar no celular automaticamente após navegar para outra seção
+    if (window.innerWidth <= 768) {
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.classList.remove('mobile-open');
+    }
+
     const loader = Pages.getLoader(sectionId);
     if (loader) await loader();
   };
@@ -87,3 +93,24 @@ const Pages = (() => {
         getLoader: (n) => _reg[n] 
     };
 })();
+
+// NOVO: Controle de abrir e fechar a Sidebar no Celular
+document.addEventListener("DOMContentLoaded", () => {
+  const sidebar = document.getElementById("sidebar");
+  const btnOpenMenu = document.getElementById("menu-toggle");
+  const btnCloseMenu = document.getElementById("sidebar-close");
+
+  // Botão Hamburguer (Abre o menu)
+  if (btnOpenMenu) {
+    btnOpenMenu.addEventListener("click", () => {
+      sidebar.classList.add("mobile-open");
+    });
+  }
+
+  // Botão 'X' dentro da sidebar (Fecha o menu)
+  if (btnCloseMenu) {
+    btnCloseMenu.addEventListener("click", () => {
+      sidebar.classList.remove("mobile-open");
+    });
+  }
+});

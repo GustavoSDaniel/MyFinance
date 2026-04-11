@@ -159,7 +159,8 @@ input:focus, select:focus { border-color: var(--gold); }
 #page-app { display: none; min-height: 100vh; }
 #page-app.active { display: flex; }
 
-.sidebar { width: var(--sidebar-width); background-color: var(--bg-2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: var(--spacing-sm); height: 100vh; position: sticky; top: 0; }
+/* AQUI FOI ADICIONADA A TRANSIÇÃO NA SIDEBAR */
+.sidebar { width: var(--sidebar-width); background-color: var(--bg-2); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: var(--spacing-sm); height: 100vh; position: sticky; top: 0; transition: left 0.3s ease; }
 .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: var(--spacing-sm); margin-bottom: var(--spacing-sm); border-bottom: 1px solid var(--border); }
 .sidebar-brand { font-family: var(--font-title); color: var(--text-1); font-size: 1.25rem; font-weight: 600; }
 .sidebar-close { display: none; }
@@ -270,7 +271,8 @@ input:focus, select:focus { border-color: var(--gold); }
 .item-card-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: var(--spacing-xs); }
 
 /* Tabelas */
-.table-wrapper { background-color: var(--bg-2); border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; }
+/* AQUI O OVERFLOW FOI TROCADO PARA OVERFLOW-X: AUTO */
+.table-wrapper { background-color: var(--bg-2); border-radius: var(--radius-md); border: 1px solid var(--border); overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table thead th { background-color: var(--bg-3); text-align: left; color: var(--text-1); font-weight: 600; padding: 1.2rem var(--spacing-sm); font-size: 0.85rem; border-bottom: 2px solid var(--border); }
 .data-table tbody td { padding: 1rem var(--spacing-sm); border-bottom: 1px solid var(--border); color: var(--text-1); vertical-align: middle; }
