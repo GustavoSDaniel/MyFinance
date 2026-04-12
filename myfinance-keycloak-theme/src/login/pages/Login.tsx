@@ -13,13 +13,13 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
     return (
         <div className="kc-login-card">
             
-            {/* Logo do MyFinance */}
+            {/* Logo do MyFinance - Coerente com o Dashboard */}
             <div className="kc-logo">
-                <i className="fa-solid fa-chart-pie"></i>
+                <i className="fa-solid fa-chart-line"></i>
                 MyFinance
             </div>
 
-            {/* Mensagem de Erro do Keycloak (se a senha estiver errada, etc) */}
+            {/* Mensagens de Erro/Alerta do Keycloak */}
             {message !== undefined && (message.type === "error" || message.type === "warning") && (
                 <div className="kc-alert-error">
                     <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '8px' }}></i>
@@ -63,28 +63,29 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                 </div>
 
                 {/* Opções extras (Lembrar de mim e Esqueci a senha) */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
                     {realm.rememberMe && (
-                        <label style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <label style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                             <input
                                 tabIndex={3}
                                 id="rememberMe"
                                 name="rememberMe"
                                 type="checkbox"
                                 defaultChecked={!!login.rememberMe}
+                                style={{ accentColor: 'var(--gold)' }}
                             />
                             Lembrar de mim
                         </label>
                     )}
                     
                     {realm.resetPasswordAllowed && (
-                        <a tabIndex={5} href={url.loginResetCredentialsUrl} style={{ color: 'var(--gold)', textDecoration: 'none' }}>
+                        <a tabIndex={5} href={url.loginResetCredentialsUrl} style={{ color: 'var(--gold)', textDecoration: 'none', fontWeight: '500' }}>
                             Esqueceu a senha?
                         </a>
                     )}
                 </div>
 
-                {/* Botão de Submit */}
+                {/* Botão de Acesso - Padronizado com Spinner do CSS */}
                 <button
                     tabIndex={4}
                     className="btn-primary"
@@ -94,7 +95,7 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? (
-                        <span className="spinner" style={{ borderTopColor: '#000' }}></span>
+                        <span className="spinner"></span>
                     ) : (
                         <>
                             <i className="fa-solid fa-right-to-bracket"></i>
@@ -103,12 +104,12 @@ export default function Login(props: PageProps<Extract<KcContext, { pageId: "log
                     )}
                 </button>
 
-                {/* Botão de Registro corrigido para aparecer mesmo com 'Email as username' ativado */}
+                {/* Link de Cadastro */}
                 {realm.password && realm.registrationAllowed && (
-                    <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                    <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
                         <span>Ainda não tem conta? </span>
-                        <a tabIndex={6} href={url.registrationUrl} style={{ color: 'var(--gold)', textDecoration: 'none', fontWeight: 'bold' }}>
-                            Cadastre-se
+                        <a tabIndex={6} href={url.registrationUrl} style={{ color: 'var(--gold)', textDecoration: 'none', fontWeight: '600' }}>
+                            Cadastre-se agora
                         </a>
                     </div>
                 )}

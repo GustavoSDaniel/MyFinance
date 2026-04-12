@@ -24,7 +24,9 @@ export default function Register(props: PageProps<Extract<KcContext, { pageId: "
             )}
 
             <form id="kc-register-form" action={url.registrationAction} method="post" onSubmit={() => setIsSubmitting(true)}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                
+                {/* GRID PARA NOME E SOBRENOME */}
+                <div className="kc-form-grid">
                     <div className="form-row">
                         <label>Nome</label>
                         <input type="text" name="firstName" required autoFocus />
@@ -51,7 +53,7 @@ export default function Register(props: PageProps<Extract<KcContext, { pageId: "
                 </div>
 
                 <button className="btn-primary" type="submit" disabled={isSubmitting} style={{ marginTop: '1rem' }}>
-                    {isSubmitting ? <span className="spinner" style={{ borderTopColor: '#000' }}></span> : "Finalizar Cadastro"}
+                    {isSubmitting ? <span className="spinner"></span> : "Finalizar Cadastro"}
                 </button>
 
                 <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem' }}>
