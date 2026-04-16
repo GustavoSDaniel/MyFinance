@@ -7,11 +7,15 @@ import com.gustavosdaniel.myfinance_api.domain.po.User;
 import com.gustavosdaniel.myfinance_api.exception.UnauthorizedException;
 import com.gustavosdaniel.myfinance_api.controller.metrics.UserMetrics;
 import com.gustavosdaniel.myfinance_api.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Componente auxiliar para operações de autenticação e gerenciamento do usuário logado.
@@ -27,11 +31,12 @@ public class AuthHelper {
      * que devem receber privilégios de administrador (ADMIN).
      */
     @Value("${app.security.admin-emails}")
-    private List<String> adminEmails;
+    private Set<String> adminEmails;
 
     private final UserMetrics userMetrics;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final Logger log = LoggerFactory.getLogger(AuthHelper.class);
 
     public AuthHelper(UserRepository userRepository, UserMapper userMapper, UserMetrics userMetrics) {
         this.userRepository = userRepository;
@@ -51,6 +56,7 @@ public class AuthHelper {
      * @return a entidade {@link User} correspondente ao usuário logado
      * @throws UnauthorizedException se o token JWT fornecido for nulo
      */
+    @Transactional
     public User getCurrentUser(Jwt jwt){
 
         if (jwt == null){
@@ -77,23 +83,26 @@ public class AuthHelper {
      */
     private User createUserFromJwt(Jwt jwt){
 
+        String keycloakId = jwt.getSubject();
         String email = jwt.getClaimAsString("email");
+        String name = jwt.getClaimAsString("name");
 
         UserRole role = adminEmails.contains(email)
                 ? UserRole.ADMIN
                 : UserRole.USER;
 
-        User user = userMapper.toUser(new UserRequest(
-                jwt.getSubject(),
+        User user = userMapper.fromKeycloakClaims(
+                keycloakId,
                 email,
-                jwt.getClaimAsString("name")
-        ));
-
-        user.setRole(role);
+                name,
+                role
+        );
 
         User userSalved = userRepository.save(user);
 
         userMetrics.incrementCreated();
+
+        log.info("Novo usuário registrado com sucesso, email = {}, role = {}", email, role);
 
         return userSalved;
 

@@ -80,4 +80,13 @@ public class UserMapper {
 
         return new UserResponse(user.getId(),user.getName(), user.getEmail(), user.getRole());
     }
+
+    public User fromKeycloakClaims(String keycloakId, String email, String name, UserRole role){
+
+        if (keycloakId == null || email == null || name == null){
+            throw new IllegalArgumentException("KeycloakId, email e nome são obrigatórios");
+        }
+
+        return new User( keycloakId,  email,  name,  role);
+    }
 }
